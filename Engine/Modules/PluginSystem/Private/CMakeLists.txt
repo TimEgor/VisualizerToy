@@ -11,5 +11,5 @@ vt_add_common_module(PluginSystem)
 target_link_libraries(PluginSystem
 	PUBLIC
 		Engine_COMMON
-        PluginSystem_COMMON
+		PluginSystem_COMMON
 )

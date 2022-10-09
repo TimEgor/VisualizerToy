@@ -66,11 +66,11 @@ function(vt_get_all_sources_recurse SOURCE_DIR_PATH GROUP_NAME SOURCE_FILES)
 		include(${GPOUP_CMAKE_FILE_PATH})
 	else()
 		vt_get_subdirs_names(${SOURCE_DIR_PATH} SUBDIRS_NAMES)
-		vt_get_all_sources_subdirs(${SOURCE_DIR_PATH} "${SUBDIRS_NAMES}" GPOUP_SRCS)
+		vt_get_all_sources_subdirs(${SOURCE_DIR_PATH} "${SUBDIRS_NAMES}" GROUP_SRCS)
 	endif()
 
-	list(APPEND GPOUP_SRCS ${${SOURCE_FILES}})
-	set(${SOURCE_FILES} ${GPOUP_SRCS} PARENT_SCOPE)
+	list(APPEND GROUP_SRCS ${${SOURCE_FILES}})
+	set(${SOURCE_FILES} ${GROUP_SRCS} PARENT_SCOPE)
 endfunction()
 
 ### vt_generate_source_groups_by_sources_prefix

@@ -5,4 +5,4 @@ project(Core)
 include(${VT_ROOT_PATH}/CMake/SourceFilesGroups.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)
 
-vt_add_commons_target(Core INTERFACE "VT_Engine")
+vt_add_module_target(Core STATIC "VT_Engine")
