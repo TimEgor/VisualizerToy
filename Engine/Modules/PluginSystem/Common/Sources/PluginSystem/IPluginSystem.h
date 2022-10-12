@@ -2,8 +2,6 @@
 
 #include "PluginBase.h"
 
-#include <string>
-
 namespace VT
 {
 	class IPluginSystem
@@ -15,11 +13,13 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
-		virtual void loadPlugin(const std::string& name) = 0;
-		virtual void unloadPlugin(const std::string& name) = 0;
+		virtual bool loadPlugin(const char* name) = 0;
+		virtual void unloadPlugin(const char* name) = 0;
 		virtual void unloadPlugin(PluginID id) = 0;
 
-		virtual PluginBase* getPlugin(const std::string& name) = 0;
+		virtual PluginBase* getPlugin(const char* name) = 0;
 		virtual PluginBase* getPlugin(PluginID id) = 0;
+
+		virtual PluginID getPluginID(const char* name) = 0;
 	};
 }

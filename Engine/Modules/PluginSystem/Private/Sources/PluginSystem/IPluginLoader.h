@@ -21,7 +21,7 @@ namespace VT
 		IPluginLoader() = default;
 		virtual ~IPluginLoader() {}
 
-		virtual PluginBase* load(const char* name) = 0;
+		virtual PluginBase* load(const char* name, PluginID id) = 0;
 		virtual void unload(PluginBase* plugin) = 0;
 	};
 }

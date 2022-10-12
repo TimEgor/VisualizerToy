@@ -19,17 +19,22 @@ void VT::PluginSystem::release()
 	VT_SAFE_DESTROY(m_loader);
 }
 
-void VT::PluginSystem::loadPlugin(const std::string& name)
+bool VT::PluginSystem::loadPlugin(const char* name)
 {
 	assert(m_loader);
 
-	PluginBase* newPlugin = m_loader->load(name.c_str());
-	newPlugin->onLoaded();
+	PluginBase* newPlugin = m_loader->load(name, getPluginID(name));
+	if (newPlugin)
+	{
+		newPlugin->onLoaded();
+	}
+
+	return newPlugin;
 }
 
-void VT::PluginSystem::unloadPlugin(const std::string& name)
+void VT::PluginSystem::unloadPlugin(const char* name)
 {
-	unloadPlugin(crc32(name.c_str()));
+	unloadPlugin(getPluginID(name));
 }
 
 void VT::PluginSystem::unloadPlugin(PluginID id)
@@ -43,9 +48,9 @@ void VT::PluginSystem::unloadPlugin(PluginID id)
 	m_loader->unload(plugin);
 }
 
-VT::PluginBase* VT::PluginSystem::getPlugin(const std::string& name)
+VT::PluginBase* VT::PluginSystem::getPlugin(const char* name)
 {
-	return getPlugin(crc32(name.c_str()));
+	return getPlugin(getPluginID(name));
 }
 
 VT::PluginBase* VT::PluginSystem::getPlugin(VT::PluginID id)
@@ -57,4 +62,9 @@ VT::PluginBase* VT::PluginSystem::getPlugin(VT::PluginID id)
 	}
 
 	return nullptr;
+}
+
+VT::PluginID VT::PluginSystem::getPluginID(const char* name)
+{
+	return crc32(name);
 }

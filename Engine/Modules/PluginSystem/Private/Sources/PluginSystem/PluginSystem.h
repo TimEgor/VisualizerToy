@@ -24,11 +24,13 @@ namespace VT
 		virtual bool init() override;
 		virtual void release() override;
 
-		virtual void loadPlugin(const std::string& name) override;
-		virtual void unloadPlugin(const std::string& name) override;
+		virtual bool loadPlugin(const char* name) override;
+		virtual void unloadPlugin(const char* name) override;
 		virtual void unloadPlugin(PluginID id) override;
 
-		virtual PluginBase* getPlugin(const std::string& name) override;
+		virtual PluginBase* getPlugin(const char* name) override;
 		virtual PluginBase* getPlugin(PluginID id) override;
+
+		virtual PluginID getPluginID(const char* name) override;
 	};
 }
