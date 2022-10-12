@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.8)
 project(VT_StandaloneLauncher)
 
 set(VT_ROOT_PATH ${CMAKE_CURRENT_LIST_DIR}/../)
+set(VT_PLUGIN_BINARY ${VT_ROOT_PATH}/Plugins/Build)
+set(VT_PLUGIN_OUT ${VT_ROOT_PATH}/Plugins/Out)
 
 include(${VT_ROOT_PATH}/CMake/BuildingOptions.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)
@@ -19,14 +21,20 @@ set_target_properties(StandaloneLauncher PROPERTIES
 	FOLDER "VT_StandaloneLauncher"
 )
 
-set(MODULES_SET
-	Engine Engine/Engine/Private
-)
-
 get_target_property(OUTPUT_LOCATION StandaloneLauncher RUNTIME_OUTPUT_DIRECTORY)
 
+set(MODULES_SET
+	Engine		Engine/Private
+)
+
 vt_add_modules_by_path(StandaloneLauncher PUBLIC
-	"${MODULES_SET}" ${CMAKE_CURRENT_LIST_DIR}/../ ${CMAKE_CURRENT_BINARY_DIR}/Core)
+	"${MODULES_SET}" ${CMAKE_CURRENT_LIST_DIR}/../Engine/ ${CMAKE_CURRENT_BINARY_DIR}/Core)
+
+message("\n>>>>>> PLUGINS <<<<<<<")
+vt_add_plugins_include(Engine
+	"EnginePlugins.cmake" ${CMAKE_CURRENT_LIST_DIR}/../Plugins ${VT_PLUGIN_BINARY})
+
+message("\n----------------------")
 
 if (MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT StandaloneLauncher)

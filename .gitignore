@@ -346,8 +346,16 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
+
+################
+####   VT   ####
+################
+
 # ImGUI
 *imgui.ini
 
 #ThirdParty install dir
 Libs/Install/
+
+#Plugins
+Plugins/Out/

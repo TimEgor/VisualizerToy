@@ -3,19 +3,19 @@
 namespace VT
 {
 	template <typename T>
-	class Singelton
+	class Singleton
 	{
 	protected:
-		Singelton() = default;
+		Singleton() = default;
 
 	public:
-		virtual ~Singelton() {}
+		virtual ~Singleton() {}
 
 		static T& getInstance();
 	};
 
 	template<typename T>
-	inline T& Singelton<T>::getInstance()
+	inline T& Singleton<T>::getInstance()
 	{
 		static T uniqueInstance;
 		return uniqueInstance;

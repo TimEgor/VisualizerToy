@@ -51,18 +51,20 @@ function(vt_set_module_default_target_properties_out_path TARGET_NAME OUTPUT_PAT
 endfunction()
 
 ### vt_add_module_target_name
-function(vt_add_module_target_name CURRENT_TARGET_NAME CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME)
+function(vt_add_module_target_name CURRENT_TARGET_NAME CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME OUTPUT_PATH)
 	set(ALL_SOURCE)
 	vt_get_all_sources_recurse("${CMAKE_CURRENT_LIST_DIR}/Sources/${CURRENT_MODULE_NAME}" "${CURRENT_MODULE_NAME}" ALL_SOURCE)
 	vt_generate_source_groups_by_sources("${CMAKE_CURRENT_LIST_DIR}/Sources/${CURRENT_MODULE_NAME}" "${ALL_SOURCE}")
 
 	add_library(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${ALL_SOURCE})
 
-	vt_set_module_default_target_properties(${CURRENT_TARGET_NAME})
+	vt_set_module_default_target_properties_out_path(${CURRENT_TARGET_NAME} ${OUTPUT_PATH})
 	set_target_properties(${CURRENT_TARGET_NAME} PROPERTIES
 		FOLDER ${FOLDER_NAME}
 	)
 endfunction()
+
+#########
 
 ### vt_link_module
 macro(vt_link_module CURRENT_TARGET_NAME LINK_MODIFIER MODULE_NAME)
@@ -111,6 +113,50 @@ function(vt_add_modules_by_path_include CURRENT_TARGET_NAME LINK_MODIFIER MODULE
 	endif()
 endfunction()
 
+########
+
+### vt_add_plugin
+function(vt_add_plugin CURRENT_TARGET_NAME PLUGINS_SET PLUGINS_PATH BINARY_DIR)
+	foreach(PLUGIN ${PLUGINS_SET})
+		message(">>> adding plugin: ${PLUGIN}")
+		add_subdirectory(${PLUGINS_PATH}/${PLUGIN} ${BINARY_DIR}/${PLUGIN})
+	endforeach()
+endfunction()
+
+### vt_add_plugins_include
+function(vt_add_plugins_include CURRENT_TARGET_NAME PLUGINS_SET_PATH PLUGINS_PATH BINARY_DIR)
+	include(${PLUGINS_SET_PATH})
+
+	if (DEFINED PLUGINS_SET)
+		vt_add_plugin(${CURRENT_TARGET_NAME} "${PLUGINS_SET}" ${PLUGINS_PATH} ${BINARY_DIR})
+	endif()
+endfunction()
+
+### vt_add_plugins_by_path
+function(vt_add_plugins_by_path CURRENT_TARGET_NAME PLUGINS_SET PLUGINS_PATH BINARY_DIR)
+	vt_check_root_path()
+
+	include(${VT_ROOT_PATH}/CMake/Array2d.cmake)
+
+	array2d_begin_loop(advanced "${PLUGINS_SET}" 2 "PLUGIN_NAME;PLUGIN_PATH")
+	while(advanced)
+		message(">>> adding plugin: ${PLUGIN_NAME} (${PLUGIN_PATH})")
+		add_subdirectory(${PLUGIN_PATH}/${PLUGIN_NAME} ${BINARY_DIR}/${PLUGIN_NAME})
+		array2d_advance()
+	endwhile()
+endfunction()
+
+### vt_add_plugins_by_path_include
+function(vt_add_plugins_by_path_include CURRENT_TARGET_NAME PLUGINS_SET_PATH PLUGINS_PATH BINARY_DIR)
+	include(${PLUGINS_SET_PATH})
+
+	if (DEFINED PLUGINS_SET)
+		vt_add_plugins_by_path(${CURRENT_TARGET_NAME} "${PLUGINS_SET}" ${PLUGINS_PATH} ${BINARY_DIR})
+	endif()
+endfunction()
+
+########
+
 ### vt_add_third_party_modules
 function(vt_add_third_party_modules CURRENT_TARGET_NAME LINK_MODIFIER THIRD_PARTY_MODULES_SET BINARY_DIR)
 	vt_check_root_path()
@@ -142,14 +188,36 @@ function(vt_add_third_party_modules_include CURRENT_TARGET_NAME LINK_MODIFIER TH
 	endif()
 endfunction()
 
+########
+
 ### vt_add_module_target
 function(vt_add_module_target CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME)
-	vt_add_module_target_name(${CURRENT_MODULE_NAME} ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME})
+	vt_add_module_target_name(${CURRENT_MODULE_NAME} ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME} ${CMAKE_CURRENT_BINARY_DIR}/Out)
+endfunction()
+
+### vt_add_module_target_out_path
+function(vt_add_module_target_out_path CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME OUTPUT_PATH)
+	vt_add_module_target_name(${CURRENT_MODULE_NAME} ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME} ${OUTPUT_PATH})
 endfunction()
 
 ### vt_add_common_module_target
 function(vt_add_common_module_target CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME)
-	vt_add_module_target_name(${CURRENT_MODULE_NAME}_COMMON ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME})
+	vt_add_module_target_name(${CURRENT_MODULE_NAME}_COMMON ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME} ${CMAKE_CURRENT_BINARY_DIR}/Out)
+endfunction()
+
+### vt_add_common_module_target_out_path
+function(vt_add_common_module_target_out_path CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME OUTPUT_PATH)
+	vt_add_common_module_target_out_path(${CURRENT_MODULE_NAME}_COMMON ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME} ${OUTPUT_PATH})
+endfunction()
+
+### vt_add_plugin_target
+function(vt_add_plugin_target CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME)
+	vt_add_module_target(${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME})
+endfunction()
+
+### vt_add_plugin_target_out_path
+function(vt_add_plugin_target_out_path CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME OUTPUT_PATH)
+	vt_add_module_target_out_path(${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME} ${OUTPUT_PATH})
 endfunction()
 
 ### vt_add_common_module_out_path

@@ -50,6 +50,9 @@ while [ "$1" != "" ]; do
 		"-imgui")
 			BUILDING_OPTIONS="$BUILDING_OPTIONS -DIMGUI=True"
 		;;
+		"-clean")
+			rm -r ./Build
+		;;
 	esac
 
     shift
