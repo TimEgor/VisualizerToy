@@ -6,6 +6,8 @@ namespace VT
 {
 	class Engine final : public IEngine
 	{
+		EngineEnvironment* m_engineEnvironment = nullptr;
+
 	public:
 		Engine() = default;
 
@@ -23,6 +25,6 @@ namespace VT
 		virtual void pauseRendering(bool state) override;
 		virtual bool isRenderingPaused() const override;
 
-		virtual EngineEnvironment* getEnvironment() override;
+		inline virtual EngineEnvironment* getEnvironment() override { return m_engineEnvironment; }
 	};
 }

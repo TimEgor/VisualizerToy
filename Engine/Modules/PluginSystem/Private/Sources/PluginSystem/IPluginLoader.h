@@ -12,7 +12,7 @@
 
 namespace VT
 {
-	using PluginCreatingFunctionPtr = PluginBase*(*)(PluginID, VT_PLATFORM_HANDLE_MODULE);
+	using PluginCreatingFunctionPtr = PluginBase*(*)(PluginID, VT_PLATFORM_HANDLE_MODULE, IEngine*);
 	using PluginReleasingFunctionPtr = void(*)(PluginBase*);
 
 	class IPluginLoader

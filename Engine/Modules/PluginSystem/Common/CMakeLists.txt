@@ -10,4 +10,5 @@ vt_add_common_module_target(PluginSystem INTERFACE "VT_Engine/PluginSystem/")
 target_link_libraries(PluginSystem_COMMON
 	INTERFACE
         Core
+		Engine_COMMON
 )
