@@ -51,6 +51,7 @@ endfunction()
 ### vt_check_and_build_module
 macro(vt_check_and_build_module MODULE_NAME)
 	find_package(${MODULE_NAME})
+
 	if ((NOT ${${MODULE_NAME}_FOUND}) OR (NOT DEFINED ${MODULE_NAME}_FOUND))
 		message(">>> Find module - FAILED : '${MODULE_NAME}'")
 		vt_build_module(${MODULE_NAME})

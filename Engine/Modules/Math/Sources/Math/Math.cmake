@@ -1,0 +1,6 @@
+if (DEFINED SIMD_MATH)
+	if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${SIMD_MATH})
+		vt_get_all_sources_recurse("${CMAKE_CURRENT_LIST_DIR}/${SIMD_MATH}" "${GROUP_NAME}/${SIMD_MATH}" GROUP_SRCS)
+		vt_get_directory_sources("${CMAKE_CURRENT_LIST_DIR}" GROUP_SRCS)
+	endif()
+endif()
