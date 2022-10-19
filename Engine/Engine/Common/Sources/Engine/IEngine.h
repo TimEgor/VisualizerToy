@@ -2,7 +2,7 @@
 
 namespace VT
 {
-	class EngineEnvironment;
+	struct EngineEnvironment;
 
 	class IEngine
 	{

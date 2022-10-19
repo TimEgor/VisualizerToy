@@ -5,6 +5,7 @@ set (ALL_SOURCE_FILE_EXTENSIONS
 	"*.cpp"
 	"*.cmake"
 	"*.inl"
+	"*.natvis"
 )
 
 ### vt_get_directory_sources_recurse
