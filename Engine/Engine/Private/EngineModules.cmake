@@ -3,6 +3,7 @@ set(MODULES_SET
 	#FileSystem		FileSystem/Private
 	Math			Math
 	ObjectPool		ObjectPool
+	Platform		Platform
 	PluginSystem	PluginSystem/Private
-	Window			Window
+	WindowSystem	WindowSystem
 )

@@ -11,7 +11,7 @@ namespace VT
 
 	class PluginSystem final : public IPluginSystem
 	{
-		using PluginContainer = std::unordered_map<PluginID, PluginBase*>;
+		using PluginContainer = std::unordered_map<PluginID, IPlugin*>;
 
 	private:
 		PluginContainer m_plugins;
@@ -28,8 +28,8 @@ namespace VT
 		virtual void unloadPlugin(const char* name) override;
 		virtual void unloadPlugin(PluginID id) override;
 
-		virtual PluginBase* getPlugin(const char* name) override;
-		virtual PluginBase* getPlugin(PluginID id) override;
+		virtual IPlugin* getPlugin(const char* name) override;
+		virtual IPlugin* getPlugin(PluginID id) override;
 
 		virtual PluginID getPluginID(const char* name) override;
 	};

@@ -23,7 +23,7 @@ bool VT::PluginSystem::loadPlugin(const char* name)
 {
 	assert(m_loader);
 
-	PluginBase* newPlugin = m_loader->load(name, getPluginID(name));
+	IPlugin* newPlugin = m_loader->load(name, getPluginID(name));
 	if (newPlugin)
 	{
 		newPlugin->onLoaded();
@@ -41,19 +41,19 @@ void VT::PluginSystem::unloadPlugin(PluginID id)
 {
 	assert(m_loader);
 
-	PluginBase* plugin = getPlugin(id);
+	IPlugin* plugin = getPlugin(id);
 	assert(plugin);
 
 	plugin->onUnloaded();
 	m_loader->unload(plugin);
 }
 
-VT::PluginBase* VT::PluginSystem::getPlugin(const char* name)
+VT::IPlugin* VT::PluginSystem::getPlugin(const char* name)
 {
 	return getPlugin(getPluginID(name));
 }
 
-VT::PluginBase* VT::PluginSystem::getPlugin(VT::PluginID id)
+VT::IPlugin* VT::PluginSystem::getPlugin(VT::PluginID id)
 {
 	auto findIter = m_plugins.find(id);
 	if (findIter != m_plugins.end())

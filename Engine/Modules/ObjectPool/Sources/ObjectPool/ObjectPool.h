@@ -123,7 +123,7 @@ namespace VT
 			return checkElementLocation(location) && location.pageIndex < m_pages.size();
 		}
 
-		ElementLocation getElementLocation(IndexType index)
+		ElementLocation getElementLocation(IndexType index) const
 		{
 			ElementLocation location;
 			location.pageIndex = index / m_pageSize;
@@ -139,7 +139,7 @@ namespace VT
 			VersionType version = handle.getVersion();
 			if (version == InvalidVersion)
 			{
-				return;
+				return nullptr;
 			}
 
 			IndexType index = handle.getIndex();
@@ -156,14 +156,14 @@ namespace VT
 				return nullptr;
 			}
 
-			VersionType lastElementVersion = *page.m_versionMem[elementLocation.elementIndex];
+			VersionType lastElementVersion = page.m_versionMem[elementLocation.elementIndex];
 
 			if (lastElementVersion != version)
 			{
 				return nullptr;
 			}
 
-			return page.m_valsMem[elementLocation.elementIndex];
+			return &page.m_valsMem[elementLocation.elementIndex];
 		}
 
 	public:
@@ -187,6 +187,8 @@ namespace VT
 			pool.m_maxFreePageCount = 0;
 			pool.m_minFreeIndexCount = 0;
 		}
+		~ObjectPool() { release(); }
+
 
 		bool init(size_t pageSize = 4096, size_t maxFreePageCount = 2, size_t minFreeIndexCount = 64)
 		{
@@ -201,6 +203,38 @@ namespace VT
 			return true;
 		}
 
+		void release()
+		{
+			clear();
+		}
+
+		void clear()
+		{
+			for (auto& page : m_pages)
+			{
+				if (!page.isAllocated())
+				{
+					continue;
+				}
+
+				for (size_t elementIndex = 0; elementIndex < page.m_size; ++elementIndex)
+				{
+					if (!page.m_aliveMem[elementIndex])
+					{
+						continue;
+					}
+
+					if constexpr (!std::is_trivially_destructible<ValType>::value)
+					{
+						ValType* val = &page.m_valsMem[elementIndex];
+						val->~ValType();
+					}
+				}
+
+				page.deallocate();
+			}
+		}
+
 		bool isValid(HandleType handle) const
 		{
 			assert(m_pageSize != 0);
@@ -208,7 +242,7 @@ namespace VT
 			VersionType version = handle.getVersion();
 			if (version == InvalidVersion)
 			{
-				return;
+				return false;
 			}
 
 			IndexType index = handle.getIndex();
@@ -225,7 +259,7 @@ namespace VT
 				return false;
 			}
 
-			VersionType lastElementVersion = *page.m_versionMem[elementLocation.elementIndex];
+			VersionType lastElementVersion = page.m_versionMem[elementLocation.elementIndex];
 
 			return lastElementVersion == version;
 		}
@@ -352,6 +386,12 @@ namespace VT
 			if (lastElementVersion != version)
 			{
 				return;
+			}
+
+			if constexpr (!std::is_trivially_destructible<ValType>::value)
+			{
+				ValType* val = &page.m_valsMem[elementLocation.elementIndex];
+				val->~ValType();
 			}
 
 			m_freeIndices.push_back(index);

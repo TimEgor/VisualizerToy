@@ -6,7 +6,10 @@ namespace VT
 {
 	class Engine final : public IEngine
 	{
+	private:
 		EngineEnvironment* m_engineEnvironment = nullptr;
+
+		void initEnvironmentPlatform();
 
 	public:
 		Engine() = default;

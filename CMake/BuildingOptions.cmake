@@ -3,7 +3,7 @@ if (NOT DEFINED OPTIONS_SET)
 		message(FATAL_ERROR "Error: 'VT_ROOT_PATH' hasn't been defined.")
 	endif()
 
-	set(OPTIONS_SET)
+	add_compile_definitions(VT_ROOT_PATH="${VT_ROOT_PATH}")
 
 	if(DEFINED SIMD_MATH)
 		if (SIMD_MATH STREQUAL "")
@@ -18,4 +18,6 @@ if (NOT DEFINED OPTIONS_SET)
 	endif()
 
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${VT_ROOT_PATH}/Libs/FindModules)
+
+	set(OPTIONS_SET)
 endif() #OPTIONS_SET

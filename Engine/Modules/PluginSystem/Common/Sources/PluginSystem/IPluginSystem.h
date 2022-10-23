@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PluginBase.h"
+#include "IPlugin.h"
 
 namespace VT
 {
@@ -17,8 +17,8 @@ namespace VT
 		virtual void unloadPlugin(const char* name) = 0;
 		virtual void unloadPlugin(PluginID id) = 0;
 
-		virtual PluginBase* getPlugin(const char* name) = 0;
-		virtual PluginBase* getPlugin(PluginID id) = 0;
+		virtual IPlugin* getPlugin(const char* name) = 0;
+		virtual IPlugin* getPlugin(PluginID id) = 0;
 
 		virtual PluginID getPluginID(const char* name) = 0;
 	};

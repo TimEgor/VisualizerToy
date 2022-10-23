@@ -12,8 +12,8 @@
 
 namespace VT
 {
-	using PluginCreatingFunctionPtr = PluginBase*(*)(PluginID, VT_PLATFORM_HANDLE_MODULE, IEngine*);
-	using PluginReleasingFunctionPtr = void(*)(PluginBase*);
+	using PluginCreatingFunctionPtr = IPlugin*(*)(PluginID, VT_PLATFORM_HANDLE_MODULE, IEngine*);
+	using PluginReleasingFunctionPtr = void(*)(IPlugin*);
 
 	class IPluginLoader
 	{
@@ -21,7 +21,7 @@ namespace VT
 		IPluginLoader() = default;
 		virtual ~IPluginLoader() {}
 
-		virtual PluginBase* load(const char* name, PluginID id) = 0;
-		virtual void unload(PluginBase* plugin) = 0;
+		virtual IPlugin* load(const char* name, PluginID id) = 0;
+		virtual void unload(IPlugin* plugin) = 0;
 	};
 }

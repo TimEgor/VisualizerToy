@@ -11,8 +11,8 @@ namespace VT
 		PluginLoaderWin32() = default;
 		virtual ~PluginLoaderWin32() {}
 
-		virtual PluginBase* load(const char* name, PluginID id) override;
-		virtual void unload(PluginBase* plugin) override;
+		virtual IPlugin* load(const char* name, PluginID id) override;
+		virtual void unload(IPlugin* plugin) override;
 	};
 }
 #endif

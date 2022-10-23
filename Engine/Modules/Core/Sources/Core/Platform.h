@@ -13,3 +13,19 @@
 
 #define VT_PLATFORM_HANDLE_MODULE
 #endif
+
+namespace VT
+{
+	constexpr char* getPlatformName()
+	{
+#ifdef WIN32
+        return "Win32";
+#elif WIN64
+        return "x64";
+#else
+        return "";
+#endif
+	}
+}
+
+#define VT_PLATFORM_NAME VT::getPlatformName()
