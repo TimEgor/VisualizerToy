@@ -48,6 +48,22 @@ void Win32WindowSystem::release()
 	releaseWindowPool();
 }
 
+void Win32WindowSystem::updateWindowEvents()
+{
+	MSG msg{ 0 };
+	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+	{
+		if (msg.message == WM_QUIT)
+		{
+			VT::EngineInstance::getInstance()->stop();
+			break;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+}
+
 bool Win32WindowSystem::registerClass()
 {
 	Win32Platform* platform = getWin32EnvironmentPlatform();

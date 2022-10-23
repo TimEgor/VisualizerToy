@@ -15,5 +15,7 @@ public:
 	virtual bool init() override;
 	virtual void release() override;
 
+	virtual void updateWindowEvents() override;
+
 	bool registerClass();
 };

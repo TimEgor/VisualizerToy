@@ -20,5 +20,7 @@ namespace VT
 		virtual void destroyWindow(WindowHandle handle) = 0;
 
 		virtual bool isValidWindowHandle(WindowHandle handle) const = 0;
+
+		virtual void updateWindowEvents() = 0;
 	};
 }

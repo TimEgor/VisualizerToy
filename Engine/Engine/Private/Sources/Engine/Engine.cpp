@@ -50,26 +50,31 @@ void VT::Engine::release()
 }
 
 void VT::Engine::run()
-{}
-
-void VT::Engine::updateFrame()
-{}
-
-void VT::Engine::startTimer()
-{}
-
-void VT::Engine::stop()
-{}
-
-bool VT::Engine::isStoped() const
 {
-	return false;
+	startTimer();
+
+	while (!m_isStoped)
+	{
+		updateFrame();
+	}
 }
 
-void VT::Engine::pauseRendering(bool state)
-{}
-
-bool VT::Engine::isRenderingPaused() const
+void VT::Engine::updateFrame()
 {
-	return false;
+	assert(m_engineEnvironment);
+
+	assert(m_engineEnvironment->m_windowSystem);
+	m_engineEnvironment->m_windowSystem->updateWindowEvents();
+}
+
+void VT::Engine::startTimer()
+{
+	m_startTime = Clock::getCurrentTime();
+	m_lastFrameStartTime = m_startTime;
+}
+
+void VT::Engine::stop()
+{
+	m_isStoped = true;
+	m_isRenderingPaused = true;
 }

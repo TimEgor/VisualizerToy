@@ -3,10 +3,6 @@
 #include "Engine/EngineInstance.h"
 #include "Engine/EngineEnvironment.h"
 
-#include "PluginSystem/IPluginSystem.h"
-
-#include "ObjectPool/ObjectPool.h"
-
 #include "ReturningCodes.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -18,6 +14,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	{
 		return VT_LAUNCHER_ENGINE_INIT_ERROR;
 	}
+
+	engineInst->run();
 
 	return VT_LAUNCHER_SUCCESS;
 }

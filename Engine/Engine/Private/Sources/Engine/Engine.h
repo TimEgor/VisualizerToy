@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/IEngine.h"
+#include "Core/Clock.h"
 
 namespace VT
 {
@@ -8,6 +9,14 @@ namespace VT
 	{
 	private:
 		EngineEnvironment* m_engineEnvironment = nullptr;
+
+		//Times
+		ClockTimePoint m_startTime;
+		ClockTimePoint m_lastFrameStartTime;
+		float m_deltaTime;
+
+		bool m_isStoped = false;
+		bool m_isRenderingPaused = false;
 
 		void initEnvironmentPlatform();
 
@@ -23,10 +32,10 @@ namespace VT
 		virtual void startTimer() override;
 
 		virtual void stop() override;
-		virtual bool isStoped() const override;
+		virtual bool isStoped() const override { return m_isStoped; }
 
-		virtual void pauseRendering(bool state) override;
-		virtual bool isRenderingPaused() const override;
+		virtual void pauseRendering(bool state) override { m_isRenderingPaused = state; }
+		virtual bool isRenderingPaused() const override { return m_isRenderingPaused; }
 
 		inline virtual EngineEnvironment* getEnvironment() override { return m_engineEnvironment; }
 	};
