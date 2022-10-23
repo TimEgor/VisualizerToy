@@ -19,11 +19,5 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return VT_LAUNCHER_ENGINE_INIT_ERROR;
 	}
 
-	//tmp functional for testing plugin system
-	{
-		VT::IPluginSystem* pluginSystem = engineInst->getEnvironment()->m_pluginSystem;
-		pluginSystem->loadPlugin("D:/VisualizerToy/Plugins/Out/TestPlugin_Debug_Win32.dll");
-	}
-
 	return VT_LAUNCHER_SUCCESS;
 }
