@@ -4,6 +4,7 @@ if (NOT DEFINED OPTIONS_SET)
 	endif()
 
 	add_compile_definitions(VT_ROOT_PATH="${VT_ROOT_PATH}")
+	add_compile_definitions(VT_CONFIG=$<CONFIG> VT_CONFIG_NAME="$<CONFIG>")
 
 	if(DEFINED SIMD_MATH)
 		if (SIMD_MATH STREQUAL "")

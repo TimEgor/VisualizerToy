@@ -4,13 +4,19 @@ namespace VT
 {
 	struct EngineEnvironment;
 
+	struct EngineInitParam final
+	{
+		const char* m_platformPluginPath = nullptr;
+		const char* m_graphicDevicePluginPath = nullptr;
+	};
+
 	class IEngine
 	{
 	public:
 		IEngine() = default;
 		virtual ~IEngine() {}
 
-		virtual bool init() = 0;
+		virtual bool init(const EngineInitParam& initParam) = 0;
 		virtual void release() = 0;
 
 		virtual void run() = 0;

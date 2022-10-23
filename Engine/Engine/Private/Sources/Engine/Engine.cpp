@@ -6,32 +6,31 @@
 
 #include "Platform/IPlatform.h"
 #include "WindowSystem/IWindowSystem.h"
+#include "GraphicDevice/IGraphicDevice.h"
 
-#include <string>
 #include <cassert>
 
-void VT::Engine::initEnvironmentPlatform()
+bool VT::Engine::init(const EngineInitParam& initParam)
 {
-	//tmp realization
 
-	m_engineEnvironment->m_pluginSystem->loadPlugin((std::string(VT_ROOT_PATH) + "Plugins/Out/Win32PlatformPlugin_Debug_Win32.dll").c_str());
-}
-
-bool VT::Engine::init()
-{
 	m_engineEnvironment = new EngineEnvironment();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment);
 
 	m_engineEnvironment->m_pluginSystem = new PluginSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_pluginSystem && m_engineEnvironment->m_pluginSystem->init());
 
-	initEnvironmentPlatform();
+	assert(initParam.m_platformPluginPath);
+	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_platformPluginPath);
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_platform);
 
 	m_engineEnvironment->m_windowSystem = m_engineEnvironment->m_platform->createWindowSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem && m_engineEnvironment->m_windowSystem->init());
 
 	WindowHandle mainWindow = m_engineEnvironment->m_windowSystem->createWindow("VT", { 500, 500 });
+
+	assert(initParam.m_graphicDevicePluginPath);
+	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_graphicDevicePluginPath);
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice && m_engineEnvironment->m_graphicDevice->init())
 
 	return true;
 }

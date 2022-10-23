@@ -18,12 +18,10 @@ namespace VT
 		bool m_isStoped = false;
 		bool m_isRenderingPaused = false;
 
-		void initEnvironmentPlatform();
-
 	public:
 		Engine() = default;
 
-		virtual bool init() override;
+		virtual bool init(const EngineInitParam& initParam) override;
 		virtual void release() override;
 
 		virtual void run() override;

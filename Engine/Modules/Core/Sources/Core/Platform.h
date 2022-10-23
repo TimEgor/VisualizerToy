@@ -1,17 +1,21 @@
 #pragma once
 
-#ifdef WIN32
+#if defined(WIN32) || defined(WIN64)
 #include <Windows.h>
 
 #define VT_DLL_EXPORT __declspec(dllexport)
 #define VT_DLL_IMPORT __declspec(dllimport)
 
 #define VT_PLATFORM_HANDLE_MODULE HMODULE
+
+#define VT_DYNAMIC_LIB_EXT_NAME ".dll"
 #else
 #define VT_DLL_EXPORT
 #define VT_DLL_IMPORT
 
 #define VT_PLATFORM_HANDLE_MODULE
+
+#define VT_DYNAMIC_LIB_EXT_NAME ""
 #endif
 
 namespace VT

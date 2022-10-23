@@ -48,11 +48,11 @@ void Win32Window::updateSize()
 {
 	RECT clientSize;
 	GetClientRect(m_hWnd, &clientSize);
-	m_clientAreaSize.m_width = clientSize.right - clientSize.left;
-	m_clientAreaSize.m_height = clientSize.bottom - clientSize.top;
+	m_clientAreaSize.m_width = static_cast<VT::WindowSize::ValueType>(clientSize.right - clientSize.left);
+	m_clientAreaSize.m_height = static_cast<VT::WindowSize::ValueType>(clientSize.bottom - clientSize.top);
 
-	m_cutoutsArea.m_top = clientSize.top;
-	m_cutoutsArea.m_bottom = m_windowSize.m_height - clientSize.bottom;
-	m_cutoutsArea.m_right = m_windowSize.m_width - clientSize.right;
-	m_cutoutsArea.m_left = clientSize.left;
+	m_cutoutsArea.m_top = static_cast<VT::WindowArea::ValueType>(clientSize.top);
+	m_cutoutsArea.m_bottom = static_cast<VT::WindowArea::ValueType>(m_windowSize.m_height - clientSize.bottom);
+	m_cutoutsArea.m_right = static_cast<VT::WindowArea::ValueType>(m_windowSize.m_width - clientSize.right);
+	m_cutoutsArea.m_left = static_cast<VT::WindowArea::ValueType>(clientSize.left);
 }
