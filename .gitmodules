@@ -1,0 +1,3 @@
+[submodule "Libs/volk"]
+	path = Libs/volk
+	url = git@github.com:zeux/volk.git

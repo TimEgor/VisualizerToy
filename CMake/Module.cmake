@@ -157,34 +157,43 @@ endfunction()
 
 ########
 
+### vt_add_third_party_module
+function(vt_add_third_party_module CURRENT_TARGET_NAME LINK_MODIFIER THIRD_PARTY_MODULE_NAME TARGETS)
+	include(${VT_ROOT_PATH}/CMake/PreBuild.cmake)
+
+	vt_check_and_build_module(${THIRD_PARTY_MODULE_NAME})
+	if ((NOT ${${THIRD_PARTY_MODULE_NAME}_FOUND}) OR (NOT DEFINED ${THIRD_PARTY_MODULE_NAME}_FOUND))
+		find_package(${THIRD_PARTY_MODULE_NAME} REQUIRED)
+		if ((NOT ${${THIRD_PARTY_MODULE_NAME}_FOUND}) OR (NOT DEFINED ${THIRD_PARTY_MODULE_NAME}_FOUND))
+			message(FATAL_ERROR "Error: '${THIRD_PARTY_MODULE_NAME}' hasn't been found.")
+		endif()
+	endif()
+
+	foreach(TARGET ${TARGETS})
+		message(">>> adding third party module: ${TARGET} (${THIRD_PARTY_MODULE_NAME})")
+		vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${TARGET})
+	endforeach()
+endfunction()
+
 ### vt_add_third_party_modules
-function(vt_add_third_party_modules CURRENT_TARGET_NAME LINK_MODIFIER THIRD_PARTY_MODULES_SET BINARY_DIR)
+function(vt_add_third_party_modules CURRENT_TARGET_NAME LINK_MODIFIER THIRD_PARTY_MODULES_SET)
 	vt_check_root_path()
 
 	include(${VT_ROOT_PATH}/CMake/Array2d.cmake)
-	include(${VT_ROOT_PATH}/CMake/PreBuild.cmake)
 
 	array2d_begin_loop( advanced "${THIRD_PARTY_MODULES_SET}" 2 "THIRD_PARTY_MODULE_NAME;TARGETS" )
 	while( advanced )
-		foreach(TARGET ${TARGETS})
-			vt_check_and_build_module(${THIRD_PARTY_MODULE_NAME})
-			if ((NOT ${${THIRD_PARTY_MODULE_NAME}_FOUND}) OR (NOT DEFINED ${THIRD_PARTY_MODULE_NAME}_FOUND))
-				find_package(${THIRD_PARTY_MODULE_NAME} REQUIRED)
-			endif()
-			message(">>> adding third party module: ${TARGET} (${THIRD_PARTY_MODULE_NAME})")
-			vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${TARGET})
-		endforeach()
-
+		vt_add_third_party_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${THIRD_PARTY_MODULE_NAME} ${TARGETS})
 		array2d_advance()
 	endwhile()
 endfunction()
 
 ### vt_add_third_party_modules_include
-function(vt_add_third_party_modules_include CURRENT_TARGET_NAME LINK_MODIFIER THIRD_PARTY_MODULES_SET_PATH BINARY_DIR)
+function(vt_add_third_party_modules_include CURRENT_TARGET_NAME LINK_MODIFIER THIRD_PARTY_MODULES_SET_PATH)
 	include(${THIRD_PARTY_MODULES_SET_PATH})
 
 	if (DEFINED THIRD_PARTY_MODULES_SET)
-		vt_add_third_party_modules(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} "${THIRD_PARTY_MODULES_SET}" ${BINARY_DIR})
+		vt_add_third_party_modules(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} "${THIRD_PARTY_MODULES_SET}")
 	endif()
 endfunction()
 

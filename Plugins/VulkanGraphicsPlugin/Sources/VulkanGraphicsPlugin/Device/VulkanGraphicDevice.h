@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicDevice/IGraphicDevice.h"
+#include "VulkanGraphicsPlugin/VulkanCore.h"
 
 #define VT_GRAPHIC_DEVICE_VULKAN_TYPE
 
