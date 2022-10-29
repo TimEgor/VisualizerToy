@@ -2,7 +2,7 @@
 
 #include "Win32PlatformUtils.h"
 
-bool Win32Window::init(const char* title, const VT::WindowSize& size)
+bool VT_WIN32::Win32Window::init(const char* title, const VT::WindowSize& size)
 {
 	Win32Platform* win32Platform = getWin32EnvironmentPlatform();
 
@@ -26,7 +26,7 @@ bool Win32Window::init(const char* title, const VT::WindowSize& size)
     return true;
 }
 
-void Win32Window::release()
+void VT_WIN32::Win32Window::release()
 {
 	if (m_hWnd)
 	{
@@ -34,17 +34,17 @@ void Win32Window::release()
 	}
 }
 
-void Win32Window::show()
+void VT_WIN32::Win32Window::show()
 {
 	ShowWindow(m_hWnd, SW_NORMAL);
 }
 
-void Win32Window::hide()
+void VT_WIN32::Win32Window::hide()
 {
 	ShowWindow(m_hWnd, SW_HIDE);
 }
 
-void Win32Window::updateSize()
+void VT_WIN32::Win32Window::updateSize()
 {
 	RECT clientSize;
 	GetClientRect(m_hWnd, &clientSize);

@@ -2,7 +2,7 @@
 
 #include "Win32WindowSystem.h"
 
-VT::IWindowSystem* Win32Platform::createWindowSystem()
+VT::IWindowSystem* VT_WIN32::Win32Platform::createWindowSystem()
 {
-    return new Win32WindowSystem();
+	return new Win32WindowSystem();
 }

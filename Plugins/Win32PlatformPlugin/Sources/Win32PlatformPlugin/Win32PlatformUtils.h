@@ -4,10 +4,13 @@
 
 #include "Win32Platform.h"
 
-inline Win32Platform* getWin32EnvironmentPlatform()
+namespace VT_WIN32
 {
-	VT::IPlatform* platform = VT::EngineInstance::getInstance()->getEnvironment()->m_platform;
-	assert(platform->getType() == Win32Platform::getPlatformType());
+	inline Win32Platform* getWin32EnvironmentPlatform()
+	{
+		VT::IPlatform* platform = VT::EngineInstance::getInstance()->getEnvironment()->m_platform;
+		assert(platform->getType() == Win32Platform::getPlatformType());
 
-	return reinterpret_cast<Win32Platform*>(platform);
+		return reinterpret_cast<Win32Platform*>(platform);
+	}
 }

@@ -3,19 +3,22 @@
 #include "WindowSystem/WindowSystemBase.h"
 #include "Win32Window.h"
 
-class Win32WindowSystem final : public VT::WindowSystemBase<Win32Window>
+namespace VT_WIN32
 {
-private:
-	static LRESULT CALLBACK wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	class Win32WindowSystem final : public VT::WindowSystemBase<Win32Window>
+	{
+	private:
+		static LRESULT CALLBACK wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-public:
-	Win32WindowSystem() = default;
-	~Win32WindowSystem() { release(); }
+	public:
+		Win32WindowSystem() = default;
+		~Win32WindowSystem() { release(); }
 
-	virtual bool init() override;
-	virtual void release() override;
+		virtual bool init() override;
+		virtual void release() override;
 
-	virtual void updateWindowEvents() override;
+		virtual void updateWindowEvents() override;
 
-	bool registerClass();
-};
+		bool registerClass();
+	};
+}

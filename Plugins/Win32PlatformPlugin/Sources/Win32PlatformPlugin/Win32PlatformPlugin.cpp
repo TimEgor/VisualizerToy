@@ -6,9 +6,9 @@
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
 
-VT_PLUGIN(Win32PluginPlatform)
+VT_PLUGIN(VT_WIN32::Win32PluginPlatform)
 
-void Win32PluginPlatform::onLoaded()
+void VT_WIN32::Win32PluginPlatform::onLoaded()
 {
 	VT::EngineEnvironment* environment = VT::EngineInstance::getInstance()->getEnvironment();
 	if (!environment)
@@ -26,7 +26,7 @@ void Win32PluginPlatform::onLoaded()
 	environment->m_platform = new Win32Platform(GetModuleHandle(0));
 }
 
-void Win32PluginPlatform::onUnloaded()
+void VT_WIN32::Win32PluginPlatform::onUnloaded()
 {
 
 }

@@ -5,19 +5,22 @@
 
 #define VT_WIN32_WND_CLASS_NAME "VT_Window"
 
-class Win32Window final : public VT::WindowBase
+namespace VT_WIN32
 {
-private:
-	HWND m_hWnd = 0;
+	class Win32Window final : public VT::WindowBase
+	{
+	private:
+		HWND m_hWnd = 0;
 
-public:
-	Win32Window() = default;
+	public:
+		Win32Window() = default;
 
-	virtual bool init(const char* title, const VT::WindowSize& size) override;
-	virtual void release() override;
+		virtual bool init(const char* title, const VT::WindowSize& size) override;
+		virtual void release() override;
 
-	virtual void show() override;
-	virtual void hide() override;
+		virtual void show() override;
+		virtual void hide() override;
 
-	void updateSize();
-};
+		void updateSize();
+	};
+}

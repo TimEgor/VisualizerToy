@@ -2,7 +2,7 @@
 
 #include "Win32PlatformUtils.h"
 
-LRESULT Win32WindowSystem::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT VT_WIN32::Win32WindowSystem::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	Win32Window* window = reinterpret_cast<Win32Window*>(GetWindowLongPtr(hwnd, 0));
 
@@ -35,7 +35,7 @@ LRESULT Win32WindowSystem::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-bool Win32WindowSystem::init()
+bool VT_WIN32::Win32WindowSystem::init()
 {
 	VT_CHECK_INITIALIZATION(registerClass());
 	VT_CHECK_INITIALIZATION(initWindowPool());
@@ -43,12 +43,12 @@ bool Win32WindowSystem::init()
 	return true;
 }
 
-void Win32WindowSystem::release()
+void VT_WIN32::Win32WindowSystem::release()
 {
 	releaseWindowPool();
 }
 
-void Win32WindowSystem::updateWindowEvents()
+void VT_WIN32::Win32WindowSystem::updateWindowEvents()
 {
 	MSG msg{ 0 };
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -64,27 +64,27 @@ void Win32WindowSystem::updateWindowEvents()
 	}
 }
 
-bool Win32WindowSystem::registerClass()
+bool VT_WIN32::Win32WindowSystem::registerClass()
 {
 	Win32Platform* platform = getWin32EnvironmentPlatform();
 
-    WNDCLASS wndClass{};
-    wndClass.cbClsExtra = 0;
-    wndClass.cbWndExtra = sizeof(Win32Window*);
-    wndClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
-    wndClass.hCursor = LoadCursor(0, IDC_ARROW);
-    wndClass.hIcon = LoadIcon(0, IDI_APPLICATION);
-    wndClass.hInstance = platform->getHInstance();
-    wndClass.lpfnWndProc = wndProc;
-    wndClass.lpszClassName = VT_WIN32_WND_CLASS_NAME;
-    wndClass.lpszMenuName = 0;
-    wndClass.style = 0;
+	WNDCLASS wndClass{};
+	wndClass.cbClsExtra = 0;
+	wndClass.cbWndExtra = sizeof(Win32Window*);
+	wndClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
+	wndClass.hCursor = LoadCursor(0, IDC_ARROW);
+	wndClass.hIcon = LoadIcon(0, IDI_APPLICATION);
+	wndClass.hInstance = platform->getHInstance();
+	wndClass.lpfnWndProc = wndProc;
+	wndClass.lpszClassName = VT_WIN32_WND_CLASS_NAME;
+	wndClass.lpszMenuName = 0;
+	wndClass.style = 0;
 
-    if (!RegisterClass(&wndClass))
-    {
-        assert(false && "Win32WindowSystem::registerClass() : WNDCLASS registration failed.");
-        return false;
-    }
+	if (!RegisterClass(&wndClass))
+	{
+		assert(false && "Win32WindowSystem::registerClass() : WNDCLASS registration failed.");
+		return false;
+	}
 
-    return true;
+	return true;
 }

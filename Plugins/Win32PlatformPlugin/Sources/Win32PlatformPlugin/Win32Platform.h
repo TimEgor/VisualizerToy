@@ -5,18 +5,22 @@
 
 #define VT_PLARFORM_WIN32_TYPE
 
-class Win32Platform final : public VT::IPlatform
+namespace VT_WIN32
 {
-private:
-	HINSTANCE m_hInstance;
+	class Win32Platform final : public VT::IPlatform
+	{
+	private:
+		HINSTANCE m_hInstance;
 
-public:
-	Win32Platform(HINSTANCE hInstance)
-		: m_hInstance(hInstance) {}
+	public:
+		Win32Platform(HINSTANCE hInstance)
+			: m_hInstance(hInstance)
+		{}
 
-	HINSTANCE getHInstance() const { return m_hInstance; }
+		HINSTANCE getHInstance() const { return m_hInstance; }
 
-	virtual VT::IWindowSystem* createWindowSystem() override;
+		virtual VT::IWindowSystem* createWindowSystem() override;
 
-	VT_PLATFORM_TYPE(VT_PLARFORM_WIN32_TYPE)
-};
+		VT_PLATFORM_TYPE(VT_PLARFORM_WIN32_TYPE)
+	};
+}
