@@ -6,9 +6,11 @@
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
 
-VT_PLUGIN(VulkanGraphicPlugin)
+#include "VulkanCore.h"
 
-void VulkanGraphicPlugin::onLoaded()
+VT_PLUGIN(VT_VK::VulkanGraphicPlugin)
+
+void VT_VK::VulkanGraphicPlugin::onLoaded()
 {
 	VT::EngineEnvironment* environment = VT::EngineInstance::getInstance()->getEnvironment();
 	if (!environment)
@@ -23,8 +25,10 @@ void VulkanGraphicPlugin::onLoaded()
 		return;
 	}
 
+	volkInitialize();
+
 	environment->m_graphicDevice = new VulkanGraphicDevice();
 }
 
-void VulkanGraphicPlugin::onUnloaded()
+void VT_VK::VulkanGraphicPlugin::onUnloaded()
 {}

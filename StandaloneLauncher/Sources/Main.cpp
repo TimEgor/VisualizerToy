@@ -17,13 +17,17 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	initParams.m_platformPluginPath = platformPluginPath.c_str();
 	initParams.m_graphicDevicePluginPath = graphicsPluginPath.c_str();
 
-	engineInst.setEngine(new VT::Engine());
+	VT::IEngine* engine = new VT::Engine();
+
+	engineInst.setEngine(engine);
 	if (!engineInst->init(initParams))
 	{
 		return VT_LAUNCHER_ENGINE_INIT_ERROR;
 	}
 
 	engineInst->run();
+
+	VT_SAFE_DESTROY_WITH_RELEASING(engine);
 
 	return VT_LAUNCHER_SUCCESS;
 }

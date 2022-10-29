@@ -13,8 +13,9 @@
 #define VT_PLUGIN_CREATE(PLUGIN_TYPE)																												\
 extern "C" VT_DLL_EXPORT VT::PluginBase* VT_PLUGIN_CREATE_FUNC(VT::PluginID pluginID, VT_PLATFORM_HANDLE_MODULE nativeHandle, VT::IEngine* engine)	\
 {																																					\
-	VT::EngineInstance::getInstance().setEngine(engine);																							\
 	static_assert(std::is_base_of<VT::PluginBase, PLUGIN_TYPE>::value);																				\
+																																					\
+	VT::EngineInstance::getInstance().setEngine(engine);																							\
 	return new PLUGIN_TYPE(pluginID, nativeHandle);																									\
 }
 

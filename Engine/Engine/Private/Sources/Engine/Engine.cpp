@@ -39,6 +39,7 @@ void VT::Engine::release()
 {
 	if (m_engineEnvironment)
 	{
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_graphicDevice);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_windowSystem);
 		VT_SAFE_DESTROY(m_engineEnvironment->m_platform);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_pluginSystem);

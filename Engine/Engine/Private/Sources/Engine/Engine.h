@@ -13,13 +13,14 @@ namespace VT
 		//Times
 		ClockTimePoint m_startTime;
 		ClockTimePoint m_lastFrameStartTime;
-		float m_deltaTime;
+		float m_deltaTime = 0.0f;
 
 		bool m_isStoped = false;
 		bool m_isRenderingPaused = false;
 
 	public:
 		Engine() = default;
+		~Engine() { release(); }
 
 		virtual bool init(const EngineInitParam& initParam) override;
 		virtual void release() override;
