@@ -96,6 +96,13 @@ namespace VT
 			}
 		};
 
+	public:
+		struct NewElementInfo final
+		{
+			HandleType m_elementHandle = InvalidHandle;
+			ValType* m_elementPtr = nullptr;
+		};
+
 	private:
 		std::vector<Page> m_pages;
 		std::deque<IndexType> m_freeIndices;
@@ -275,7 +282,7 @@ namespace VT
 		}
 
 		template <typename... Args>
-		HandleType addElement(Args&&... args)
+		NewElementInfo addElement(Args&&... args)
 		{
 			assert(m_pageSize != 0);
 
@@ -296,7 +303,7 @@ namespace VT
 			if (!checkElementLocation(elementLocation))
 			{
 				assert(false && "ObjectPool::addElement() : Element indicing invalidation.");
-				return InvalidHandle;
+				return NewElementInfo();
 			}
 
 			Page* pagePtr = nullptr;
@@ -317,7 +324,7 @@ namespace VT
 			if (!pagePtr)
 			{
 				assert(false && "ObjectPool::addElement() : Page indicing invalidation.");
-				return InvalidHandle;
+				return NewElementInfo();
 			}
 
 			Page& page = *pagePtr;
@@ -331,7 +338,7 @@ namespace VT
 			if (aliveState)
 			{
 				assert(false && "ObjectPool::addElement() : Reusing alive element.");
-				return InvalidHandle;
+				return NewElementInfo();
 			}
 
 			++page.m_size;
@@ -349,7 +356,7 @@ namespace VT
 
 			aliveState = true;
 
-			return HandleType(index, version);
+			return NewElementInfo{ HandleType(index, version), val };
 		}
 
 		void removeElement(HandleType handle)

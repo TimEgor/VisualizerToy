@@ -1,19 +1,17 @@
 #pragma once
 
-#include "IWindow.h"
-#include "ObjectPool/ObjectPoolHandle.h"
+#include "IWindowContainer.h"
+#include "IWindowEventSystem.h"
 
 namespace VT
 {
-	using WindowHandle = ObjectPoolHandle32;
-
 	class IWindowSystem
 	{
 	public:
 		IWindowSystem() = default;
 		virtual ~IWindowSystem() {}
 
-		virtual bool init() = 0;
+		virtual bool init(IWindowContainer* container, IWindowEventSystem* eventSystem) = 0;
 		virtual void release() = 0;
 
 		virtual WindowHandle createWindow(const char* title, const WindowSize& size) = 0;

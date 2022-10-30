@@ -1,10 +1,10 @@
 set(MODULES_SET
 	Core			Core
 	#FileSystem		FileSystem/Private
-	Graphics		Graphics
+	GraphicsModule	Graphics
 	Math			Math
 	ObjectPool		ObjectPool
 	Platform		Platform
 	PluginSystem	PluginSystem/Private
-	WindowSystem	WindowSystem
+	WindowSystem	WindowSystem/Private
 )

@@ -12,14 +12,20 @@ namespace VT_WIN32
 	private:
 		HINSTANCE m_hInstance;
 
+		bool initWindowClass();
+
 	public:
 		Win32Platform(HINSTANCE hInstance)
-			: m_hInstance(hInstance)
-		{}
+			: m_hInstance(hInstance) {}
+
+		virtual bool init() override;
+		virtual void release() override {}
 
 		HINSTANCE getHInstance() const { return m_hInstance; }
 
-		virtual VT::IWindowSystem* createWindowSystem() override;
+		//WindowSystem
+		virtual VT::IWindowContainer* createWindowContainer() override;
+		virtual VT::IWindowEventSystem* createWindowEventSystem() override;
 
 		VT_PLATFORM_TYPE(VT_PLARFORM_WIN32_TYPE)
 	};

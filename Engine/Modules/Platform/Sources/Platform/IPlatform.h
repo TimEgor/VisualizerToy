@@ -4,7 +4,8 @@
 
 namespace VT
 {
-	class IWindowSystem;
+	class IWindowContainer;
+	class IWindowEventSystem;
 
 	using PlatformType = uint32_t;
 
@@ -14,7 +15,12 @@ namespace VT
 		IPlatform() = default;
 		virtual ~IPlatform() {}
 
-		virtual IWindowSystem* createWindowSystem() = 0;
+		virtual bool init() = 0;
+		virtual void release() = 0;
+
+		//WindowSystem
+		virtual IWindowContainer* createWindowContainer() = 0;
+		virtual IWindowEventSystem* createWindowEventSystem() = 0;
 
 		virtual PlatformType getType() const = 0;
 	};

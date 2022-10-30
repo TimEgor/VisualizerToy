@@ -5,10 +5,10 @@ project(WindowSystem)
 include(${VT_ROOT_PATH}/CMake/SourceFilesGroups.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)
 
-vt_add_module_target(WindowSystem INTERFACE "VT_Engine/UserInterfaces")
+vt_add_module_target(WindowSystem STATIC "VT_Engine/UserInterfaces/WindowSystem")
+vt_add_common_module(WindowSystem)
 
 target_link_libraries(WindowSystem
-    INTERFACE
-        Math
-        ObjectPool
+	PUBLIC
+        WindowSystem_COMMON
 )

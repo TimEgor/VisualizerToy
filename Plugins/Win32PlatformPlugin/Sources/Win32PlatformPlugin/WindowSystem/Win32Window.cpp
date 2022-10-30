@@ -1,6 +1,6 @@
 #include "Win32Window.h"
 
-#include "Win32PlatformUtils.h"
+#include "Win32PlatformPlugin/Win32PlatformUtils.h"
 
 bool VT_WIN32::Win32Window::init(const char* title, const VT::WindowSize& size)
 {

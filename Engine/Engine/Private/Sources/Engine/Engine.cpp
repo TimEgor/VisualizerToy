@@ -2,10 +2,11 @@
 
 #include "Core/UtilitiesMacros.h"
 #include "Engine/EngineEnvironment.h"
+
 #include "PluginSystem/PluginSystem.h"
+#include "WindowSystem/WindowSystem.h"
 
 #include "Platform/IPlatform.h"
-#include "WindowSystem/IWindowSystem.h"
 #include "GraphicDevice/IGraphicDevice.h"
 
 #include <cassert>
@@ -21,10 +22,14 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 
 	assert(initParam.m_platformPluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_platformPluginPath);
-	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_platform);
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_platform && m_engineEnvironment->m_platform->init());
 
-	m_engineEnvironment->m_windowSystem = m_engineEnvironment->m_platform->createWindowSystem();
-	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem && m_engineEnvironment->m_windowSystem->init());
+	m_engineEnvironment->m_windowSystem = new WindowSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem
+		&& m_engineEnvironment->m_windowSystem->init(
+			m_engineEnvironment->m_platform->createWindowContainer(),
+			m_engineEnvironment->m_platform->createWindowEventSystem()
+		));
 
 	WindowHandle mainWindow = m_engineEnvironment->m_windowSystem->createWindow("VT", { 500, 500 });
 
