@@ -31,4 +31,18 @@ void VT_VK::VulkanGraphicPlugin::onLoaded()
 }
 
 void VT_VK::VulkanGraphicPlugin::onUnloaded()
-{}
+{
+	VT::EngineEnvironment* environment = VT::EngineInstance::getInstance()->getEnvironment();
+	if (!environment)
+	{
+		assert(false && "VulkanGraphicPlugin::onUnloaded() : Engine environment is invalid.");
+		return;
+	}
+
+	VT::IGraphicDevice* graphicDevice = environment->m_graphicDevice;
+
+	if (graphicDevice && graphicDevice->getType() == VulkanGraphicDevice::getGraphicDeviceType())
+	{
+		VT_SAFE_DESTROY_WITH_RELEASING(graphicDevice);
+	}
+}

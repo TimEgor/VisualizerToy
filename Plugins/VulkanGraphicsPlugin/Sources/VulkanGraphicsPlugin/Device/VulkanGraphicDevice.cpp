@@ -206,7 +206,8 @@ void VT_VK::VulkanGraphicDevice::release()
 {
 	if (m_vkDevice)
 	{
-		vkDeviceWaitIdle(m_vkDevice);
+		wait();
+
 		vkDestroyDevice(m_vkDevice, nullptr);
 		m_vkDevice = nullptr;
 	}
@@ -216,4 +217,10 @@ void VT_VK::VulkanGraphicDevice::release()
 		vkDestroyInstance(m_vkInstance, nullptr);
 		m_vkInstance = nullptr;
 	}
+}
+
+void VT_VK::VulkanGraphicDevice::wait()
+{
+	assert(m_vkDevice);
+	vkDeviceWaitIdle(m_vkDevice);
 }

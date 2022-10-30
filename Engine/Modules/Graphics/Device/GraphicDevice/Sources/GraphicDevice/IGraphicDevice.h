@@ -15,6 +15,8 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
+		virtual void wait() = 0;
+
 		virtual GraphicDeviceType getType() const = 0;
 	};
 }

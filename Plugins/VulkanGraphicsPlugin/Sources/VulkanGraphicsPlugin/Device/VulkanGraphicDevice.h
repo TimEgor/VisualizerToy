@@ -45,6 +45,8 @@ namespace VT_VK
 		virtual bool init() override;
 		virtual void release() override;
 
+		virtual void wait() override;
+
 		VT_GRAPHIC_DEVICE_TYPE(VT_GRAPHIC_DEVICE_VULKAN_TYPE)
 	};
 }
