@@ -1,5 +1,6 @@
 set(MODULES_SET
-	GraphicDevice
-	SwapChain
-	Textures
+	GraphicDevice		GraphicDevice
+	ResourceManager		ResourceManager/Private
+	SwapChain			SwapChain
+	Textures			Textures
 )

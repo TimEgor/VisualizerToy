@@ -1,18 +1,20 @@
 #pragma once
 
 #include "IWindow.h"
-#include "ObjectPool/ObjectPoolHandle.h"
+
+#include <cstdint>
 
 namespace VT
 {
-	using WindowHandle = ObjectPoolHandle32;
+	using WindowHandle = uint32_t;
+	constexpr WindowHandle InvalidWindowHandle = 0;
 
 	class IWindowContainer
 	{
 	public:
 		struct NewWindowInfo final
 		{
-			WindowHandle m_windowHandle = WindowHandle::InvalidKey;
+			WindowHandle m_windowHandle = InvalidWindowHandle;
 			IWindow* m_windowPtr = nullptr;
 		};
 

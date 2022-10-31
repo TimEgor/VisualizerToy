@@ -6,6 +6,6 @@ project(GraphicDeviceModule)
 
 add_library(GraphicDeviceModule INTERFACE)
 
-vt_add_modules_include(GraphicDeviceModule INTERFACE "DeviceModules.cmake"
+vt_add_modules_by_path_include(GraphicDeviceModule INTERFACE "DeviceModules.cmake"
 	${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Modules
 )

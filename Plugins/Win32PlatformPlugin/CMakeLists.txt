@@ -12,5 +12,5 @@ target_link_libraries(Win32PlatformPlugin
 		Core
 		Platform
 		PluginSystem_COMMON
-		WindowSystem
+		WindowSystem_COMMON
 )

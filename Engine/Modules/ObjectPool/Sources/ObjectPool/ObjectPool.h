@@ -281,8 +281,7 @@ namespace VT
 			return getElementInternal(handle);
 		}
 
-		template <typename... Args>
-		NewElementInfo addElement(Args&&... args)
+		void addElementRaw(NewElementInfo& info)
 		{
 			assert(m_pageSize != 0);
 
@@ -303,7 +302,8 @@ namespace VT
 			if (!checkElementLocation(elementLocation))
 			{
 				assert(false && "ObjectPool::addElement() : Element indicing invalidation.");
-				return NewElementInfo();
+				info = NewElementInfo();
+				return;
 			}
 
 			Page* pagePtr = nullptr;
@@ -324,7 +324,8 @@ namespace VT
 			if (!pagePtr)
 			{
 				assert(false && "ObjectPool::addElement() : Page indicing invalidation.");
-				return NewElementInfo();
+				info = NewElementInfo();
+				return;
 			}
 
 			Page& page = *pagePtr;
@@ -338,13 +339,13 @@ namespace VT
 			if (aliveState)
 			{
 				assert(false && "ObjectPool::addElement() : Reusing alive element.");
-				return NewElementInfo();
+				info = NewElementInfo();
+				return;
 			}
 
 			++page.m_size;
 
 			ValType* val = &page.m_valsMem[elementLocation.elementIndex];
-			new (val) ValType(args...);
 
 			VersionType& version = page.m_versionMem[elementLocation.elementIndex];
 
@@ -356,7 +357,31 @@ namespace VT
 
 			aliveState = true;
 
-			return NewElementInfo{ HandleType(index, version), val };
+			info = NewElementInfo{ HandleType(index, version), val };
+		}
+
+		NewElementInfo addElementRaw()
+		{
+			NewElementInfo info;
+			addElementRaw(info);
+
+			return info;
+		}
+
+		template <typename... Args>
+		void addElement(NewElementInfo& info, Args&&... args)
+		{
+			addElementRaw(info);
+			new (info.m_elementPtr) ValType(args...);
+		}
+
+		template <typename... Args>
+		NewElementInfo addElement(Args&&... args)
+		{
+			NewElementInfo info = addElementRaw();
+			new (info.m_elementPtr) ValType(args...);
+
+			return info;
 		}
 
 		void removeElement(HandleType handle)

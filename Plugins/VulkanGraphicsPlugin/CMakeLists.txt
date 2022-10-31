@@ -12,6 +12,9 @@ vt_add_third_party_module(VulkanGraphicsPlugin PRIVATE "volk" "volk::volk")
 target_link_libraries(VulkanGraphicsPlugin
 	PUBLIC
 		Core
-		GraphicDeviceModule
+		GraphicDevice
+		GraphicResourceManager_COMMON
+		SwapChain
+		Textures
 		PluginSystem_COMMON
 )

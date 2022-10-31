@@ -10,5 +10,4 @@ vt_add_common_module_target(WindowSystem INTERFACE "VT_Engine/UserInterfaces/Win
 target_link_libraries(WindowSystem_COMMON
     INTERFACE
         Math
-        ObjectPool
 )
