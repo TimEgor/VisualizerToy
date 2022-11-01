@@ -8,7 +8,8 @@ namespace VT
 	template <typename WindowType>
 	class WindowContainerBase : public IWindowContainer
 	{
-		using WindowPool = ObjectPool<WindowType, WindowHandle>;
+		using WindowPoolHandle = ObjectPoolHandle32;
+		using WindowPool = ObjectPool<WindowType, WindowPoolHandle>;
 
 		static constexpr size_t DefaultWindowPoolPageSize = 4;
 		static constexpr size_t DefaultWindowPoolMaxFreePageCount = 0;
@@ -26,7 +27,7 @@ namespace VT
 		virtual NewWindowInfo addWindow() override
 		{
 			const WindowPool::NewElementInfo info = m_windowPool.addElement();
-			return NewWindowInfo{ info.m_elementHandle, info.m_elementPtr };
+			return NewWindowInfo{ info.m_elementHandle.getKey(), info.m_elementPtr };
 		}
 		virtual void removeWindow(WindowHandle handle) override { m_windowPool.removeElement(handle); }
 
