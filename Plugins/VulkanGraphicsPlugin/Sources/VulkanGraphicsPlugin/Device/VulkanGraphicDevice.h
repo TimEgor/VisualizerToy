@@ -13,6 +13,7 @@ namespace VT_VK
 
 	using VulkanPhysDevicesContainer = std::vector<VkPhysicalDevice>;
 	using VulkanQueueFamilyPropertiesContainer = std::vector<VkQueueFamilyProperties>;
+	using VulkanLayerNameContainer = std::vector<const char*>;
 
 	class VulkanGraphicDevice final : public VT::IGraphicDevice
 	{
