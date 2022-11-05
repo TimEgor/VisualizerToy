@@ -4,6 +4,7 @@
 #include "WindowSystem/WindowBase.h"
 
 #define VT_WIN32_WND_CLASS_NAME "VT_Window"
+#define VT_WINDOW_WIN32_TYPE
 
 namespace VT_WIN32
 {
@@ -22,5 +23,9 @@ namespace VT_WIN32
 		virtual void hide() override;
 
 		void updateSize();
+
+		virtual void* getNativeHandle() const override { return m_hWnd; }
+
+		VT_WINDOW_TYPE(VT_WINDOW_WIN32_TYPE);
 	};
 }

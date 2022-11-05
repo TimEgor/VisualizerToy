@@ -14,7 +14,7 @@ namespace VT
 		virtual bool init(IWindowContainer* container, IWindowEventSystem* eventSystem) = 0;
 		virtual void release() = 0;
 
-		virtual WindowHandle createWindow(const char* title, const WindowSize& size) = 0;
+		virtual IWindowContainer::NewWindowInfo createWindow(const char* title, const WindowSize& size) = 0;
 		virtual void destroyWindow(WindowHandle handle) = 0;
 
 		virtual bool isValidWindowHandle(WindowHandle handle) const = 0;

@@ -15,7 +15,7 @@ namespace VT
 
 	private:
 		PluginContainer m_plugins;
-		IPluginLoader* m_loader;
+		IPluginLoader* m_loader = nullptr;
 
 	public:
 		PluginSystem() = default;

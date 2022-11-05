@@ -16,5 +16,8 @@ target_link_libraries(VulkanGraphicsPlugin
 		GraphicResourceManager_COMMON
 		SwapChain
 		Textures
+
 		PluginSystem_COMMON
+		WindowSystem_COMMON
+		Platform
 )

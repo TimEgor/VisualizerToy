@@ -1,16 +1,31 @@
 #pragma once
 
+#include "Textures/TextureCommon.h"
+#include "GraphicResourceCommon/Format.h"
+
 namespace VT
 {
+	enum class SwapChainPresentMode
+	{
+		IMMIDIATE,
+		FIFO,
+		FIFO_RELAX,
+		MAILBOX
+	};
+
+	struct SwapChainDesc final
+	{
+		Format m_format = Format::UNDEFINED;
+		SwapChainPresentMode m_presentMode = SwapChainPresentMode::IMMIDIATE;
+		uint32_t m_imageCount = 0;
+	};
+
 	class ISwapChain
 	{
 	public:
 		ISwapChain() = default;
 		virtual ~ISwapChain() {}
 
-		virtual bool init() = 0;
-		virtual void release() = 0;
-
-		virtual void present() = 0;
+		virtual const SwapChainDesc& getDesc() const = 0;
 	};
 }

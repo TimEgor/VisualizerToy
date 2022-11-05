@@ -4,13 +4,12 @@
 
 namespace VT
 {
-	using GraphicResourceHandle = uint32_t;
-	constexpr GraphicResourceHandle InvalidGraphicResourceHandle = 0;
-
-	template <typename ResourceType>
+	template <typename ResourceType, typename GraphicResourceHandle>
 	class IGraphicResourceContainer
 	{
 	public:
+		static constexpr GraphicResourceHandle InvalidGraphicResourceHandle = 0;
+
 		struct NewResourceInfo final
 		{
 			GraphicResourceHandle m_resourceHandle = InvalidGraphicResourceHandle;

@@ -22,6 +22,7 @@ namespace VT_WIN32
 		virtual void release() override {}
 
 		HINSTANCE getHInstance() const { return m_hInstance; }
+		virtual void* getNativeHandle() const override { return m_hInstance; }
 
 		//WindowSystem
 		virtual VT::IWindowContainer* createWindowContainer() override;

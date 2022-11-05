@@ -8,6 +8,7 @@ add_library(GraphicsModule INTERFACE)
 
 set(GRAPHICS_MODULES_SET
 	GraphicDeviceModule	Device
+	GraphicPresenter	Presenter/Private
 )
 
 vt_add_modules_by_path(GraphicsModule INTERFACE "${GRAPHICS_MODULES_SET}"

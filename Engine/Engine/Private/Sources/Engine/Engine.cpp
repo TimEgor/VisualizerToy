@@ -31,11 +31,9 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 			m_engineEnvironment->m_platform->createWindowEventSystem()
 		));
 
-	WindowHandle mainWindow = m_engineEnvironment->m_windowSystem->createWindow("VT", { 500, 500 });
-
 	assert(initParam.m_graphicDevicePluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_graphicDevicePluginPath);
-	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice && m_engineEnvironment->m_graphicDevice->init())
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice && m_engineEnvironment->m_graphicDevice->init(initParam.m_swapChainEnabled));
 
 	return true;
 }
@@ -51,16 +49,6 @@ void VT::Engine::release()
 
 		delete m_engineEnvironment;
 		m_engineEnvironment = nullptr;
-	}
-}
-
-void VT::Engine::run()
-{
-	startTimer();
-
-	while (!m_isStoped)
-	{
-		updateFrame();
 	}
 }
 

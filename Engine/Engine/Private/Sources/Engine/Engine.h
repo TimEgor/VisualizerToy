@@ -25,7 +25,6 @@ namespace VT
 		virtual bool init(const EngineInitParam& initParam) override;
 		virtual void release() override;
 
-		virtual void run() override;
 		virtual void updateFrame() override;
 
 		virtual void startTimer() override;

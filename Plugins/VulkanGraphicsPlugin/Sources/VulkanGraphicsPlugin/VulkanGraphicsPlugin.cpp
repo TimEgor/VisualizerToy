@@ -6,8 +6,6 @@
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
 
-#include "VulkanCore.h"
-
 VT_PLUGIN(VT_VK::VulkanGraphicPlugin)
 
 void VT_VK::VulkanGraphicPlugin::onLoaded()

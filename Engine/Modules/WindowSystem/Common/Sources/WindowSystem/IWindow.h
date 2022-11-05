@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/HashFunctions/CRC32.h"
 #include "Math/Vector.h"
 
 namespace VT
@@ -49,6 +50,8 @@ namespace VT
 			: m_top(top), m_bottom(bottom), m_right(right), m_left(left) {}
 	};
 
+	using WindowType = uint32_t;
+
 	class IWindow
 	{
 	public:
@@ -65,5 +68,13 @@ namespace VT
 		virtual const WindowSize& getWindowSize() const = 0;
 		virtual const WindowSize& getClientAreaSize() const = 0;
 		virtual const WindowArea& getCutoutsArea() const = 0;
+
+		virtual void* getNativeHandle() const = 0;
+
+		virtual WindowType getType() const = 0;
 	};
 }
+
+#define VT_WINDOW_TYPE(WINDOW_TYPE)																\
+	static inline constexpr VT::WindowType getWindowType() { return VT::crc32(#WINDOW_TYPE); }	\
+	virtual VT::WindowType getType() const override { return getWindowType(); }

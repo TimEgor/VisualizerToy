@@ -3,6 +3,7 @@
 #include "volk.h"
 
 #include <cassert>
+#include <vector>
 
 namespace VT_VK
 {
@@ -23,4 +24,10 @@ namespace VT_VK
 
 		return chkResult;
 	}
+
+	using VulkanQueueFamilyIndex = uint32_t;
+
+	using VulkanPhysDevicesContainer = std::vector<VkPhysicalDevice>;
+	using VulkanQueueFamilyPropertiesContainer = std::vector<VkQueueFamilyProperties>;
+	using VulkanNameContainer = std::vector<const char*>;
 }

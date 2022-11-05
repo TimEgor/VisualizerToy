@@ -17,8 +17,8 @@ namespace VT
 		virtual void release() override;
 
 		virtual Texture2DContainer::NewResourceInfo createTexture2D(const Texture2DDesc& desc) override;
-		virtual void deleteTexture2D(GraphicResourceHandle handle) override;
-		virtual ITexture2D* getTexture2D(GraphicResourceHandle handle) override;
-		virtual bool isValidTexture2D(GraphicResourceHandle handle) const override;
+		virtual void deleteTexture2D(Texture2DHandle handle) override;
+		virtual ITexture2D* getTexture2D(Texture2DHandle handle) override;
+		virtual bool isValidTexture2D(Texture2DHandle handle) const override;
 	};
 }

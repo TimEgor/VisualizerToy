@@ -18,6 +18,8 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
+		virtual void* getNativeHandle() const = 0;
+
 		//WindowSystem
 		virtual IWindowContainer* createWindowContainer() = 0;
 		virtual IWindowEventSystem* createWindowEventSystem() = 0;

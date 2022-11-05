@@ -27,11 +27,11 @@ void VT::GraphicResourceManager::release()
 	VT_SAFE_DESTROY_WITH_RELEASING(m_texture2DContainer);
 }
 
-VT::GraphicResourceManager::Texture2DContainer::NewResourceInfo VT::GraphicResourceManager::createTexture2D(const Texture2DDesc & desc)
+VT::Texture2DContainer::NewResourceInfo VT::GraphicResourceManager::createTexture2D(const Texture2DDesc & desc)
 {
 	assert(m_texture2DContainer);
 
-	VT::GraphicResourceManager::Texture2DContainer::NewResourceInfo info;
+	VT::Texture2DContainer::NewResourceInfo info;
 	m_texture2DContainer->addResource(info);
 
 	//create texture from graphic device
@@ -40,19 +40,19 @@ VT::GraphicResourceManager::Texture2DContainer::NewResourceInfo VT::GraphicResou
 	return info;
 }
 
-void VT::GraphicResourceManager::deleteTexture2D(GraphicResourceHandle handle)
+void VT::GraphicResourceManager::deleteTexture2D(Texture2DHandle handle)
 {
 	assert(m_texture2DContainer);
 	m_texture2DContainer->removeResource(handle);
 }
 
-VT::ITexture2D* VT::GraphicResourceManager::getTexture2D(GraphicResourceHandle handle)
+VT::ITexture2D* VT::GraphicResourceManager::getTexture2D(Texture2DHandle handle)
 {
 	assert(m_texture2DContainer);
 	return m_texture2DContainer->getResource(handle);
 }
 
-bool VT::GraphicResourceManager::isValidTexture2D(GraphicResourceHandle handle) const
+bool VT::GraphicResourceManager::isValidTexture2D(Texture2DHandle handle) const
 {
 	assert(m_texture2DContainer);
 	return m_texture2DContainer->isValidResourceHandle(handle);

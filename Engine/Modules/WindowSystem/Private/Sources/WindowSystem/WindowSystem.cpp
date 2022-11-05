@@ -22,7 +22,7 @@ void VT::WindowSystem::release()
 	VT_SAFE_DESTROY(m_eventSystem);
 }
 
-VT::WindowHandle VT::WindowSystem::createWindow(const char* title, const VT::WindowSize& size)
+VT::IWindowContainer::NewWindowInfo VT::WindowSystem::createWindow(const char* title, const VT::WindowSize& size)
 {
 	assert(m_windowContainer);
 
@@ -32,7 +32,7 @@ VT::WindowHandle VT::WindowSystem::createWindow(const char* title, const VT::Win
 		newWindowInfo.m_windowPtr->init(title, size);
 	}
 
-	return newWindowInfo.m_windowHandle;
+	return newWindowInfo;
 }
 
 void VT::WindowSystem::destroyWindow(WindowHandle handle)

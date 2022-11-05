@@ -5,7 +5,7 @@
 namespace VT
 {
 	template <typename ...Args>
-	inline std::string stringFormat(const char* format, Args... args)
+	std::string stringFormat(const char* format, Args... args)
 	{
 		int newStrSize = std::snprintf(nullptr, 0, format, args...) + 1;
 		if (newStrSize > 0)

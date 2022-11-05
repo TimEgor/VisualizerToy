@@ -8,6 +8,8 @@ namespace VT
 	{
 		const char* m_platformPluginPath = nullptr;
 		const char* m_graphicDevicePluginPath = nullptr;
+
+		bool m_swapChainEnabled = true;
 	};
 
 	class IEngine
@@ -19,7 +21,6 @@ namespace VT
 		virtual bool init(const EngineInitParam& initParam) = 0;
 		virtual void release() = 0;
 
-		virtual void run() = 0;
 		virtual void updateFrame() = 0;
 
 		virtual void startTimer() = 0;

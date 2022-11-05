@@ -16,7 +16,7 @@ namespace VT
 		virtual bool init(IWindowContainer* container, IWindowEventSystem* eventSystem) override;
 		virtual void release() override;
 
-		virtual WindowHandle createWindow(const char* title, const WindowSize& size) override;
+		virtual IWindowContainer::NewWindowInfo createWindow(const char* title, const WindowSize& size) override;
 		virtual void destroyWindow(WindowHandle handle) override;
 
 		virtual bool isValidWindowHandle(WindowHandle handle) const override;

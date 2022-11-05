@@ -3,17 +3,11 @@
 #include "GraphicDevice/IGraphicDevice.h"
 #include "VulkanGraphicsPlugin/VulkanCore.h"
 
-#include <vector>
-
 #define VT_GRAPHIC_DEVICE_VULKAN_TYPE
 
 namespace VT_VK
 {
-	using VulkanQueueFamilyIndex = uint32_t;
-
-	using VulkanPhysDevicesContainer = std::vector<VkPhysicalDevice>;
-	using VulkanQueueFamilyPropertiesContainer = std::vector<VkQueueFamilyProperties>;
-	using VulkanLayerNameContainer = std::vector<const char*>;
+	struct VulkanSwapChainInfo;
 
 	class VulkanGraphicDevice final : public VT::IGraphicDevice
 	{
@@ -31,22 +25,30 @@ namespace VT_VK
 		VulkanQueueFamilyIndex m_transferQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		VulkanQueueFamilyIndex m_computeQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-		bool initVkInstance();
-		bool initVkDevice();
+		bool m_swapChainEnabled = false;
 
-		bool chooseVkPhysDevice();
-		bool checkVkPhysDevice(VkPhysicalDevice device);
+		bool initVkInstance(bool swapChainEnabled);
+		bool initVkDevice(bool swapChainEnabled);
+
+		bool chooseVkPhysDevice(const VulkanNameContainer& extensions);
+		bool checkVkPhysDevice(VkPhysicalDevice device, const VulkanNameContainer& extensions);
 
 		void findQueueFamiliesIndices();
+
+		void getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info);
+		void createSwapChainInternal(const VT::SwapChainDesc& desc, VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain);
 
 	public:
 		VulkanGraphicDevice() = default;
 		virtual ~VulkanGraphicDevice() { release(); }
 
-		virtual bool init() override;
+		virtual bool init(bool swapChainEnabled = true) override;
 		virtual void release() override;
 
 		virtual void wait() override;
+
+		virtual VT::ISwapChain* createSwapChain(const VT::SwapChainDesc& desc, VT::IWindow* window) override;
+		virtual bool createSwapChain(const VT::SwapChainDesc& desc, VT::IWindow* window, void* swapChainPtr) override;
 
 		VT_GRAPHIC_DEVICE_TYPE(VT_GRAPHIC_DEVICE_VULKAN_TYPE)
 	};
