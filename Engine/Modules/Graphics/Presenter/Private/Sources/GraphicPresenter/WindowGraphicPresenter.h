@@ -3,17 +3,19 @@
 #include "GraphicPresenter/IPresenter.h"
 
 #include "WindowSystem/IWindowContainer.h"
-#include "SwapChain/ISwapChain.h"
+#include "GraphicResourceManager/GraphicResourceHandles.h"
 
 namespace VT
 {
 	class ITeture2D;
 
+	struct SwapChainDesc;
+
 	class WindowGraphicPresenter final : public IPresenter
 	{
 	private:
 		WindowHandle m_windowHandle = InvalidWindowHandle;
-		ISwapChain* m_swapChain = nullptr;
+		SwapChainHandle m_swapChainHandle = 0;
 
 	public:
 		WindowGraphicPresenter() = default;

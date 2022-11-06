@@ -44,6 +44,7 @@ namespace VT_VK
 
 		virtual VT::ISwapChain* createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
 		virtual bool createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window, void* swapChainPtr) override;
+		virtual void destroySwapChain(VT::ISwapChain* swapChain, bool waitDevice = false) override;
 
 		VT_GRAPHIC_DEVICE_TYPE(VT_GRAPHIC_DEVICE_VULKAN_TYPE)
 	};

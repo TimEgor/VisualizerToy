@@ -51,9 +51,14 @@ namespace VT_VK
 			m_pool.removeElement(handle);
 		}
 
-		virtual GraphicResource* getResource(GraphicResourceHandle handle) override
+		virtual GraphicResource* getResource(GraphicResourceHandle handle, bool checkDisabling = true) override
 		{
-			return m_pool.getElement(handle);
+			return m_pool.getElement(handle, checkDisabling);
+		}
+
+		virtual void disableResource(GraphicResourceHandle handle)
+		{
+			return m_pool.setElementEnabledState(handle, false);
 		}
 
 		virtual bool isValidResourceHandle(GraphicResourceHandle handle) const override

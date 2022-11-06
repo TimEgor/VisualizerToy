@@ -15,8 +15,10 @@ bool VT::WindowGraphicPresenter::init(const char* windowTitle, const WindowSize&
 
 	IWindowContainer::NewWindowInfo windowInfo = environment->m_windowSystem->createWindow(windowTitle, windowSize);
 	VT_CHECK_RETURN_FALSE_ASSERT(windowInfo.m_windowHandle != InvalidWindowHandle && windowInfo.m_windowPtr);
+	m_windowHandle = windowInfo.m_windowHandle;
 
 	SwapChainContainer::NewResourceInfo newSwapCahinInfo = environment->m_graphicResourceManager->createSwapChain(swapChainDesc, windowInfo.m_windowPtr);
+	m_swapChainHandle = newSwapCahinInfo.m_resourceHandle;
 
 	VT_CHECK_RETURN_FALSE_ASSERT_MSG(newSwapCahinInfo.m_resourcePtr, "Swap chain hasn't been created.");
 
@@ -26,9 +28,13 @@ bool VT::WindowGraphicPresenter::init(const char* windowTitle, const WindowSize&
 void VT::WindowGraphicPresenter::release()
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
-	VT_CHECK_RETURN_ASSERT(environment && environment->m_windowSystem);
+	VT_CHECK_RETURN_ASSERT(environment && environment->m_windowSystem && environment->m_graphicResourceManager);
 
 	environment->m_windowSystem->destroyWindow(m_windowHandle);
+	environment->m_graphicResourceManager->deleteSwapChain(m_swapChainHandle);
+
+	m_windowHandle = 0;
+	m_swapChainHandle = 0;
 }
 
 uint32_t VT::WindowGraphicPresenter::getFrameCount() const

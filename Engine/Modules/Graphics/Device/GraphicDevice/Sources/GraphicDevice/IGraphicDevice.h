@@ -24,6 +24,7 @@ namespace VT
 
 		virtual ISwapChain* createSwapChain(const SwapChainDesc& desc, const IWindow* window) = 0;
 		virtual bool createSwapChain(const SwapChainDesc& desc, const IWindow* window, void* swapChainPtr) = 0;
+		virtual void destroySwapChain(ISwapChain* swapChain, bool waitDevice = false) = 0;
 
 		virtual GraphicDeviceType getType() const = 0;
 	};

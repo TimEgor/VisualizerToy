@@ -7,6 +7,8 @@
 
 #include "GraphicPresenter/WindowGraphicPresenter.h"
 
+#include "SwapChain/ISwapChain.h"
+
 #include "ReturningCodes.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -47,7 +49,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		engine->updateFrame();
 	}
 
-	VT_SAFE_DESTROY_WITH_RELEASING(engine);
+	VT_SAFE_DESTROY(m_graphicPresenter);
+	VT_SAFE_DESTROY(engine);
 
 	return VT_LAUNCHER_SUCCESS;
 }

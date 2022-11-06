@@ -410,3 +410,27 @@ bool VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, 
 	new (reinterpret_cast<VulkanSwapChain*>(swapChainPtr)) VulkanSwapChain(swapChain, surface, desc);
 	return true;
 }
+
+void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ISwapChain* swapChain, bool waitDevice)
+{
+	assert(swapChain);
+
+	VulkanSwapChain* vulkanSwapChain = reinterpret_cast<VulkanSwapChain*>(swapChain);
+
+	if (waitDevice)
+	{
+		wait();
+	}
+
+	VkSwapchainKHR vkSwapChain = vulkanSwapChain->getVkSwapChain();
+	if (vkSwapChain)
+	{
+		vkDestroySwapchainKHR(m_vkDevice, vkSwapChain, nullptr);
+	}
+
+	VkSurfaceKHR vkSurface = vulkanSwapChain->getVkSurface();
+	if (vkSurface)
+	{
+		vkDestroySurfaceKHR(getVulkanEnvironmentGraphicPlatform()->getInstance(), vkSurface, nullptr);
+	}
+}

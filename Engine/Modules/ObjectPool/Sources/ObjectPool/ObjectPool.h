@@ -22,12 +22,26 @@ namespace VT
 		static constexpr VersionType InvalidVersion = typename HandleType::InvalidVersion;
 		static constexpr HandleType InvalidHandle = HandleType(InvalidKey);
 
+		
+		struct ElementStates
+		{
+			union
+			{
+				uint8_t m_states = 0;
+				struct
+				{
+					uint8_t m_alive : 1;
+					uint8_t m_enabled : 1;
+				};
+			};
+		};
+
 		struct Page final
 		{
 			void* m_mem = nullptr;
 			ValType* m_valsMem = nullptr;
 			VersionType* m_versionMem = nullptr;
-			bool* m_aliveMem = nullptr;
+			ElementStates* m_states = nullptr;
 
 			size_t m_capacity = 0;
 			size_t m_size = 0;
@@ -38,14 +52,14 @@ namespace VT
 				: m_mem(nullptr),
 				m_valsMem(nullptr),
 				m_versionMem(nullptr),
-				m_aliveMem(nullptr),
+				m_states(nullptr),
 				m_capacity(page.m_capacity),
 				m_size(page.m_size)
 			{
 				std::swap(m_mem, page.m_mem);
 				std::swap(m_valsMem, page.m_valsMem);
 				std::swap(m_versionMem, page.m_versionMem);
-				std::swap(m_aliveMem, page.m_aliveMem);
+				std::swap(m_states, page.m_states);
 				page.m_capacity = 0;
 				page.m_size = 0;
 			}
@@ -59,15 +73,15 @@ namespace VT
 			{
 				size_t valueMemSize = align(sizeof(ValType) * capacity, sizeof(void*));
 				size_t versionMemSize = align(sizeof(VersionType) * capacity, sizeof(void*));
-				size_t aliveMemSize = sizeof(bool) * capacity;
+				size_t statesMemSize = sizeof(m_states) * capacity;
 
-				size_t memSize = align(valueMemSize + versionMemSize + aliveMemSize, sizeof(void*));
+				size_t memSize = align(valueMemSize + versionMemSize + statesMemSize, sizeof(void*));
 				uint8_t* mem = new uint8_t[memSize];
 
 				m_mem = mem;
 				m_valsMem = reinterpret_cast<ValType*>(mem);
 				m_versionMem = reinterpret_cast<VersionType*>(mem + valueMemSize);
-				m_aliveMem = reinterpret_cast<bool*>(mem + valueMemSize + versionMemSize);
+				m_states = reinterpret_cast<ElementStates*>(mem + valueMemSize + versionMemSize);
 
 				m_capacity = capacity;
 				m_size = 0;
@@ -76,7 +90,7 @@ namespace VT
 				assert(capacity);
 
 				memset(m_versionMem, InvalidVersion, versionMemSize);
-				memset(m_aliveMem, 0, aliveMemSize);
+				memset(m_states, 0, statesMemSize);
 			}
 
 			void deallocate()
@@ -85,7 +99,7 @@ namespace VT
 
 				m_valsMem = nullptr;
 				m_versionMem = nullptr;
-				m_aliveMem = nullptr;
+				m_states = nullptr;
 				m_capacity = 0;
 				m_size = 0;
 			}
@@ -130,6 +144,12 @@ namespace VT
 			return checkElementLocation(location) && location.pageIndex < m_pages.size();
 		}
 
+		inline bool checkElementStates(const Page& page, const ElementLocation& location) const
+		{
+			ElementStates states = page.m_states[location.elementIndex];
+			return states.m_alive && states.m_enabled;
+		}
+
 		ElementLocation getElementLocation(IndexType index) const
 		{
 			ElementLocation location;
@@ -139,7 +159,7 @@ namespace VT
 			return location;
 		}
 
-		ValType* getElementInternal(HandleType handle)
+		ValType* getElementInternal(HandleType handle, bool checkEnableState)
 		{
 			assert(m_pageSize != 0);
 
@@ -158,7 +178,8 @@ namespace VT
 			}
 
 			const Page& page = m_pages[elementLocation.pageIndex];
-			if (!page.isAllocated() || !page.m_aliveMem[elementLocation.elementIndex])
+			const ElementStates states = page.m_states[elementLocation.elementIndex];
+			if (!page.isAllocated() || !states.m_alive || (checkEnableState && !states.m_enabled))
 			{
 				return nullptr;
 			}
@@ -226,7 +247,7 @@ namespace VT
 
 				for (size_t elementIndex = 0; elementIndex < page.m_size; ++elementIndex)
 				{
-					if (!page.m_aliveMem[elementIndex])
+					if (!(page.m_states[elementIndex].m_alive))
 					{
 						continue;
 					}
@@ -261,7 +282,7 @@ namespace VT
 			}
 
 			const Page& page = m_pages[elementLocation.pageIndex];
-			if (!page.isAllocated() || !page.m_aliveMem[elementLocation.elementIndex])
+			if (!page.isAllocated() || !checkElementStates(page, elementLocation))
 			{
 				return false;
 			}
@@ -271,14 +292,14 @@ namespace VT
 			return lastElementVersion == version;
 		}
 
-		const ValType* getElement(HandleType handle) const
+		const ValType* getElement(HandleType handle, bool checkEnableState = true) const
 		{
-			return getElementInternal(handle);
+			return getElementInternal(handle, checkEnableState);
 		}
 
-		ValType* getElement(HandleType handle)
+		ValType* getElement(HandleType handle, bool checkEnableState = true)
 		{
-			return getElementInternal(handle);
+			return getElementInternal(handle, checkEnableState);
 		}
 
 		void addElementRaw(NewElementInfo& info)
@@ -335,8 +356,8 @@ namespace VT
 			}
 			assert(page.m_size < page.m_capacity);
 
-			bool& aliveState = page.m_aliveMem[elementLocation.elementIndex];
-			if (aliveState)
+			ElementStates& states = page.m_states[elementLocation.elementIndex];
+			if (states.m_alive)
 			{
 				assert(false && "ObjectPool::addElement() : Reusing alive element.");
 				info = NewElementInfo();
@@ -355,7 +376,8 @@ namespace VT
 				++version;
 			}
 
-			aliveState = true;
+			states.m_alive = true;
+			states.m_enabled = true;
 
 			info = NewElementInfo{ HandleType(index, version), val };
 		}
@@ -408,8 +430,8 @@ namespace VT
 				return;
 			}
 
-			bool& aliveState = page.m_aliveMem[elementLocation.elementIndex];
-			if (!aliveState)
+			ElementStates& states = page.m_states[elementLocation.elementIndex];
+			if (!(states.m_alive))
 			{
 				return;
 			}
@@ -427,7 +449,7 @@ namespace VT
 			}
 
 			m_freeIndices.push_back(index);
-			aliveState = false;
+			states.m_alive = false;
 
 			assert(page.m_size > 0);
 
@@ -440,6 +462,61 @@ namespace VT
 					page.deallocate();
 				}
 			}
+		}
+
+		void setElementEnabledState(HandleType handle, bool state)
+		{
+			assert(m_pageSize != 0);
+
+			VersionType version = handle.getVersion();
+			if (version == InvalidVersion)
+			{
+				return;
+			}
+
+			IndexType index = handle.getIndex();
+			ElementLocation elementLocation = getElementLocation(index);
+
+			if (!checkElementLocationWithPage(elementLocation))
+			{
+				return;
+			}
+
+			Page& page = m_pages[elementLocation.pageIndex];
+			if (!page.isAllocated())
+			{
+				return;
+			}
+
+			page.m_states[elementLocation.elementIndex].m_enabled = state;
+		}
+
+		bool getElementEnableState(HandleType handle) const
+		{
+			assert(m_pageSize != 0);
+
+			VersionType version = handle.getVersion();
+			if (version == InvalidVersion)
+			{
+				return;
+			}
+
+			IndexType index = handle.getIndex();
+			ElementLocation elementLocation = getElementLocation(index);
+
+			if (!checkElementLocationWithPage(elementLocation))
+			{
+				return;
+			}
+
+			Page& page = m_pages[elementLocation.pageIndex];
+			if (!page.isAllocated())
+			{
+				return;
+			}
+
+			ElementStates state = page.m_states[elementLocation.elementIndex];
+			return state.m_alive && state.m_enabled;
 		}
 	};
 }
