@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"

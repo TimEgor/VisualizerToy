@@ -4,15 +4,18 @@
 
 namespace VT
 {
-	template <typename ResourceType, typename GraphicResourceHandle>
+	template <typename ResourceType, typename ResourceHandle>
 	class IGraphicResourceContainer
 	{
 	public:
+		using GraphicResourceType = ResourceType;
+		using GraphicResourceHandle = ResourceHandle;
+
 		static constexpr GraphicResourceHandle InvalidGraphicResourceHandle = 0;
 
 		struct NewResourceInfo final
 		{
-			GraphicResourceHandle m_resourceHandle = InvalidGraphicResourceHandle;
+			ResourceHandle m_resourceHandle = InvalidGraphicResourceHandle;
 			ResourceType* m_resourcePtr = nullptr;
 		};
 
@@ -24,10 +27,10 @@ namespace VT
 		virtual void release() = 0;
 
 		virtual void addResource(NewResourceInfo& info) = 0;
-		virtual void removeResource(GraphicResourceHandle handle) = 0;
+		virtual void removeResource(ResourceHandle handle) = 0;
 
-		virtual ResourceType* getResource(GraphicResourceHandle handle) = 0;
+		virtual ResourceType* getResource(ResourceHandle handle) = 0;
 
-		virtual bool isValidResourceHandle(GraphicResourceHandle handle) const = 0;
+		virtual bool isValidResourceHandle(ResourceHandle handle) const = 0;
 	};
 }

@@ -2,11 +2,12 @@
 
 #include "Core/HashFunctions/CRC32.h"
 
-#include "SwapChain/ISwapChain.h"
-
 namespace VT
 {
 	class IWindow;
+	class ISwapChain;
+
+	struct SwapChainDesc;
 
 	using GraphicDeviceType = uint32_t;
 
@@ -16,13 +17,13 @@ namespace VT
 		IGraphicDevice() = default;
 		virtual ~IGraphicDevice() {}
 
-		virtual bool init(bool swapChainEnabled = true) = 0;
+		virtual bool init(bool isSwapChainEnabled) = 0;
 		virtual void release() = 0;
 
 		virtual void wait() = 0;
 
-		virtual ISwapChain* createSwapChain(const SwapChainDesc& desc, IWindow* window) = 0;
-		virtual bool createSwapChain(const SwapChainDesc& desc, IWindow* window, void* swapChainPtr) = 0;
+		virtual ISwapChain* createSwapChain(const SwapChainDesc& desc, const IWindow* window) = 0;
+		virtual bool createSwapChain(const SwapChainDesc& desc, const IWindow* window, void* swapChainPtr) = 0;
 
 		virtual GraphicDeviceType getType() const = 0;
 	};

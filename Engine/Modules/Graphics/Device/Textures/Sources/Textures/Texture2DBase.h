@@ -4,7 +4,7 @@
 
 namespace VT
 {
-	class Texture2DBase final : public ITexture2D
+	class Texture2DBase : public ITexture2D
 	{
 	protected:
 		Texture2DDesc m_desc;

@@ -7,7 +7,9 @@
 #include "WindowSystem/WindowSystem.h"
 
 #include "Platform/IPlatform.h"
+#include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicDevice/IGraphicDevice.h"
+#include "GraphicResourceManager/GraphicResourceManager.h"
 
 #include <cassert>
 
@@ -33,7 +35,22 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 
 	assert(initParam.m_graphicDevicePluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_graphicDevicePluginPath);
-	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice && m_engineEnvironment->m_graphicDevice->init(initParam.m_swapChainEnabled));
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicPlatform
+		&& m_engineEnvironment->m_graphicPlatform->init(initParam.m_swapChainEnabled));
+
+	m_engineEnvironment->m_graphicDevice = m_engineEnvironment->m_graphicPlatform->createGraphicDevice();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice
+		&& m_engineEnvironment->m_graphicDevice->init(initParam.m_swapChainEnabled));
+
+	m_engineEnvironment->m_graphicResourceManager = new GraphicResourceManager();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicResourceManager
+		&& m_engineEnvironment->m_graphicResourceManager->init(
+			ResourceManagerContainerCollection{
+				m_engineEnvironment->m_graphicPlatform->createSwapChainResourceContainer(),
+				m_engineEnvironment->m_graphicPlatform->createTexture2DResourceContainer()
+			},
+			initParam.m_swapChainEnabled
+		));
 
 	return true;
 }

@@ -20,6 +20,8 @@ namespace VT
 		uint32_t m_imageCount = 0;
 	};
 
+	class ITexture2D;
+
 	class ISwapChain
 	{
 	public:

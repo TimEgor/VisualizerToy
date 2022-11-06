@@ -7,14 +7,22 @@ namespace VT
 	class GraphicResourceManager final : public IGraphicResourceManager
 	{
 	private:
-		Texture2DContainer* m_texture2DContainer = nullptr;
+		ResourceManagerContainerCollection m_containers;
+
+		static bool isContainerCollectionEmpty(const ResourceManagerContainerCollection& collection);
+		static bool isContainerCollectionFull(const ResourceManagerContainerCollection& collection);
 
 	public:
 		GraphicResourceManager() = default;
 		~GraphicResourceManager() { release(); }
 
-		virtual bool init(Texture2DContainer* texture2DContainer) override;
+		virtual bool init(const ResourceManagerContainerCollection& containers, bool isSwapChainEnabled) override;
 		virtual void release() override;
+
+		virtual SwapChainContainer::NewResourceInfo createSwapChain(const SwapChainDesc& desc, const IWindow* window) override;
+		virtual void deleteSwapChain(SwapChainHandle handle) override;
+		virtual ITexture2D* getSwapChain(SwapChainHandle handle) override;
+		virtual bool isValidSwapChain(SwapChainHandle handle) const override;
 
 		virtual Texture2DContainer::NewResourceInfo createTexture2D(const Texture2DDesc& desc) override;
 		virtual void deleteTexture2D(Texture2DHandle handle) override;

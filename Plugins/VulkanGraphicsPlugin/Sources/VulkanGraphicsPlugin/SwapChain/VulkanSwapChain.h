@@ -23,7 +23,5 @@ namespace VT_VK
 	public:
 		VulkanSwapChain(VkSwapchainKHR swapChain, VkSurfaceKHR surface, const VT::SwapChainDesc& desc)
 			: VT::SwapChainBase(desc), m_vkSwapChain(swapChain), m_vkSurface(surface) {}
-
-
 	};
 }

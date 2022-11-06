@@ -4,9 +4,11 @@
 
 #include "GraphicResourceHandles.h"
 
-#include "Textures/ITexture2D.h"
-
 namespace VT
 {
+	class ISwapChain;
+	class ITexture2D;
+
+	using SwapChainContainer = IGraphicResourceContainer<ISwapChain, SwapChainHandle>;
 	using Texture2DContainer = IGraphicResourceContainer<ITexture2D, Texture2DHandle>;
 }

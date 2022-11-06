@@ -1,6 +1,6 @@
 #include "VulkanGraphicsPlugin.h"
 
-#include "Device/VulkanGraphicDevice.h"
+#include "Platform/VulkanGraphicPlatform.h"
 
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
@@ -17,15 +17,15 @@ void VT_VK::VulkanGraphicPlugin::onLoaded()
 		return;
 	}
 
-	if (environment->m_graphicDevice)
+	if (environment->m_graphicPlatform)
 	{
-		assert(false && "VulkanGraphicPlugin::onLoaded() : Graphic device has been already initialized.");
+		assert(false && "VulkanGraphicPlugin::onLoaded() : Graphic platform has been already initialized.");
 		return;
 	}
 
 	volkInitialize();
 
-	environment->m_graphicDevice = new VulkanGraphicDevice();
+	environment->m_graphicPlatform = new VulkanGraphicPlatform();
 }
 
 void VT_VK::VulkanGraphicPlugin::onUnloaded()
@@ -37,10 +37,10 @@ void VT_VK::VulkanGraphicPlugin::onUnloaded()
 		return;
 	}
 
-	VT::IGraphicDevice* graphicDevice = environment->m_graphicDevice;
+	VT::IGraphicPlatform* graphicPlatform = environment->m_graphicPlatform;
 
-	if (graphicDevice && graphicDevice->getType() == VulkanGraphicDevice::getGraphicDeviceType())
+	if (graphicPlatform && graphicPlatform->getType() == VulkanGraphicPlatform::getGraphicPlatformType())
 	{
-		VT_SAFE_DESTROY_WITH_RELEASING(graphicDevice);
+		VT_SAFE_DESTROY_WITH_RELEASING(graphicPlatform);
 	}
 }

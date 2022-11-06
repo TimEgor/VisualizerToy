@@ -7,7 +7,8 @@ include(${VT_ROOT_PATH}/CMake/Module.cmake)
 
 vt_add_common_module_target(GraphicResourceManager INTERFACE "VT_Engine/Graphics/Device/ResourceManager")
 
-target_link_libraries(GraphicResourceManager_COMMON
-	INTERFACE
-		Textures
-)
+#target_link_libraries(GraphicResourceManager_COMMON
+#	INTERFACE
+#		SwapChain
+#		Textures
+#)

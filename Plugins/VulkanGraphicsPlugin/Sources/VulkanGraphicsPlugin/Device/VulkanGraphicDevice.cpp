@@ -14,6 +14,8 @@
 #include "VulkanGraphicsPlugin/Utilities/FormatConverter.h"
 #include "VulkanGraphicsPlugin/Utilities/PresentModeConverter.h"
 
+#include "VulkanGraphicsPlugin/Utilities/VulkanEnvironmentGraphicPlatform.h"
+
 #include <algorithm>
 
 namespace VT_VK
@@ -51,96 +53,6 @@ namespace VT_VK
 			properties.resize(queueCount);
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &queueCount, properties.data());
 		}
-	}
-
-	bool checkAvaliableInstanceLayersSupport(const VulkanNameContainer& layers)
-	{
-		bool result = true;
-
-		uint32_t layerCount = 0;
-
-		VkResult vkResult;
-		vkResult = vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		result = checkVkResultReturnAssert(vkResult);
-
-		if (result && layerCount > 0)
-		{
-			std::vector<VkLayerProperties> availableLayerProperties;
-			availableLayerProperties.resize(layerCount);
-
-			vkResult = vkEnumerateInstanceLayerProperties(&layerCount, availableLayerProperties.data());
-			result = checkVkResultReturnAssert(vkResult);
-
-			if (result)
-			{
-				for (const char* layerName : layers)
-				{
-					bool isLayerFound = false;
-
-					for (const auto& availableLayerProperty : availableLayerProperties)
-					{
-						if (std::strncmp(layerName, availableLayerProperty.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0)
-						{
-							isLayerFound = true;
-							break;
-						}
-					}
-
-					if (!isLayerFound)
-					{
-						result = false;
-						break;
-					}
-				}
-			}
-		}
-
-		return result;
-	}
-
-	bool checkAvaliableInstanceExtensionsSupport(const VulkanNameContainer& extensions)
-	{
-		bool result = true;
-
-		uint32_t extensionCount = 0;
-
-		VkResult vkResult;
-		vkResult = vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-		result = checkVkResultReturnAssert(vkResult);
-
-		if (result && extensionCount > 0)
-		{
-			std::vector<VkExtensionProperties> availableExtensionProperties;
-			availableExtensionProperties.resize(extensionCount);
-
-			vkResult = vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensionProperties.data());
-			result = checkVkResultReturnAssert(vkResult);
-
-			if (result)
-			{
-				for (const char* extensionName : extensions)
-				{
-					bool isExtensionFound = false;
-
-					for (const auto& availableExtensionProperty : availableExtensionProperties)
-					{
-						if (std::strncmp(extensionName, availableExtensionProperty.extensionName, VK_MAX_EXTENSION_NAME_SIZE) == 0)
-						{
-							isExtensionFound = true;
-							break;
-						}
-					}
-
-					if (!isExtensionFound)
-					{
-						result = false;
-						break;
-					}
-				}
-			}
-		}
-
-		return result;
 	}
 
 	bool checkAvaliableDeviceExtensionsSupport(VkPhysicalDevice device, const VulkanNameContainer& extensions)
@@ -189,62 +101,16 @@ namespace VT_VK
 	}
 }
 
-bool VT_VK::VulkanGraphicDevice::initVkInstance(bool swapChainEnabled)
-{
-	VkApplicationInfo applicationInfo{};
-	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	applicationInfo.pApplicationName = "VT_TEST_APP";
-	applicationInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
-	applicationInfo.pEngineName = "VT";
-	applicationInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
-	applicationInfo.apiVersion = VK_API_VERSION_1_3;
-
-	VkInstanceCreateInfo instanceCreateInfo{};
-
-	VulkanNameContainer extensionNames;
-	if (swapChainEnabled)
-	{
-		extensionNames.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-
-#ifdef WIN32
-		extensionNames.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#endif
-	}
-
-	if (!extensionNames.empty())
-	{
-		VT_CHECK_RETURN_FALSE_ASSERT(checkAvaliableInstanceExtensionsSupport(extensionNames));
-
-		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(extensionNames.size());
-		instanceCreateInfo.ppEnabledExtensionNames = extensionNames.data();
-	}
-
-	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	instanceCreateInfo.pApplicationInfo = &applicationInfo;
-
-#ifdef _DEBUG
-	const VulkanNameContainer validationLayers = { "VK_LAYER_KHRONOS_validation" };
-	VT_CHECK_RETURN_FALSE(checkAvaliableInstanceLayersSupport(validationLayers));
-
-	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-	instanceCreateInfo.ppEnabledLayerNames = validationLayers.data();
-#endif
-
-	VkResult creationResult = vkCreateInstance(&instanceCreateInfo, nullptr, &m_vkInstance);
-
-	return checkVkResultReturnAssert(creationResult);
-}
-
-bool VT_VK::VulkanGraphicDevice::initVkDevice(bool swapChainEnabled)
+bool VT_VK::VulkanGraphicDevice::initVkDevice(VkInstance vkInstance, bool isSwapChainEnabled)
 {
 	VulkanNameContainer extensionNames;
 
-	if (swapChainEnabled)
+	if (isSwapChainEnabled)
 	{
 		extensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 	}
 
-	VT_CHECK_RETURN_FALSE(chooseVkPhysDevice(extensionNames));
+	VT_CHECK_RETURN_FALSE(chooseVkPhysDevice(vkInstance, extensionNames));
 
 	findQueueFamiliesIndices();
 
@@ -294,12 +160,12 @@ bool VT_VK::VulkanGraphicDevice::initVkDevice(bool swapChainEnabled)
 	return true;
 }
 
-bool VT_VK::VulkanGraphicDevice::chooseVkPhysDevice(const VulkanNameContainer& extensions)
+bool VT_VK::VulkanGraphicDevice::chooseVkPhysDevice(VkInstance vkInstance, const VulkanNameContainer& extensions)
 {
 	assert(!m_vkPhysDevice);
 
 	VulkanPhysDevicesContainer physDevices;
-	VT_CHECK_RETURN_FALSE(enumeratePhysDevices(m_vkInstance, physDevices) && physDevices.size() > 0);
+	VT_CHECK_RETURN_FALSE(enumeratePhysDevices(vkInstance, physDevices) && physDevices.size() > 0);
 
 	for (auto device : physDevices)
 	{
@@ -415,9 +281,10 @@ void VT_VK::VulkanGraphicDevice::getSwapChainCapabilitiesInfo(VkSurfaceKHR surfa
 	}
 }
 
-void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc& desc, VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain)
+void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc& desc, const VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain)
 {
 	VT::IPlatform* platform = VT::EngineInstance::getInstance()->getEnvironment()->m_platform;
+	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
 
 	VT_CHECK_RETURN_ASSERT(window && platform);
 
@@ -430,7 +297,7 @@ void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc
 	surfaceCreateInfo.hwnd = reinterpret_cast<HWND>(window->getNativeHandle());
 	surfaceCreateInfo.hinstance = reinterpret_cast<HINSTANCE>(platform->getNativeHandle());
 
-	vkCreateWin32SurfaceKHR(m_vkInstance, &surfaceCreateInfo, nullptr, &surface);
+	vkCreateWin32SurfaceKHR(vkInstance, &surfaceCreateInfo, nullptr, &surface);
 #endif
 
 	VT_CHECK_RETURN_ASSERT(surface);
@@ -487,13 +354,11 @@ void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc
 	checkVkResultAssert(vkCreateSwapchainKHR(m_vkDevice, &swapChainCreateInfo, nullptr, &swapChain));
 }
 
-bool VT_VK::VulkanGraphicDevice::init(bool swapChainEnabled)
+bool VT_VK::VulkanGraphicDevice::init(bool isSwapChainEnabled)
 {
-	VT_CHECK_INITIALIZATION(initVkInstance(swapChainEnabled));
+	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
 
-	volkLoadInstance(m_vkInstance);
-
-	VT_CHECK_INITIALIZATION(initVkDevice(swapChainEnabled));
+	VT_CHECK_INITIALIZATION(initVkDevice(vkInstance, isSwapChainEnabled));
 
 	return true;
 }
@@ -507,12 +372,6 @@ void VT_VK::VulkanGraphicDevice::release()
 		vkDestroyDevice(m_vkDevice, nullptr);
 		m_vkDevice = nullptr;
 	}
-
-	if (m_vkInstance)
-	{
-		vkDestroyInstance(m_vkInstance, nullptr);
-		m_vkInstance = nullptr;
-	}
 }
 
 void VT_VK::VulkanGraphicDevice::wait()
@@ -521,7 +380,7 @@ void VT_VK::VulkanGraphicDevice::wait()
 	vkDeviceWaitIdle(m_vkDevice);
 }
 
-VT::ISwapChain* VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, VT::IWindow* window)
+VT::ISwapChain* VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window)
 {
 	VkSurfaceKHR surface = 0;
 	VkSwapchainKHR swapChain = 0;
@@ -536,7 +395,7 @@ VT::ISwapChain* VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainD
 	return new VulkanSwapChain(swapChain, surface, desc);
 }
 
-bool VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, VT::IWindow* window, void* swapChainPtr)
+bool VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window, void* swapChainPtr)
 {
 	VkSurfaceKHR surface = 0;
 	VkSwapchainKHR swapChain = 0;

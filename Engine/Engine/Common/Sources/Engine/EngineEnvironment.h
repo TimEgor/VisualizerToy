@@ -6,7 +6,9 @@ namespace VT
 	class IPluginSystem;
 	class IWindowSystem;
 
+	class IGraphicPlatform;
 	class IGraphicDevice;
+	class IGraphicResourceManager;
 
 	struct EngineEnvironment final
 	{
@@ -14,6 +16,8 @@ namespace VT
 		IPluginSystem* m_pluginSystem = nullptr;
 		IWindowSystem* m_windowSystem = nullptr;
 
+		IGraphicPlatform* m_graphicPlatform = nullptr;
 		IGraphicDevice* m_graphicDevice = nullptr;
+		IGraphicResourceManager* m_graphicResourceManager = nullptr;
 	};
 }
