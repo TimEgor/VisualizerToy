@@ -2,21 +2,12 @@
 
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 
-#include <vector>
-
 namespace VT
 {
-	struct RemovingHandleLists final
-	{
-		std::vector<SwapChainHandle> m_swapChain;
-		std::vector<Texture2DHandle> m_texture2D;
-	};
-
 	class GraphicResourceManager final : public IGraphicResourceManager
 	{
 	private:
 		ResourceManagerContainerCollection m_containers;
-		RemovingHandleLists m_removingLists;
 
 		static bool isContainerCollectionEmpty(const ResourceManagerContainerCollection& collection);
 
@@ -26,8 +17,6 @@ namespace VT
 
 		virtual bool init(const ResourceManagerContainerCollection& containers, bool isSwapChainEnabled) override;
 		virtual void release() override;
-
-		virtual void updateRemovingLists() override;
 
 		virtual SwapChainContainer::NewResourceInfo createSwapChain(const SwapChainDesc& desc, const IWindow* window) override;
 		virtual void deleteSwapChain(SwapChainHandle handle) override;

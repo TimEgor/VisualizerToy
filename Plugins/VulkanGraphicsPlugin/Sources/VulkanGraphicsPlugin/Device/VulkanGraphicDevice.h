@@ -2,6 +2,7 @@
 
 #include "GraphicDevice/IGraphicDevice.h"
 #include "VulkanGraphicsPlugin/VulkanCore.h"
+#include "VulkanDestroyingResourceCollection.h"
 
 #define VT_GRAPHIC_DEVICE_VULKAN_TYPE
 
@@ -12,6 +13,8 @@ namespace VT_VK
 	class VulkanGraphicDevice final : public VT::IGraphicDevice
 	{
 	private:
+		VulkanDestroyingResourceCollection m_destroyingResources;
+
 		VkDevice m_vkDevice = nullptr;
 		VkPhysicalDevice m_vkPhysDevice = nullptr;
 
@@ -33,6 +36,8 @@ namespace VT_VK
 		void getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info);
 		void createSwapChainInternal(const VT::SwapChainDesc& desc, const VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain);
 
+		void destroyResources();
+
 	public:
 		VulkanGraphicDevice() = default;
 		virtual ~VulkanGraphicDevice() { release(); }
@@ -40,11 +45,13 @@ namespace VT_VK
 		virtual bool init(bool isSwapChainEnabled) override;
 		virtual void release() override;
 
+		virtual void update() override;
+
 		virtual void wait() override;
 
 		virtual VT::ISwapChain* createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
 		virtual bool createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window, void* swapChainPtr) override;
-		virtual void destroySwapChain(VT::ISwapChain* swapChain, bool waitDevice = false) override;
+		virtual void destroySwapChain(VT::ISwapChain* swapChain) override;
 
 		VT_GRAPHIC_DEVICE_TYPE(VT_GRAPHIC_DEVICE_VULKAN_TYPE)
 	};

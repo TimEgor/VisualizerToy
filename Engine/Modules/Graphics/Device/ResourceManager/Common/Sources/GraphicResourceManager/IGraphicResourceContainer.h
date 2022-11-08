@@ -29,9 +29,7 @@ namespace VT
 		virtual void addResource(NewResourceInfo& info) = 0;
 		virtual void removeResource(ResourceHandle handle) = 0;
 
-		virtual ResourceType* getResource(ResourceHandle handle, bool checkDisabling = true) = 0;
-
-		virtual void disableResource(ResourceHandle handle) = 0;
+		virtual ResourceType* getResource(ResourceHandle handle) = 0;
 
 		virtual bool isValidResourceHandle(ResourceHandle handle) const = 0;
 	};

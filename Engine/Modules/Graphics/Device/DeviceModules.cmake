@@ -1,7 +1,8 @@
 set(MODULES_SET
-	GraphicDevice				GraphicDevice
-	GraphicResourceCommon		GraphicResourceCommon
-	GraphicResourceManager		ResourceManager/Private
-	SwapChain					SwapChain
-	Textures					Textures
+	GraphicDevice						GraphicDevice
+	GraphicResourceCommon				ResourceCommon
+	GraphicResourceManager				ResourceManager/Private
+	SwapChain							SwapChain
+	Textures							Textures
+	GraphicResourceContainerObjectPool	ResourceContainer/ObjectPool
 )

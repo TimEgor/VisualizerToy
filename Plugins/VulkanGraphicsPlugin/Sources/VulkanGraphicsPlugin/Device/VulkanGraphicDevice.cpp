@@ -258,6 +258,23 @@ void VT_VK::VulkanGraphicDevice::findQueueFamiliesIndices()
 	}
 }
 
+void VT_VK::VulkanGraphicDevice::destroyResources()
+{
+	wait();
+
+	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
+
+	for (VkSwapchainKHR vkSwapChain : m_destroyingResources.m_swapChains)
+	{
+		vkDestroySwapchainKHR(m_vkDevice, vkSwapChain, nullptr);
+	}
+
+	for (VkSurfaceKHR vkSurface : m_destroyingResources.m_surfaces)
+	{
+		vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
+	}
+}
+
 void VT_VK::VulkanGraphicDevice::getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info)
 {
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_vkPhysDevice, surface, &info.m_capabilities);
@@ -374,6 +391,11 @@ void VT_VK::VulkanGraphicDevice::release()
 	}
 }
 
+void VT_VK::VulkanGraphicDevice::update()
+{
+	destroyResources();
+}
+
 void VT_VK::VulkanGraphicDevice::wait()
 {
 	assert(m_vkDevice);
@@ -411,26 +433,21 @@ bool VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, 
 	return true;
 }
 
-void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ISwapChain* swapChain, bool waitDevice)
+void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ISwapChain* swapChain)
 {
 	assert(swapChain);
 
 	VulkanSwapChain* vulkanSwapChain = reinterpret_cast<VulkanSwapChain*>(swapChain);
 
-	if (waitDevice)
-	{
-		wait();
-	}
-
 	VkSwapchainKHR vkSwapChain = vulkanSwapChain->getVkSwapChain();
 	if (vkSwapChain)
 	{
-		vkDestroySwapchainKHR(m_vkDevice, vkSwapChain, nullptr);
+		m_destroyingResources.m_swapChains.push_back(vkSwapChain);
 	}
 
 	VkSurfaceKHR vkSurface = vulkanSwapChain->getVkSurface();
 	if (vkSurface)
 	{
-		vkDestroySurfaceKHR(getVulkanEnvironmentGraphicPlatform()->getInstance(), vkSurface, nullptr);
+		m_destroyingResources.m_surfaces.push_back(vkSurface);
 	}
 }

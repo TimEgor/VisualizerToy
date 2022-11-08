@@ -38,20 +38,6 @@ void VT::GraphicResourceManager::release()
 	VT_SAFE_DESTROY_WITH_RELEASING(m_containers.m_texture2DContainer);
 }
 
-void VT::GraphicResourceManager::updateRemovingLists()
-{
-	IGraphicDevice* device = EngineInstance::getInstance()->getEnvironment()->m_graphicDevice;
-	assert(device);
-
-	device->wait();
-
-	for (auto& swapChainHandle : m_removingLists.m_swapChain)
-	{
-		device->destroySwapChain(m_containers.m_swapChainContainer->getResource(swapChainHandle, false));
-		m_containers.m_swapChainContainer->removeResource(swapChainHandle);
-	}
-}
-
 VT::SwapChainContainer::NewResourceInfo VT::GraphicResourceManager::createSwapChain(const SwapChainDesc& desc, const IWindow* window)
 {
 	assert(m_containers.m_swapChainContainer);
@@ -68,9 +54,7 @@ VT::SwapChainContainer::NewResourceInfo VT::GraphicResourceManager::createSwapCh
 void VT::GraphicResourceManager::deleteSwapChain(SwapChainHandle handle)
 {
 	assert(m_containers.m_swapChainContainer);
-	m_containers.m_swapChainContainer->disableResource(handle);
-
-	m_removingLists.m_swapChain.push_back(handle);
+	m_containers.m_swapChainContainer->removeResource(handle);
 }
 
 VT::ISwapChain* VT::GraphicResourceManager::getSwapChain(SwapChainHandle handle)

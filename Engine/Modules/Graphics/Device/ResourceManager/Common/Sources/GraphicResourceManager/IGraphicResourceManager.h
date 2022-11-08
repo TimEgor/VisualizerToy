@@ -26,8 +26,6 @@ namespace VT
 		virtual bool init(const ResourceManagerContainerCollection& containers, bool isSwapChainEnabled) = 0;
 		virtual void release() = 0;
 
-		virtual void updateRemovingLists() = 0;
-
 		virtual SwapChainContainer::NewResourceInfo createSwapChain(const SwapChainDesc& desc, const IWindow* window) = 0;
 		virtual void deleteSwapChain(SwapChainHandle handle) = 0;
 		virtual ISwapChain* getSwapChain(SwapChainHandle handle) = 0;

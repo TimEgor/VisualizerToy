@@ -168,10 +168,10 @@ VT::IGraphicDevice* VT_VK::VulkanGraphicPlatform::createGraphicDevice()
 
 VT::SwapChainContainer* VT_VK::VulkanGraphicPlatform::createSwapChainResourceContainer()
 {
-	return new VulkanSwapChainRescourceContainer();
+	return new VulkanSwapChainContainer();
 }
 
 VT::Texture2DContainer* VT_VK::VulkanGraphicPlatform::createTexture2DResourceContainer()
 {
-	return new VulkanTexture2DResourceContainer();
+	return new VulkanTexture2DContainer();
 }
