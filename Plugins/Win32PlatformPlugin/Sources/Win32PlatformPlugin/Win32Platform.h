@@ -25,7 +25,7 @@ namespace VT_WIN32
 		virtual void* getNativeHandle() const override { return m_hInstance; }
 
 		//WindowSystem
-		virtual VT::IWindowContainer* createWindowContainer() override;
+		virtual VT::IWindow* createWindow() override;
 		virtual VT::IWindowEventSystem* createWindowEventSystem() override;
 
 		VT_PLATFORM_TYPE(VT_PLARFORM_WIN32_TYPE)

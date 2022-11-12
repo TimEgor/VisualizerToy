@@ -28,10 +28,7 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 
 	m_engineEnvironment->m_windowSystem = new WindowSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem
-		&& m_engineEnvironment->m_windowSystem->init(
-			m_engineEnvironment->m_platform->createWindowContainer(),
-			m_engineEnvironment->m_platform->createWindowEventSystem()
-		));
+		&& m_engineEnvironment->m_windowSystem->init(m_engineEnvironment->m_platform->createWindowEventSystem()));
 
 	assert(initParam.m_graphicDevicePluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_graphicDevicePluginPath);

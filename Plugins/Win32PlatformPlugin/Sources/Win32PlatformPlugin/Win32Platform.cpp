@@ -1,8 +1,9 @@
 #include "Win32Platform.h"
 
+#include "Core/UtilitiesMacros.h"
+
 #include "WindowSystem/Win32Window.h"
 #include "WindowSystem/Win32WindowEventSystem.h"
-#include "WindowSystem/WindowContainerBase.h"
 
 bool VT_WIN32::Win32Platform::initWindowClass()
 {
@@ -34,9 +35,9 @@ bool VT_WIN32::Win32Platform::init()
 	return true;
 }
 
-VT::IWindowContainer* VT_WIN32::Win32Platform::createWindowContainer()
+VT::IWindow* VT_WIN32::Win32Platform::createWindow()
 {
-	return new VT::WindowContainerBase<Win32Window>();
+	return new Win32Window();
 }
 
 VT::IWindowEventSystem* VT_WIN32::Win32Platform::createWindowEventSystem()

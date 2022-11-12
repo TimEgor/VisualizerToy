@@ -29,7 +29,6 @@ namespace VT::ManagedGraphicDevice
 
 	public:
 		ManagedGraphicDevice() = default;
-		virtual ~ManagedGraphicDevice() { release(); }
 
 		virtual bool init(bool isSwapChainEnabled) override;
 		virtual void release() override;

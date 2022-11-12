@@ -11,5 +11,7 @@ vt_add_common_module(WindowSystem)
 target_link_libraries(WindowSystem
 	PUBLIC
 		Core
+		Engine_COMMON
 		WindowSystem_COMMON
+		Platform
 )

@@ -2,13 +2,14 @@
 
 #include "Core/UtilitiesMacros.h"
 
-bool VT::WindowSystem::init(IWindowContainer* container, IWindowEventSystem* eventSystem)
-{
-	assert(!m_windowContainer);
-	assert(!m_eventSystem);
+#include "Engine/IEngine.h"
+#include "Engine/EngineInstance.h"
+#include "Engine/EngineEnvironment.h"
+#include "Platform/IPlatform.h"
 
-	m_windowContainer = container;
-	VT_CHECK_INITIALIZATION(m_windowContainer && m_windowContainer->init());
+bool VT::WindowSystem::init(IWindowEventSystem* eventSystem)
+{
+	assert(!m_eventSystem);
 
 	m_eventSystem = eventSystem;
 	VT_CHECK_INITIALIZATION(m_eventSystem);
@@ -18,39 +19,23 @@ bool VT::WindowSystem::init(IWindowContainer* container, IWindowEventSystem* eve
 
 void VT::WindowSystem::release()
 {
-	VT_SAFE_DESTROY_WITH_RELEASING(m_windowContainer);
 	VT_SAFE_DESTROY(m_eventSystem);
 }
 
-VT::IWindowContainer::NewWindowInfo VT::WindowSystem::createWindow(const char* title, const VT::WindowSize& size)
+VT::IWindow* VT::WindowSystem::createWindow(const char* title, const VT::WindowSize& size)
 {
-	assert(m_windowContainer);
-
-	const IWindowContainer::NewWindowInfo newWindowInfo = m_windowContainer->addWindow();
-	if (newWindowInfo.m_windowPtr)
+	IWindow* newWindow = EngineInstance::getInstance().getEngine()->getEnvironment()->m_platform->createWindow();
+	if (newWindow)
 	{
-		newWindowInfo.m_windowPtr->init(title, size);
+		newWindow->init(title, size);
 	}
 
-	return newWindowInfo;
+	return newWindow;
 }
 
-void VT::WindowSystem::destroyWindow(WindowHandle handle)
+void VT::WindowSystem::destroyWindow(IWindow* window)
 {
-	assert(m_windowContainer);
-
-	IWindow* window = m_windowContainer->getWindow(handle);
-	if (window)
-	{
-		window->release();
-		m_windowContainer->removeWindow(handle);
-	}
-}
-
-bool VT::WindowSystem::isValidWindowHandle(WindowHandle handle) const
-{
-	assert(m_windowContainer);
-	return m_windowContainer->isValidWindowHandle(handle);
+	VT_SAFE_DESTROY_WITH_RELEASING(window);
 }
 
 void VT::WindowSystem::updateWindowEvents()

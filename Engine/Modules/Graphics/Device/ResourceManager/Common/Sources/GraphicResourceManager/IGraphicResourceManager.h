@@ -2,8 +2,6 @@
 
 #include "ResourceHandles.h"
 
-#include <type_traits>
-
 namespace VT
 {
 	class IWindow;

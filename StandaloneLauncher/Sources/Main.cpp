@@ -8,6 +8,7 @@
 #include "GraphicPresenter/WindowGraphicPresenter.h"
 
 #include "SwapChain/ISwapChain.h"
+#include "WindowSystem/IWindow.h"
 
 #include "ReturningCodes.h"
 

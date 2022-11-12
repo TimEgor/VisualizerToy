@@ -60,7 +60,6 @@ namespace VT_VK
 
 	public:
 		VulkanGraphicDevice() = default;
-		virtual ~VulkanGraphicDevice() { release(); }
 
 		virtual void update() override;
 
