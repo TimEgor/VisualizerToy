@@ -3,7 +3,7 @@
 #include "GraphicPresenter/IPresenter.h"
 
 #include "WindowSystem/IWindowContainer.h"
-#include "GraphicResourceManager/GraphicResourceHandles.h"
+#include "SwapChain/ISwapChain.h"
 
 namespace VT
 {
@@ -15,7 +15,7 @@ namespace VT
 	{
 	private:
 		WindowHandle m_windowHandle = InvalidWindowHandle;
-		SwapChainHandle m_swapChainHandle = 0;
+		ISwapChain* m_swapChain = nullptr;
 
 	public:
 		WindowGraphicPresenter() = default;
@@ -25,6 +25,6 @@ namespace VT
 		void release();
 
 		virtual uint32_t getFrameCount() const override;
-		virtual ITexture2D* getTargetTexture(uint32_t frameIndex) override;
+		virtual const ITexture2D* getTargetTexture(uint32_t frameIndex) const override;
 	};
 }

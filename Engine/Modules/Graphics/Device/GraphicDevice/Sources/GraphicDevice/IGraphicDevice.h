@@ -6,6 +6,7 @@ namespace VT
 {
 	class IWindow;
 	class ISwapChain;
+	class ITexture2D;
 
 	struct SwapChainDesc;
 
@@ -25,9 +26,9 @@ namespace VT
 		virtual void wait() = 0;
 
 		virtual ISwapChain* createSwapChain(const SwapChainDesc& desc, const IWindow* window) = 0;
-		virtual bool createSwapChain(const SwapChainDesc& desc, const IWindow* window, void* swapChainPtr) = 0;
 		virtual void destroySwapChain(ISwapChain* swapChain) = 0;
 
+		virtual void destroyTexture2D(ITexture2D* texture) = 0;
 
 		virtual GraphicDeviceType getType() const = 0;
 	};

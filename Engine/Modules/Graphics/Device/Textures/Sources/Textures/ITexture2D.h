@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TextureCommon.h"
+#include "GraphicResourceCommon/Format.h"
 
 namespace VT
 {
@@ -8,6 +9,7 @@ namespace VT
 	{
 		TextureDimension m_width = 0;
 		TextureDimension m_height = 0;
+		Format m_format = Format::UNDEFINED;
 	};
 
 	class ITexture2D

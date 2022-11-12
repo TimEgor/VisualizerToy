@@ -11,10 +11,8 @@ vt_add_common_module(GraphicResourceManager)
 target_link_libraries(GraphicResourceManager
 	PUBLIC
 		Core
+		ObjectPool
 		Engine_COMMON
 		GraphicDevice
 		GraphicResourceManager_COMMON
-
-		SwapChain
-		Textures
 )

@@ -4,6 +4,62 @@
 
 namespace VT
 {
+	struct ObjectPoolHandleStorage8 final
+	{
+		using KeyType = uint8_t;
+		using IndexType = uint8_t;
+		using VersionType = uint8_t;
+
+		static constexpr KeyType InvalidKey = 0;
+		static constexpr VersionType InvalidVersion = 0;
+
+		union
+		{
+			KeyType m_key = InvalidKey;
+
+			struct
+			{
+				IndexType m_index : 4;
+				VersionType m_version : 4;
+			};
+		};
+
+		constexpr ObjectPoolHandleStorage8() = default;
+		constexpr ObjectPoolHandleStorage8(KeyType key) : m_key(key) {}
+		constexpr ObjectPoolHandleStorage8(IndexType index, VersionType version)
+			: m_index(index), m_version(version)
+		{}
+		constexpr ObjectPoolHandleStorage8(const ObjectPoolHandleStorage8&) = default;
+	};
+
+	struct ObjectPoolHandleStorage16 final
+	{
+		using KeyType = uint16_t;
+		using IndexType = uint8_t;
+		using VersionType = uint8_t;
+
+		static constexpr KeyType InvalidKey = 0;
+		static constexpr VersionType InvalidVersion = 0;
+
+		union
+		{
+			KeyType m_key = InvalidKey;
+
+			struct
+			{
+				IndexType m_index;
+				VersionType m_version;
+			};
+		};
+
+		constexpr ObjectPoolHandleStorage16() = default;
+		constexpr ObjectPoolHandleStorage16(KeyType key) : m_key(key) {}
+		constexpr ObjectPoolHandleStorage16(IndexType index, VersionType version)
+			: m_index(index), m_version(version)
+		{}
+		constexpr ObjectPoolHandleStorage16(const ObjectPoolHandleStorage16&) = default;
+	};
+
 	struct ObjectPoolHandleStorage32 final
 	{
 		using KeyType = uint32_t;
@@ -99,6 +155,8 @@ namespace VT
 		}
 	};
 
+	using ObjectPoolHandle8 = ObjectPoolHandle<ObjectPoolHandleStorage8>;
+	using ObjectPoolHandle16 = ObjectPoolHandle<ObjectPoolHandleStorage16>;
 	using ObjectPoolHandle32 = ObjectPoolHandle<ObjectPoolHandleStorage32>;
 	using ObjectPoolHandle64 = ObjectPoolHandle<ObjectPoolHandleStorage64>;
 }

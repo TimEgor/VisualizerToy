@@ -44,13 +44,7 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 
 	m_engineEnvironment->m_graphicResourceManager = new GraphicResourceManager();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicResourceManager
-		&& m_engineEnvironment->m_graphicResourceManager->init(
-			ResourceManagerContainerCollection{
-				m_engineEnvironment->m_graphicPlatform->createSwapChainResourceContainer(),
-				m_engineEnvironment->m_graphicPlatform->createTexture2DResourceContainer()
-			},
-			initParam.m_swapChainEnabled
-		));
+		&& m_engineEnvironment->m_graphicResourceManager->init());
 
 	return true;
 }

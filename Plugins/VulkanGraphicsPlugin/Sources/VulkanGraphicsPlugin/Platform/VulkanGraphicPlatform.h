@@ -26,9 +26,6 @@ namespace VT_VK
 
 		virtual VT::IGraphicDevice* createGraphicDevice() override;
 
-		virtual VT::SwapChainContainer* createSwapChainResourceContainer() override;
-		virtual VT::Texture2DContainer* createTexture2DResourceContainer() override;
-
 		VT_GRAPHIC_PLATFORM_TYPE(VT_GRAPHIC_PLARFORM_VULKAN_TYPE)
 	};
 }

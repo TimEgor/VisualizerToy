@@ -3,7 +3,6 @@
 #include "Core/UtilitiesMacros.h"
 
 #include "VulkanGraphicsPlugin/Device/VulkanGraphicDevice.h"
-#include "VulkanGraphicsPlugin/ResourceContainer/VulkanResourceContainer.h"
 
 namespace VT_VK
 {
@@ -164,14 +163,4 @@ void VT_VK::VulkanGraphicPlatform::release()
 VT::IGraphicDevice* VT_VK::VulkanGraphicPlatform::createGraphicDevice()
 {
 	return new VulkanGraphicDevice();
-}
-
-VT::SwapChainContainer* VT_VK::VulkanGraphicPlatform::createSwapChainResourceContainer()
-{
-	return new VulkanSwapChainContainer();
-}
-
-VT::Texture2DContainer* VT_VK::VulkanGraphicPlatform::createTexture2DResourceContainer()
-{
-	return new VulkanTexture2DContainer();
 }

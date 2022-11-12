@@ -14,10 +14,7 @@ target_link_libraries(VulkanGraphicsPlugin
 		Core
 
 		GraphicPlatform
-		GraphicDevice
-		GraphicResourceContainerObjectPool
-		SwapChain
-		Textures
+		ManagedGraphicDevice
 
 		PluginSystem_COMMON
 		WindowSystem_COMMON

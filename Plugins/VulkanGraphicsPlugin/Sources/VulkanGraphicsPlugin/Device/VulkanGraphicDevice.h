@@ -1,16 +1,23 @@
 #pragma once
 
-#include "GraphicDevice/IGraphicDevice.h"
 #include "VulkanGraphicsPlugin/VulkanCore.h"
+#include "ManagedGraphicDevice/ManagedGraphicDevice.h"
 #include "VulkanDestroyingResourceCollection.h"
 
 #define VT_GRAPHIC_DEVICE_VULKAN_TYPE
+
+namespace VT
+{
+	struct Texture2DDesc;
+}
 
 namespace VT_VK
 {
 	struct VulkanSwapChainInfo;
 
-	class VulkanGraphicDevice final : public VT::IGraphicDevice
+	class VulkanSwapChain;
+
+	class VulkanGraphicDevice final : public VT::ManagedGraphicDevice::ManagedGraphicDevice
 	{
 	private:
 		VulkanDestroyingResourceCollection m_destroyingResources;
@@ -34,24 +41,30 @@ namespace VT_VK
 		void findQueueFamiliesIndices();
 
 		void getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info);
-		void createSwapChainInternal(const VT::SwapChainDesc& desc, const VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain);
+		void createSwapChainInternal(const VT::SwapChainDesc& swapCahinDesc, const VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain, VT::Texture2DDesc& imageDesc);
+		void initSwapChainImages(VulkanSwapChain* swapChain, const VT::Texture2DDesc& imageDesc);
 
 		void destroyResources();
+
+	protected:
+		virtual bool initDevice(bool isSwapChainEnabled) override;
+		virtual void releaseDevice() override;
+
+		virtual bool createSwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain, const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
+		virtual void destroySwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain) override;
+
+		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
+
+		virtual VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* createSwapChainStorage() const override;
+		virtual VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* createTexture2DStorage() const override;
 
 	public:
 		VulkanGraphicDevice() = default;
 		virtual ~VulkanGraphicDevice() { release(); }
 
-		virtual bool init(bool isSwapChainEnabled) override;
-		virtual void release() override;
-
 		virtual void update() override;
 
 		virtual void wait() override;
-
-		virtual VT::ISwapChain* createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
-		virtual bool createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window, void* swapChainPtr) override;
-		virtual void destroySwapChain(VT::ISwapChain* swapChain) override;
 
 		VT_GRAPHIC_DEVICE_TYPE(VT_GRAPHIC_DEVICE_VULKAN_TYPE)
 	};

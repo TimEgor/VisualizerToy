@@ -9,5 +9,6 @@ vt_add_common_module_target(GraphicResourceManager INTERFACE "VT_Engine/Graphics
 
 target_link_libraries(GraphicResourceManager_COMMON
 	INTERFACE
-		ObjectPool
+		SwapChain
+		Textures
 )

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GraphicResourceManager/GraphicResourceContainers.h"
 #include "Core/HashFunctions/CRC32.h"
 
 namespace VT
@@ -19,9 +18,6 @@ namespace VT
 		virtual void release() = 0;
 
 		virtual IGraphicDevice* createGraphicDevice() = 0;
-
-		virtual SwapChainContainer* createSwapChainResourceContainer() = 0;
-		virtual Texture2DContainer* createTexture2DResourceContainer() = 0;
 
 		virtual GraphicPlatformType getType() const = 0;
 	};

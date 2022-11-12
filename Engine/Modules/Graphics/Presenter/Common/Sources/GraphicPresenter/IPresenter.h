@@ -11,6 +11,6 @@ namespace VT
 		virtual ~IPresenter() {}
 
 		virtual uint32_t getFrameCount() const = 0;
-		virtual ITexture2D* getTargetTexture(uint32_t frameIndex) = 0;
+		virtual const ITexture2D* getTargetTexture(uint32_t frameIndex) const = 0;
 	};
 }

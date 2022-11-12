@@ -264,6 +264,11 @@ void VT_VK::VulkanGraphicDevice::destroyResources()
 
 	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
 
+	for (VkImage vkImage : m_destroyingResources.m_images)
+	{
+		vkDestroyImage(m_vkDevice, vkImage, nullptr);
+	}
+
 	for (VkSwapchainKHR vkSwapChain : m_destroyingResources.m_swapChains)
 	{
 		vkDestroySwapchainKHR(m_vkDevice, vkSwapChain, nullptr);
@@ -298,7 +303,7 @@ void VT_VK::VulkanGraphicDevice::getSwapChainCapabilitiesInfo(VkSurfaceKHR surfa
 	}
 }
 
-void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc& desc, const VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain)
+void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc& swapChainDesc, const VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain, VT::Texture2DDesc& imageDesc)
 {
 	VT::IPlatform* platform = VT::EngineInstance::getInstance()->getEnvironment()->m_platform;
 	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
@@ -323,7 +328,7 @@ void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc
 	getSwapChainCapabilitiesInfo(surface, capabilitiesInfo);
 
 	bool checkProperty = false;
-	VkFormat requiringVkFormat = convertFormat_VT_to_VK(desc.m_format);
+	VkFormat requiringVkFormat = convertFormat_VT_to_VK(swapChainDesc.m_format);
 	VkColorSpaceKHR requiringVkColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	for (const VkSurfaceFormatKHR& availableFormat : capabilitiesInfo.m_surfaceFormats)
 	{
@@ -337,7 +342,7 @@ void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc
 	VT_CHECK_RETURN_ASSERT_MSG(checkProperty, VT::stringFormat("Window surface doesn't support a requiring swap chain format (%d).", desc.m_format).c_str());
 
 	checkProperty = false;
-	VkPresentModeKHR requiringVkPresentMode = convertPresentMode_VT_to_VK(desc.m_presentMode);
+	VkPresentModeKHR requiringVkPresentMode = convertPresentMode_VT_to_VK(swapChainDesc.m_presentMode);
 	for (VkPresentModeKHR availableMode : capabilitiesInfo.m_presentModes)
 	{
 		if (availableMode == requiringVkPresentMode)
@@ -349,14 +354,14 @@ void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc
 
 	VT_CHECK_RETURN_ASSERT_MSG(checkProperty, VT::stringFormat("Window surface doesn't support a requiring swap chain present mode (%d).", desc.m_presentMode).c_str());
 
-	VT_CHECK_RETURN_ASSERT_MSG(capabilitiesInfo.m_capabilities.minImageCount <= desc.m_imageCount
-		&& desc.m_imageCount <= capabilitiesInfo.m_capabilities.minImageCount,
+	VT_CHECK_RETURN_ASSERT_MSG(capabilitiesInfo.m_capabilities.minImageCount <= swapChainDesc.m_imageCount
+		&& swapChainDesc.m_imageCount <= capabilitiesInfo.m_capabilities.minImageCount,
 		VT::stringFormat("Window surface doesn't support a requiring swap chain image count (%d).", desc.m_imageCount).c_str());
 
 	VkSwapchainCreateInfoKHR swapChainCreateInfo{};
 	swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapChainCreateInfo.surface = surface;
-	swapChainCreateInfo.minImageCount = desc.m_imageCount;
+	swapChainCreateInfo.minImageCount = swapChainDesc.m_imageCount;
 	swapChainCreateInfo.imageFormat = requiringVkFormat;
 	swapChainCreateInfo.imageColorSpace = requiringVkColorSpace;
 	swapChainCreateInfo.imageExtent = capabilitiesInfo.m_capabilities.currentExtent;
@@ -369,9 +374,57 @@ void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc
 	swapChainCreateInfo.clipped = true;
 
 	checkVkResultAssert(vkCreateSwapchainKHR(m_vkDevice, &swapChainCreateInfo, nullptr, &swapChain));
+
+	imageDesc.m_width = swapChainCreateInfo.imageExtent.width;
+	imageDesc.m_height = swapChainCreateInfo.imageExtent.height;
+	imageDesc.m_format = swapChainDesc.m_format;
 }
 
-bool VT_VK::VulkanGraphicDevice::init(bool isSwapChainEnabled)
+void VT_VK::VulkanGraphicDevice::initSwapChainImages(VulkanSwapChain* swapChain, const VT::Texture2DDesc& imageDesc)
+{
+	assert(swapChain);
+	assert(swapChain->m_vkSwapChain);
+	assert(!swapChain->m_textures);
+
+	uint32_t imageCount = 0;
+	vkGetSwapchainImagesKHR(m_vkDevice, swapChain->m_vkSwapChain, &imageCount, nullptr);
+
+	if (imageCount == 0)
+	{
+		return;
+	}
+
+	std::vector<VkImage> vkImages(imageCount);
+	swapChain->m_textures = reinterpret_cast<VulkanTexture2D*>(new uint8_t[sizeof(VulkanTexture2D) * imageCount]);
+
+	vkGetSwapchainImagesKHR(m_vkDevice, swapChain->m_vkSwapChain, &imageCount, vkImages.data());
+
+
+	for (size_t i = 0; i < imageCount; ++i)
+	{
+		VkImage vkImage = vkImages[i];
+		new (&swapChain->m_textures[i]) VulkanTexture2D(imageDesc, vkImage);
+	}
+
+	/*VkImageViewCreateInfo imageViewCreateInfo{};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = convertFormat_VT_to_VK(swapChain->getDesc().m_format);
+
+	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;*/
+
+}
+
+bool VT_VK::VulkanGraphicDevice::initDevice(bool isSwapChainEnabled)
 {
 	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
 
@@ -380,7 +433,7 @@ bool VT_VK::VulkanGraphicDevice::init(bool isSwapChainEnabled)
 	return true;
 }
 
-void VT_VK::VulkanGraphicDevice::release()
+void VT_VK::VulkanGraphicDevice::releaseDevice()
 {
 	if (m_vkDevice)
 	{
@@ -402,52 +455,66 @@ void VT_VK::VulkanGraphicDevice::wait()
 	vkDeviceWaitIdle(m_vkDevice);
 }
 
-VT::ISwapChain* VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window)
+bool VT_VK::VulkanGraphicDevice::createSwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain, const VT::SwapChainDesc& desc, const VT::IWindow* window)
 {
-	VkSurfaceKHR surface = 0;
-	VkSwapchainKHR swapChain = 0;
+	VkSurfaceKHR vkSurface = 0;
+	VkSwapchainKHR vkSwapChain = 0;
 
-	createSwapChainInternal(desc, window, surface, swapChain);
+	VT::Texture2DDesc imageDesc{};
 
-	if (surface == 0 || swapChain == 0)
-	{
-		return nullptr;
-	}
+	createSwapChainInternal(desc, window, vkSurface, vkSwapChain, imageDesc);
 
-	return new VulkanSwapChain(swapChain, surface, desc);
-}
-
-bool VT_VK::VulkanGraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window, void* swapChainPtr)
-{
-	VkSurfaceKHR surface = 0;
-	VkSwapchainKHR swapChain = 0;
-
-	createSwapChainInternal(desc, window, surface, swapChain);
-
-	if (surface == 0 || swapChain == 0)
+	if (vkSurface == 0 || vkSwapChain == 0)
 	{
 		return false;
 	}
 
-	new (reinterpret_cast<VulkanSwapChain*>(swapChainPtr)) VulkanSwapChain(swapChain, surface, desc);
+	VulkanSwapChain* vulkanSwapChain = new (swapChain) VulkanSwapChain(desc, vkSwapChain, vkSurface);
+	initSwapChainImages(vulkanSwapChain, imageDesc);
+
 	return true;
 }
 
-void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ISwapChain* swapChain)
+void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain)
 {
 	assert(swapChain);
 
 	VulkanSwapChain* vulkanSwapChain = reinterpret_cast<VulkanSwapChain*>(swapChain);
 
-	VkSwapchainKHR vkSwapChain = vulkanSwapChain->getVkSwapChain();
-	if (vkSwapChain)
+	if (vulkanSwapChain->m_textures)
 	{
-		m_destroyingResources.m_swapChains.push_back(vkSwapChain);
+		delete[] reinterpret_cast<uint8_t*>(vulkanSwapChain->m_textures);
 	}
 
-	VkSurfaceKHR vkSurface = vulkanSwapChain->getVkSurface();
-	if (vkSurface)
+	if (vulkanSwapChain->m_vkSwapChain)
 	{
-		m_destroyingResources.m_surfaces.push_back(vkSurface);
+		m_destroyingResources.m_swapChains.push_back(vulkanSwapChain->m_vkSwapChain);
 	}
+
+	if (vulkanSwapChain->m_vkSurface)
+	{
+		m_destroyingResources.m_surfaces.push_back(vulkanSwapChain->m_vkSurface);
+	}
+}
+
+void VT_VK::VulkanGraphicDevice::destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture)
+{
+	assert(texture);
+
+	VulkanTexture2D* vulkanTexture = reinterpret_cast<VulkanTexture2D*>(texture);
+
+	if (vulkanTexture->m_vkImage)
+	{
+		m_destroyingResources.m_images.push_back(vulkanTexture->m_vkImage);
+	}
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* VT_VK::VulkanGraphicDevice::createSwapChainStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedSwapChainStorageInfo<VulkanSwapChain>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* VT_VK::VulkanGraphicDevice::createTexture2DStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedTexture2DStorageInfo<VulkanTexture2D>>();;
 }

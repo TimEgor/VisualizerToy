@@ -11,7 +11,7 @@ vt_add_common_module(GraphicPresenter)
 target_link_libraries(GraphicPresenter
 	PUBLIC
 		Engine_COMMON
-		GraphicResourceManager_COMMON
+		GraphicDevice
 		SwapChain
 		GraphicPresenter_COMMON
 		WindowSystem_COMMON

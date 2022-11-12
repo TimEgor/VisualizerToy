@@ -7,7 +7,7 @@ namespace VT
 	class Texture2DBase : public ITexture2D
 	{
 	protected:
-		Texture2DDesc m_desc;
+		const Texture2DDesc m_desc;
 
 	public:
 		Texture2DBase(const Texture2DDesc& desc)

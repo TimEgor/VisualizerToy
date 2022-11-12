@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Textures/TextureCommon.h"
 #include "GraphicResourceCommon/Format.h"
 
 namespace VT
@@ -29,5 +28,8 @@ namespace VT
 		virtual ~ISwapChain() {}
 
 		virtual const SwapChainDesc& getDesc() const = 0;
+
+		virtual uint32_t getTextureCount() const = 0;
+		virtual const VT::ITexture2D* getTexture(uint32_t index) const = 0;
 	};
 }
