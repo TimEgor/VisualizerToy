@@ -11,4 +11,5 @@ target_link_libraries(GraphicResourceManager_COMMON
 	INTERFACE
 		SwapChain
 		Textures
+		Multithreading
 )

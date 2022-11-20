@@ -3,8 +3,10 @@ set(MODULES_SET
 	#FileSystem		FileSystem/Private
 	GraphicsModule	Graphics
 	Math			Math
+	Multithreading	Multithreading
 	ObjectPool		ObjectPool
 	Platform		Platform
 	PluginSystem	PluginSystem/Private
+	ResourceSystem	ResourceSystem
 	WindowSystem	WindowSystem/Private
 )
