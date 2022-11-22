@@ -7,6 +7,7 @@
 #include "WindowSystem/WindowSystem.h"
 
 #include "Platform/IPlatform.h"
+#include "ResourceSystem/IResourceSystem.h"
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicResourceManager/GraphicResourceManager.h"
@@ -25,6 +26,10 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	assert(initParam.m_platformPluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_platformPluginPath);
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_platform && m_engineEnvironment->m_platform->init());
+
+	assert(initParam.m_resourceSystenPluginPath);
+	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_resourceSystenPluginPath);
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_resourceSystem && m_engineEnvironment->m_resourceSystem->init());
 
 	m_engineEnvironment->m_windowSystem = new WindowSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem

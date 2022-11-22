@@ -1,7 +1,6 @@
 #include "PluginSystem.h"
 
 #include "Core/UtilitiesMacros.h"
-#include "Core/HashFunctions/CRC32.h"
 #include "PluginLoaders/PluginLoaderCreator.h"
 
 #include <cassert>
@@ -19,7 +18,7 @@ void VT::PluginSystem::release()
 	VT_SAFE_DESTROY(m_loader);
 }
 
-bool VT::PluginSystem::loadPlugin(const char* name)
+bool VT::PluginSystem::loadPlugin(const FileName& name)
 {
 	assert(m_loader);
 
@@ -32,7 +31,7 @@ bool VT::PluginSystem::loadPlugin(const char* name)
 	return newPlugin;
 }
 
-void VT::PluginSystem::unloadPlugin(const char* name)
+void VT::PluginSystem::unloadPlugin(const FileName& name)
 {
 	unloadPlugin(getPluginID(name));
 }
@@ -48,7 +47,7 @@ void VT::PluginSystem::unloadPlugin(PluginID id)
 	m_loader->unload(plugin);
 }
 
-VT::IPlugin* VT::PluginSystem::getPlugin(const char* name)
+VT::IPlugin* VT::PluginSystem::getPlugin(const FileName& name)
 {
 	return getPlugin(getPluginID(name));
 }
@@ -64,7 +63,7 @@ VT::IPlugin* VT::PluginSystem::getPlugin(VT::PluginID id)
 	return nullptr;
 }
 
-VT::PluginID VT::PluginSystem::getPluginID(const char* name)
+VT::PluginID VT::PluginSystem::getPluginID(const FileName& name)
 {
-	return crc32(name);
+	return name.hash();
 }

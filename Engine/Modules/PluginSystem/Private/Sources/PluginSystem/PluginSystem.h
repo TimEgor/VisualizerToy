@@ -24,13 +24,13 @@ namespace VT
 		virtual bool init() override;
 		virtual void release() override;
 
-		virtual bool loadPlugin(const char* name) override;
-		virtual void unloadPlugin(const char* name) override;
+		virtual bool loadPlugin(const FileName& name) override;
+		virtual void unloadPlugin(const FileName& name) override;
 		virtual void unloadPlugin(PluginID id) override;
 
-		virtual IPlugin* getPlugin(const char* name) override;
+		virtual IPlugin* getPlugin(const FileName& name) override;
 		virtual IPlugin* getPlugin(PluginID id) override;
 
-		virtual PluginID getPluginID(const char* name) override;
+		virtual PluginID getPluginID(const FileName& name) override;
 	};
 }

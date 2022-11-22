@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IPlugin.h"
+#include "Core/FileName/FileName.h"
 
 namespace VT
 {
@@ -13,13 +14,13 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
-		virtual bool loadPlugin(const char* name) = 0;
-		virtual void unloadPlugin(const char* name) = 0;
+		virtual bool loadPlugin(const FileName& name) = 0;
+		virtual void unloadPlugin(const FileName& name) = 0;
 		virtual void unloadPlugin(PluginID id) = 0;
 
-		virtual IPlugin* getPlugin(const char* name) = 0;
+		virtual IPlugin* getPlugin(const FileName& name) = 0;
 		virtual IPlugin* getPlugin(PluginID id) = 0;
 
-		virtual PluginID getPluginID(const char* name) = 0;
+		virtual PluginID getPluginID(const FileName& name) = 0;
 	};
 }

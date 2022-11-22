@@ -28,5 +28,26 @@ void VT_WIN32::Win32PluginPlatform::onLoaded()
 
 void VT_WIN32::Win32PluginPlatform::onUnloaded()
 {
+	VT::EngineEnvironment* environment = VT::EngineInstance::getInstance()->getEnvironment();
+	if (!environment)
+	{
+		assert(false && "Win32PluginPlatform::onUnloaded() : Engine environment is invalid.");
+		return;
+	}
 
+	VT::IPlatform* platform = environment->m_platform;
+
+	if (!platform)
+	{
+		assert(false && "Win32PluginPlatform::onUnloaded() : Engine environment platform is null.");
+		return;
+	}
+
+	if (platform->getType() != Win32Platform::getPlatformType())
+	{
+		assert(false && "Win32PluginPlatform::onUnloaded() : Engine environment platform isn't Win32.");
+		return;
+	}
+
+	VT_SAFE_DESTROY_WITH_RELEASING(platform);
 }

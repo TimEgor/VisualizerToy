@@ -12,16 +12,17 @@
 
 #include "ReturningCodes.h"
 
+// tmp
+#include "ResourceSystem/IResourceSystem.h"
+
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	VT::EngineInstance& engineInst = VT::EngineInstance::getInstance();
 
-	std::string platformPluginPath = VT_Launcher::getPlatformPluginPath();
-	std::string graphicsPluginPath = VT_Launcher::getGraphicsPluginPath();
-
 	VT::EngineInitParam initParams;
-	initParams.m_platformPluginPath = platformPluginPath.c_str();
-	initParams.m_graphicDevicePluginPath = graphicsPluginPath.c_str();
+	VT_Launcher::getPlatformPluginPath(initParams.m_platformPluginPath);
+	VT_Launcher::getGraphicsPluginPath(initParams.m_graphicDevicePluginPath);
+	VT_Launcher::getResourceSystemPluginPath(initParams.m_resourceSystenPluginPath);
 
 	VT::IEngine* engine = new VT::Engine();
 	VT::WindowGraphicPresenter* m_graphicPresenter = new VT::WindowGraphicPresenter();
@@ -30,6 +31,10 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	if (!engineInst->init(initParams))
 	{
 		return VT_LAUNCHER_ENGINE_INIT_ERROR;
+	}
+
+	{
+		VT::ResourceDataReference testResRef = engineInst->getEnvironment()->m_resourceSystem->getResource("Test.txt");
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);

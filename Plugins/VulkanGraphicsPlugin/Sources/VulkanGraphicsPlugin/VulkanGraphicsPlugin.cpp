@@ -1,6 +1,7 @@
 #include "VulkanGraphicsPlugin.h"
 
 #include "Platform/VulkanGraphicPlatform.h"
+#include "Device/VulkanGraphicDevice.h"
 
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
@@ -39,8 +40,17 @@ void VT_VK::VulkanGraphicPlugin::onUnloaded()
 
 	VT::IGraphicPlatform* graphicPlatform = environment->m_graphicPlatform;
 
-	if (graphicPlatform && graphicPlatform->getType() == VulkanGraphicPlatform::getGraphicPlatformType())
+	if (!graphicPlatform)
 	{
-		VT_SAFE_DESTROY_WITH_RELEASING(graphicPlatform);
+		assert(false && "VulkanGraphicPlugin::onUnloaded() : Engine environment graphicPlatform is null.");
+		return;
 	}
+	
+	if(graphicPlatform->getType() != VulkanGraphicPlatform::getGraphicPlatformType())
+	{
+		assert(false && "VulkanGraphicPlugin::onUnloaded() : Engine environment graphicPlatform isn't Vulkan.");
+		return;
+	}
+
+	VT_SAFE_DESTROY_WITH_RELEASING(graphicPlatform);
 }

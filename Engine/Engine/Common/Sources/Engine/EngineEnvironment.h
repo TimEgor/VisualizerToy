@@ -10,6 +10,8 @@ namespace VT
 	class IGraphicDevice;
 	class IGraphicResourceManager;
 
+	class IResourceSystem;
+
 	struct EngineEnvironment final
 	{
 		IPlatform* m_platform = nullptr;
@@ -19,5 +21,7 @@ namespace VT
 		IGraphicPlatform* m_graphicPlatform = nullptr;
 		IGraphicDevice* m_graphicDevice = nullptr;
 		IGraphicResourceManager* m_graphicResourceManager = nullptr;
+
+		IResourceSystem* m_resourceSystem = nullptr;
 	};
 }

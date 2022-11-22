@@ -1,13 +1,16 @@
 #pragma once
 
+#include "Core/FileName/FileName.h"
+
 namespace VT
 {
 	struct EngineEnvironment;
 
 	struct EngineInitParam final
 	{
-		const char* m_platformPluginPath = nullptr;
-		const char* m_graphicDevicePluginPath = nullptr;
+		FileName m_platformPluginPath;
+		FileName m_graphicDevicePluginPath;
+		FileName m_resourceSystenPluginPath;
 
 		bool m_swapChainEnabled = true;
 	};

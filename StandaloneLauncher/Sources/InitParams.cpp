@@ -1,27 +1,32 @@
 #include "InitParams.h"
 
+#include "Core/Platform.h"
+
 #include <cassert>
 
-std::string VT_Launcher::preparePluginPath(const std::string& pluginName)
+void VT_Launcher::preparePluginPath(const VT::FileName& pluginName, VT::FileName& outPath)
 {
-	return std::string(VT_ROOT_PATH) + "Plugins/Out/" + pluginName + '_'
-		+ VT_CONFIG_NAME + '_' + VT_PLATFORM_NAME + VT_DYNAMIC_LIB_EXT_NAME;
+	outPath = VT::FileName(VT_ROOT_PATH) + "Plugins/Out/" + pluginName + '_'
+		+ VT::FileName(VT_CONFIG_NAME) + '_' + VT::FileName(VT_PLATFORM_NAME) + VT::FileName(VT_DYNAMIC_LIB_EXT_NAME);
 }
 
-std::string VT_Launcher::getPlatformPluginPath()
+void VT_Launcher::getPlatformPluginPath(VT::FileName& outPath)
 {
-	std::string pluginName;
+	VT::FileName pluginName;
 #if defined(WIN32) || defined(WIN64)
 	pluginName = "Win32PlatformPlugin";
 #endif
 	assert(!pluginName.empty());
 
-	return preparePluginPath(pluginName);
+	preparePluginPath(pluginName, outPath);
 }
 
-std::string VT_Launcher::getGraphicsPluginPath()
+void VT_Launcher::getGraphicsPluginPath(VT::FileName& outPath)
 {
-	std::string pluginName = "VulkanGraphicsPlugin";
+	preparePluginPath("VulkanGraphicsPlugin", outPath);
+}
 
-	return preparePluginPath(pluginName);
+void VT_Launcher::getResourceSystemPluginPath(VT::FileName& outPath)
+{
+	preparePluginPath("DummyResourceSystemPlugin", outPath);
 }

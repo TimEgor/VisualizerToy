@@ -19,7 +19,7 @@ namespace VT
 
 			if (loadAtomic(&m_counter, MemoryOrder::Relaxed) == 0 && m_isAlive)
 			{
-				m_isAlive = true;
+				m_isAlive = false;
 				selfDestroy();
 			}
 		}
@@ -29,11 +29,15 @@ namespace VT
 
 		void incrementCounter()
 		{
-			fetchAddAtomic(&m_counter, 1, MemoryOrder::Relaxed);
+			fetchAddAtomic(&m_counter, 1, MemoryOrder::Acq_Rel);
 		}
 		void decrementCounter()
 		{
 			fetchSubAtomic(&m_counter, 1, MemoryOrder::Relaxed);
+			if (loadAtomic(&m_counter, MemoryOrder::Acquire) == 0)
+			{
+				tryDestroy();
+			}
 		}
 
 	public:

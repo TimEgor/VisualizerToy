@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Platform.h"
+#include "Core/FileName/FileName.h"
 #include "PluginSystem/PluginBase.h"
 #include "PluginSystem/ExternalPluginCore.h"
 
@@ -21,7 +22,7 @@ namespace VT
 		IPluginLoader() = default;
 		virtual ~IPluginLoader() {}
 
-		virtual IPlugin* load(const char* name, PluginID id) = 0;
+		virtual IPlugin* load(const FileName& name, PluginID id) = 0;
 		virtual void unload(IPlugin* plugin) = 0;
 	};
 }

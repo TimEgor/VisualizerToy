@@ -1,6 +1,5 @@
 set(MODULES_SET
 	Core			Core
-	#FileSystem		FileSystem/Private
 	GraphicsModule	Graphics
 	Math			Math
 	Multithreading	Multithreading
