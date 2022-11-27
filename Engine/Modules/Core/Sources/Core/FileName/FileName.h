@@ -7,6 +7,7 @@
 namespace VT
 {
 	using FileNameID = uint32_t;
+	constexpr FileNameID InvalidFileNameID = 0;
 
 	class FileName final
 	{

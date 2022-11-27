@@ -5,7 +5,7 @@ project(ResourceSystem)
 include(${VT_ROOT_PATH}/CMake/SourceFilesGroups.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)
 
-vt_add_module_target(ResourceSystem INTERFACE "VT_Engine/ResourceSystem")
+vt_add_module_target(ResourceSystem INTERFACE "VT_Engine/Resources")
 
 target_link_libraries(ResourceSystem
 	INTERFACE

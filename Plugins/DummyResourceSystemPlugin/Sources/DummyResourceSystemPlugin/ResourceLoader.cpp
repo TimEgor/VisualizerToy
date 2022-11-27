@@ -6,13 +6,16 @@
 #include <filesystem>
 #include <fstream>
 
-bool VT_DUMMY_RS::ResourceLoader::init()
+bool VT_DUMMY_RS::ResourceLoader::init(DummyResourceSystem* resourceSystem)
 {
+    m_resourceSystem = resourceSystem;
     return true;
 }
 
 void VT_DUMMY_RS::ResourceLoader::release()
-{}
+{
+    m_resourceSystem = nullptr;
+}
 
 void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, ManagedResourceData& data)
 {
@@ -43,4 +46,14 @@ void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, Managed
 
     data.setData(resourceData, resourceSize);
     data.setState(VT::ResourceState::LOADED);
+}
+
+void VT_DUMMY_RS::ResourceLoader::loadResourceAsync(const VT::FileName& name, ManagedResourceData& data)
+{
+    loadResource(name, data);
+
+    if (m_resourceSystem)
+    {
+        m_resourceSystem->onResourceLoaded(name.hash(), &data);
+    }
 }

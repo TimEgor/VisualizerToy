@@ -5,19 +5,21 @@
 namespace VT_DUMMY_RS
 {
 	class ManagedResourceData;
+	class DummyResourceSystem;
 
 	class ResourceLoader final
 	{
 	private:
-
+		DummyResourceSystem* m_resourceSystem = nullptr;
 
 	public:
 		ResourceLoader() = default;
 		~ResourceLoader() { release(); }
 
-		bool init();
+		bool init(DummyResourceSystem* resourceSystem);
 		void release();
 
 		void loadResource(const VT::FileName& name, ManagedResourceData& data);
+		void loadResourceAsync(const VT::FileName& name, ManagedResourceData& data);
 	};
 }

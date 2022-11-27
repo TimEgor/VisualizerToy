@@ -10,6 +10,7 @@ vt_add_plugin_target_out_path(DummyResourceSystemPlugin SHARED "VT_Plugins" ${VT
 target_link_libraries(DummyResourceSystemPlugin
 	PUBLIC
 		Core
+		Containers
 		PluginSystem_COMMON
 		ResourceSystem
 		ObjectPool

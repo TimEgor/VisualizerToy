@@ -33,8 +33,15 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return VT_LAUNCHER_ENGINE_INIT_ERROR;
 	}
 
+	int counter = 0;
 	{
+		auto resourceLoadedCallback = [&counter](VT::ResourceDataReference resource)
+		{
+			++counter;
+		};
+
 		VT::ResourceDataReference testResRef = engineInst->getEnvironment()->m_resourceSystem->getResource("Test.txt");
+		VT::ResourceDataReference testRes1Ref = engineInst->getEnvironment()->m_resourceSystem->getResourceAsync("Test1.txt", resourceLoadedCallback);
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);

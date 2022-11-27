@@ -1,4 +1,5 @@
 set(MODULES_SET
+	Containers		Containers
 	Core			Core
 	GraphicsModule	Graphics
 	Math			Math
@@ -6,6 +7,6 @@ set(MODULES_SET
 	ObjectPool		ObjectPool
 	Platform		Platform
 	PluginSystem	PluginSystem/Private
-	ResourceSystem	ResourceSystem
+	ResourceModule	Resources
 	WindowSystem	WindowSystem/Private
 )

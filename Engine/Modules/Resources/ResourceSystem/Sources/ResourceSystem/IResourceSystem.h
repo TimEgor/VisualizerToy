@@ -64,6 +64,9 @@ namespace VT
 	class IResourceSystem
 	{
 	public:
+		using LoadedCallback = std::function<void(ResourceDataReference)>;
+
+	public:
 		IResourceSystem() = default;
 		virtual ~IResourceSystem() {}
 
@@ -71,7 +74,7 @@ namespace VT
 		virtual void release() = 0;
 
 		virtual ResourceDataReference getResource(const FileName& resName) = 0;
-		virtual ResourceDataReference getResourceAsync(const FileName& resName, const std::function<void(ResourceDataReference)>& callback = nullptr) = 0;
+		virtual ResourceDataReference getResourceAsync(const FileName& resName, const LoadedCallback& callback = nullptr) = 0;
 
 		virtual ResourceSystemType getType() const = 0;
 	};

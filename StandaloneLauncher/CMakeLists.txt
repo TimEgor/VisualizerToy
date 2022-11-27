@@ -3,8 +3,12 @@ cmake_minimum_required(VERSION 3.8)
 project(VT_StandaloneLauncher)
 
 set(VT_ROOT_PATH ${CMAKE_CURRENT_LIST_DIR}/../)
-set(VT_PLUGIN_BINARY ${VT_ROOT_PATH}/Plugins/Build)
-set(VT_PLUGIN_OUT ${VT_ROOT_PATH}/Plugins/Out)
+set(VT_PLUGIN_DIR ${VT_ROOT_PATH}/Plugins)
+set(VT_PLUGIN_BINARY ${VT_PLUGIN_DIR}/Build)
+set(VT_PLUGIN_OUT ${VT_PLUGIN_DIR}/Out)
+set(VT_ASSET_CONVERTERS_DIR ${VT_ROOT_PATH}/AssetsConverters)
+set(VT_ASSET_CONVERTERS_BINARY ${VT_ASSET_CONVERTERS_DIR}/Build)
+set(VT_ASSET_CONVERTERS_OUT ${VT_ASSET_CONVERTERS_DIR}/Out)
 
 include(${VT_ROOT_PATH}/CMake/BuildingOptions.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)
@@ -32,7 +36,11 @@ vt_add_modules_by_path(StandaloneLauncher PUBLIC
 
 message("\n>>>>>> PLUGINS <<<<<<<")
 vt_add_plugins_include(Engine
-	"EnginePlugins.cmake" ${CMAKE_CURRENT_LIST_DIR}/../Plugins ${VT_PLUGIN_BINARY})
+	"EnginePlugins.cmake" ${VT_PLUGIN_DIR} ${VT_PLUGIN_BINARY})
+
+message("\n>>>>>> CONVERTERS <<<<<<<")
+vt_add_plugins_include(Engine
+	"EngineConverters.cmake" ${VT_ASSET_CONVERTERS_DIR} ${VT_ASSET_CONVERTERS_BINARY})
 
 message("\n----------------------")
 

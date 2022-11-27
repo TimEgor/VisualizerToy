@@ -11,6 +11,9 @@ namespace VT
 	{
 		static_assert(std::is_base_of<CountableObjectBase, T>::value);
 
+	public:
+		using ObjectType = T;
+
 	protected:
 		const T* m_object = nullptr;
 
