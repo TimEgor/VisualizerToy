@@ -17,8 +17,11 @@ void VT_DUMMY_RS::ResourceLoader::release()
     m_resourceSystem = nullptr;
 }
 
-void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, ManagedResourceData& data)
+void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, VT::ResourceDataReference dataRef)
 {
+    ManagedResourceData* data = dataRef.getObjectCast<ManagedResourceData>();
+    assert(data);
+
     std::filesystem::path fsPath(name.c_str());
     if (!std::filesystem::exists(fsPath))
     {
@@ -44,16 +47,16 @@ void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, Managed
     stream.read(reinterpret_cast<char*>(resourceData), resourceSize);
     stream.close();
 
-    data.setData(resourceData, resourceSize);
-    data.setState(VT::ResourceState::LOADED);
+    data->setData(resourceData, resourceSize);
+    data->setState(VT::ResourceState::LOADED);
 }
 
-void VT_DUMMY_RS::ResourceLoader::loadResourceAsync(const VT::FileName& name, ManagedResourceData& data)
+void VT_DUMMY_RS::ResourceLoader::loadResourceAsync(const VT::FileName& name, VT::ResourceDataReference dataRef)
 {
-    loadResource(name, data);
+    loadResource(name, dataRef);
 
     if (m_resourceSystem)
     {
-        m_resourceSystem->onResourceLoaded(name.hash(), &data);
+        m_resourceSystem->onResourceLoaded(name.hash(), dataRef);
     }
 }

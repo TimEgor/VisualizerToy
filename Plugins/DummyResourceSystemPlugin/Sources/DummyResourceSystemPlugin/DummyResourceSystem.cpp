@@ -4,20 +4,8 @@
 
 #include "Multithreading/LockGuard.h"
 
-#include "Engine/EngineInstance.h"
-#include "Engine/IEngine.h"
-#include "Engine/EngineEnvironment.h"
-
 namespace VT_DUMMY_RS
 {
-	void ManagedResourceData::selfDestroy()
-	{
-		if (VT::loadAtomic(&m_state, VT::MemoryOrder::Relaxed) == VT::ResourceState::LOADED)
-		{
-			reinterpret_cast<DummyResourceSystem*>(VT::EngineInstance::getInstance()->getEnvironment()->m_resourceSystem)->releaseResourceData(this);
-		}
-	}
-
 	bool DummyResourceSystem::init()
 	{
 		m_loader = new ResourceLoader();
@@ -26,11 +14,15 @@ namespace VT_DUMMY_RS
 		VT_CHECK_INITIALIZATION(m_events.init());
 		m_resourceEvents.reserve(4096);
 
+		VT_CHECK_INITIALIZATION(m_packageRequests.init());
+
 		return true;
 	}
 
 	void DummyResourceSystem::release()
 	{
+		m_packageRequests.release();
+
 		m_resourceEvents = ResourceEventCollection();
 		m_events.release();
 
@@ -42,14 +34,14 @@ namespace VT_DUMMY_RS
 		return resName.hash();
 	}
 
-	void DummyResourceSystem::onResourceLoaded(VT::FileNameID resID, VT::ResourceDataReference resource)
+	void DummyResourceSystem::onResourceLoaded(ManagedResourceDataID resID, VT::ResourceDataReference resource)
 	{
 		auto fintResourceEventsIter = m_resourceEvents.find(resID);
 		if (fintResourceEventsIter != m_resourceEvents.end())
 		{
 			for (EventID eventID : fintResourceEventsIter->second)
 			{
-				VT::IResourceSystem::LoadedCallback& callback = *m_events.getElement(eventID);
+				VT::IResourceSystem::LoadedResourceCallback& callback = *m_events.getElement(eventID);
 				if (callback)
 				{
 					callback(resource);
@@ -59,7 +51,7 @@ namespace VT_DUMMY_RS
 			}
 		}
 
-		VT::LockGuard<VT::Mutex> locker(m_mutex);
+		VT::LockGuard<VT::Mutex> locker(m_resoureEventMutex);
 		m_resourceEvents.erase(resID);
 	}
 
@@ -70,13 +62,75 @@ namespace VT_DUMMY_RS
 		void* data = resData->getData();
 		VT_SAFE_DESTROY_ARRAY(data);
 
-		VT::LockGuard<VT::Mutex> locker(m_mutex);
+		VT::LockGuard<VT::Mutex> locker(m_resourceRequestMutex);
 
 		auto findDataIter = m_datas.find(resData->getID());
 		if (findDataIter != m_datas.end())
 		{
 			m_datas.erase(findDataIter);
 		}
+	}
+
+	void DummyResourceSystem::releasePackageRequest(ManagedPackagedResourceRequest* request)
+	{
+		assert(request);
+		m_packageRequests.removeElement(request->getRequestID());
+	}
+
+	EventID DummyResourceSystem::addEvent(const LoadedResourceCallback& callback)
+	{
+		return m_events.addElement(callback).m_elementIndex;
+	}
+
+	void DummyResourceSystem::addResourceEvent(ManagedResourceDataID resourceID, const LoadedResourceCallback& callback)
+	{
+		if (callback)
+		{
+			VT::LockGuard<VT::Mutex> locker(m_resoureEventMutex);
+			m_resourceEvents[resourceID].emplaceBack(addEvent(callback));
+		}
+	}
+
+	ManagedResourceDataID DummyResourceSystem::getResourceAsyncInternal(const VT::FileName& resName, const LoadedResourceCallback& callback)
+	{
+		assert(resName);
+		assert(m_loader);
+
+		ManagedResourceDataID resourceID = getResourceID(resName);
+
+		VT::UniqueLockGuard<VT::Mutex> locker(m_resourceRequestMutex);
+
+		auto findDataIter = m_datas.find(resourceID);
+		if (findDataIter != m_datas.end())
+		{
+			VT::ResourceDataReference resourceRef = &findDataIter->second;
+			locker.unlock();
+
+			if (callback)
+			{
+				if (resourceRef->getState() == VT::ResourceState::LOADING)
+				{
+					addResourceEvent(resourceID, callback);
+				}
+				else
+				{
+					callback(resourceRef);
+				}
+			}
+
+			return resourceID;
+		}
+
+		auto newVal = m_datas.insert(std::make_pair(resourceID, std::move(ManagedResourceData(resourceID))));
+		locker.unlock();
+
+		addResourceEvent(resourceID, callback);
+
+		ManagedResourceData& newResource = newVal.first->second;
+
+		m_loader->loadResourceAsync(resName, &newResource);
+
+		return resourceID;
 	}
 
 	VT::ResourceDataReference DummyResourceSystem::getResource(const VT::FileName& resName)
@@ -86,7 +140,7 @@ namespace VT_DUMMY_RS
 
 		ManagedResourceDataID resourceID = getResourceID(resName);
 
-		VT::UniqueLockGuard<VT::Mutex> locker(m_mutex);
+		VT::UniqueLockGuard<VT::Mutex> locker(m_resourceRequestMutex);
 
 		auto findDataIter = m_datas.find(resourceID);
 		if (findDataIter != m_datas.end())
@@ -100,53 +154,66 @@ namespace VT_DUMMY_RS
 
 		ManagedResourceData& newResource = newVal.first->second;
 
-		m_loader->loadResource(resName, newResource);
+		m_loader->loadResource(resName, &newResource);
 
 		return &newResource;
 	}
 
-	VT::ResourceDataReference DummyResourceSystem::getResourceAsync(const VT::FileName& resName, const std::function<void(VT::ResourceDataReference)>& callback)
+	void DummyResourceSystem::getResourceAsync(const VT::FileName& resName, const LoadedResourceCallback& callback)
 	{
-		assert(resName);
-		assert(m_loader);
+		getResourceAsyncInternal(resName, callback);
+	}
 
-		ManagedResourceDataID resourceID = getResourceID(resName);
+	size_t DummyResourceSystem::getPackagedResource(const PackageResourceRequestCollection& request, PackageResourceRequestResultCollection& result)
+	{
+		result.clear();
+		result.resize(request.size());
 
-		VT::UniqueLockGuard<VT::Mutex> locker(m_mutex);
+		size_t loadedResurses = 0;
 
-		auto findDataIter = m_datas.find(resourceID);
-		if (findDataIter != m_datas.end())
+		for (size_t i = 0; i < request.size(); ++i)
 		{
-			VT::ResourceDataReference resourceRef = &findDataIter->second;
+			VT::ResourceDataReference resource = getResource(request[i]);
 
-			if (callback)
+			assert(resource);
+			if (resource->getState() == VT::ResourceState::LOADED)
 			{
-				if (resourceRef->getState() == VT::ResourceState::LOADING)
-				{
-					EventCollection::NewElementInfo newEventInfo = m_events.addElement(callback);
-					m_resourceEvents[resourceID].emplaceBack(newEventInfo.m_elementIndex);
-				}
-				else if (resourceRef->getState() == VT::ResourceState::LOADED)
-				{
-					locker.unlock();
-					callback(resourceRef);
-				}
+				++loadedResurses;
 			}
 
-			return resourceRef;
+			result[i] = resource;
 		}
 
-		auto newVal = m_datas.insert(std::make_pair(resourceID, std::move(ManagedResourceData(resourceID))));
+		return loadedResurses;
+	}
 
-		EventCollection::NewElementInfo newEventInfo = m_events.addElement(callback);
-		m_resourceEvents[resourceID].emplaceBack(newEventInfo.m_elementIndex);
+	void DummyResourceSystem::getPackagedResourceAsync(const DelayedPackageResourceRequestCollection& request, const VT::PackageRequestCallback& callback)
+	{
+		const size_t requestCount = request.size();
 
-		locker.unlock();
+		PackageRequestCollection::NewElementInfo requestInfo = m_packageRequests.addElementRaw();
+		ManagedPackagedResourceRequest* packageRequest
+			= new (requestInfo.m_elementPtr) ManagedPackagedResourceRequest(requestInfo.m_elementIndex, requestCount, callback);
 
-		ManagedResourceData& newResource = newVal.first->second;
+		for (size_t requestIndex = 0; requestIndex < requestCount; ++requestIndex)
+		{
+			const VT::IResourceSystem::DelayedResourceRequest& resourceRequest = request[requestIndex];
 
-		m_loader->loadResourceAsync(resName, newResource);
+			auto requestCallback = [
+				packageReq = packageRequest,
+				index = requestIndex,
+				resourceCallback = resourceRequest.m_callback
+			](VT::ResourceDataReference resource)
+				{
+					if (resourceCallback)
+					{
+						resourceCallback(resource);
+					}
 
-		return &newResource;
+					packageReq->setResourceResult(index, resource);
+				};
+
+			ManagedResourceDataID resourceID = getResourceAsyncInternal(resourceRequest.m_resourceName, requestCallback);
+		}
 	}
 }

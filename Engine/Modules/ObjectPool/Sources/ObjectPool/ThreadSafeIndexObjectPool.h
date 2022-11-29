@@ -50,10 +50,10 @@ namespace VT
 			return m_pool.getElement(index);
 		}
 
-		ObjectType* getElement(IndexType handle)
+		ObjectType* getElement(IndexType index)
 		{
 			SharedLockGuard<SharedMutex> locker(m_mutex);
-			return m_pool.getElement(handle);
+			return m_pool.getElement(index);
 		}
 
 		void addElementRaw(NewElementInfo& info)
@@ -86,10 +86,10 @@ namespace VT
 			return info;
 		}
 
-		void removeElement(IndexType handle)
+		void removeElement(IndexType index)
 		{
 			UniqueLockGuard<SharedMutex> locker(m_mutex);
-			m_pool.removeElement(handle);
+			m_pool.removeElement(index);
 		}
 	};
 }

@@ -75,12 +75,12 @@ namespace VT
 		template <typename CastType>
 		inline CastType* getObjectCast() const { return reinterpret_cast<CastType*>(getObject()); }
 	};
+}
 
 #define COUNTABLE_REFERENCES_DECLARATION_BY_NAME(TYPE, NAME)			\
-	using NAME##Reference = CountableObjetcReference<TYPE>;				\
-	using NAME##ConstReference = CountableConstObjetcReference<TYPE>;
+	using NAME##Reference = VT::CountableObjetcReference<TYPE>;				\
+	using NAME##ConstReference = VT::CountableConstObjetcReference<TYPE>;
 
 #define COUNTABLE_REFERENCES_DECLARATION(TYPE) COUNTABLE_REFERENCES_DECLARATION_BY_NAME(TYPE, TYPE)
-}
 
 #include "CountableReference.inl"

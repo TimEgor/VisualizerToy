@@ -1,70 +1,45 @@
 #pragma once
 
-#include "Multithreading/CountableObject/CountableReference.h"
+#include "ResourceData.h"
+#include "PackagedResourceRequest.h"
+
 #include "Core/HashFunctions/CRC32.h"
 #include "Core/FileName/FileName.h"
 
 #include <functional>
+#include <cassert>
 
 namespace VT
 {
-	enum class ResourceState
-	{
-		INVALID,
-		LOADING,
-		LOADED
-	};
-
-	class ResourceData : public CountableObjectBase
-	{
-	protected:
-		void* m_data = nullptr;
-		size_t m_dataSize = 0;
-
-		Atomic<ResourceState> m_state = ResourceState::INVALID;
-
-	public:
-		ResourceData() = default;
-		ResourceData(const ResourceData&) = delete;
-		ResourceData(ResourceData&& data)
-			: m_data(data.m_data), m_dataSize(data.m_dataSize)
-		{
-			storeAtomic(&m_state, data.m_state);
-
-			data.m_data = nullptr;
-			data.m_dataSize = 0;
-			data.m_state = ResourceState::INVALID;
-		}
-
-		ResourceData& operator=(const ResourceData&) = delete;
-		ResourceData& operator=(ResourceData&& data)
-		{
-			m_data = data.m_data;
-			m_dataSize = data.m_dataSize;
-			storeAtomic(&m_state, data.m_state);
-
-			data.m_data = nullptr;
-			data.m_dataSize = 0;
-			data.m_state = ResourceState::INVALID;
-
-			return *this;
-		}
-
-		const void* getData() const { return m_data; }
-		size_t getDataSize() const { return m_dataSize; }
-
-		ResourceState getState() const { return m_state; }
-	};
-
-	COUNTABLE_REFERENCES_DECLARATION(ResourceData)
-
-
 	using ResourceSystemType = uint32_t;
 
 	class IResourceSystem
 	{
 	public:
-		using LoadedCallback = std::function<void(ResourceDataReference)>;
+		using LoadedResourceCallback = std::function<void(ResourceDataReference)>;
+
+		struct DelayedResourceRequest final
+		{
+			FileName m_resourceName = nullptr;
+			LoadedResourceCallback m_callback = nullptr;
+
+			DelayedResourceRequest(const FileName& resourceName)
+				: m_resourceName(resourceName)
+			{
+				assert(resourceName);
+			}
+
+			DelayedResourceRequest(const FileName& resourceName, const LoadedResourceCallback& callback)
+				: m_resourceName(resourceName), m_callback(callback)
+			{
+				assert(resourceName);
+				assert(callback);
+			}
+		};
+
+		using PackageResourceRequestCollection = std::vector<FileName>;
+		using PackageResourceRequestResultCollection = std::vector<ResourceDataReference>;
+		using DelayedPackageResourceRequestCollection = std::vector<DelayedResourceRequest>;
 
 	public:
 		IResourceSystem() = default;
@@ -74,7 +49,10 @@ namespace VT
 		virtual void release() = 0;
 
 		virtual ResourceDataReference getResource(const FileName& resName) = 0;
-		virtual ResourceDataReference getResourceAsync(const FileName& resName, const LoadedCallback& callback = nullptr) = 0;
+		virtual void getResourceAsync(const FileName& resName, const LoadedResourceCallback& callback = nullptr) = 0;
+
+		virtual size_t getPackagedResource(const PackageResourceRequestCollection& request, PackageResourceRequestResultCollection& result) = 0;
+		virtual void getPackagedResourceAsync(const DelayedPackageResourceRequestCollection& request, const PackageRequestCallback& callback = nullptr) = 0;
 
 		virtual ResourceSystemType getType() const = 0;
 	};

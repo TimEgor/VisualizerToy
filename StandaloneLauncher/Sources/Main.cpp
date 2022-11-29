@@ -35,13 +35,12 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 	int counter = 0;
 	{
-		auto resourceLoadedCallback = [&counter](VT::ResourceDataReference resource)
+		auto resourceLoadedCallback = [&counter](VT::PackagedResourceRequestReference resource)
 		{
 			++counter;
 		};
 
-		VT::ResourceDataReference testResRef = engineInst->getEnvironment()->m_resourceSystem->getResource("Test.txt");
-		VT::ResourceDataReference testRes1Ref = engineInst->getEnvironment()->m_resourceSystem->getResourceAsync("Test1.txt", resourceLoadedCallback);
+		engineInst->getEnvironment()->m_resourceSystem->getPackagedResourceAsync({ {"Test.txt"}, {"Test1.txt"} }, resourceLoadedCallback);
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);

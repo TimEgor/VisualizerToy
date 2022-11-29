@@ -19,7 +19,7 @@ namespace VT_DUMMY_RS
 		bool init(DummyResourceSystem* resourceSystem);
 		void release();
 
-		void loadResource(const VT::FileName& name, ManagedResourceData& data);
-		void loadResourceAsync(const VT::FileName& name, ManagedResourceData& data);
+		void loadResource(const VT::FileName& name, VT::ResourceDataReference dataRef);
+		void loadResourceAsync(const VT::FileName& name, VT::ResourceDataReference dataRef);
 	};
 }

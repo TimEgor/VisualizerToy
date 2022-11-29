@@ -1,6 +1,8 @@
 #pragma once
 
-#include "ResourceSystem/IResourceSystem.h"
+#include "ManagedResourceData.h"
+#include "ManagedPackagedResourceRequest.h"
+
 #include "Multithreading/Mutex.h"
 
 #include "ObjectPool/ThreadSafeIndexObjectPool.h"
@@ -12,58 +14,50 @@
 
 namespace VT_DUMMY_RS
 {
-	using ManagedResourceDataID = uint32_t;
-	constexpr ManagedResourceDataID InvalidManagedResourceDataID = 0;
-
-	class ManagedResourceData final : public VT::ResourceData
-	{
-	private:
-		ManagedResourceDataID m_id = InvalidManagedResourceDataID;
-
-		virtual void selfDestroy() override;
-
-	public:
-		ManagedResourceData(ManagedResourceDataID id)
-			: m_id(id) {}
-		 
-		void* getData() { return m_data; }
-		void setData(void* data, size_t dataSize)
-		{
-			m_data = data;
-			m_dataSize = dataSize;
-		}
-
-		ManagedResourceDataID getID() const { return m_id; }
-		void setState(VT::ResourceState state) { VT::storeAtomic(&m_state, state, VT::MemoryOrder::Relaxed); }
-	};
-
 	class ResourceLoader;
+
+	using EventID = uint32_t;
+	constexpr EventID InvalidEventID = -1;
 
 	class DummyResourceSystem final : public VT::IResourceSystem
 	{
 		friend ManagedResourceData;
+		friend ManagedPackagedResourceRequest;
 		friend ResourceLoader;
 
 		using ResourceDataContainerType = std::unordered_map<ManagedResourceDataID, ManagedResourceData>;
 
-		using EventID = uint32_t;
 		using ResourceEventContainer = VT::StaticVector<EventID, 3>;
-		using ResourceEventCollection = std::unordered_map<VT::FileNameID, ResourceEventContainer>;
-		using EventCollection = VT::ThreadSafeIndexObjectPool<VT::IResourceSystem::LoadedCallback, EventID>;
+		using ResourceEventCollection = std::unordered_map<ManagedResourceDataID, ResourceEventContainer>;
+		using EventCollection = VT::ThreadSafeIndexObjectPool<VT::IResourceSystem::LoadedResourceCallback, EventID>;
+
+		using PackageRequestCollection = VT::ThreadSafeIndexObjectPool<ManagedPackagedResourceRequest, PackageRequestID>;
+
+		using LoadedResourceCallback = VT::IResourceSystem::LoadedResourceCallback;
 
 	private:
 		ResourceDataContainerType m_datas;
+
 		ResourceEventCollection m_resourceEvents;
 		EventCollection m_events;
 
-		VT::Mutex m_mutex;
+		PackageRequestCollection m_packageRequests;
+
+		VT::Mutex m_resourceRequestMutex;
+		VT::Mutex m_resoureEventMutex;
 
 		ResourceLoader* m_loader = nullptr;
 
 		ManagedResourceDataID getResourceID(const VT::FileName& name) const;
 
-		void onResourceLoaded(VT::FileNameID resID, VT::ResourceDataReference resource);
+		void onResourceLoaded(ManagedResourceDataID resID, VT::ResourceDataReference resource);
 		void releaseResourceData(ManagedResourceData* data);
+		void releasePackageRequest(ManagedPackagedResourceRequest* request);
+
+		EventID addEvent(const LoadedResourceCallback& callback);
+		void addResourceEvent(ManagedResourceDataID resourceID, const LoadedResourceCallback& callback);
+
+		ManagedResourceDataID getResourceAsyncInternal(const VT::FileName& resName, const LoadedResourceCallback& callback);
 
 	public:
 		DummyResourceSystem() = default;
@@ -73,7 +67,10 @@ namespace VT_DUMMY_RS
 		virtual void release() override;
 
 		virtual VT::ResourceDataReference getResource(const VT::FileName& resName) override;
-		virtual VT::ResourceDataReference getResourceAsync(const VT::FileName& resName, const std::function<void(VT::ResourceDataReference)>& callback) override;
+		virtual void getResourceAsync(const VT::FileName& resName, const LoadedResourceCallback& callback) override;
+
+		virtual size_t getPackagedResource(const PackageResourceRequestCollection& request, PackageResourceRequestResultCollection& result) override;
+		virtual void getPackagedResourceAsync(const DelayedPackageResourceRequestCollection& request, const VT::PackageRequestCallback& callback = nullptr) override;
 
 		VT_RESOURCE_SYSTEM_TYPE(VT_RESOURCE_SYSTEM_DUMMY_TYPE)
 	};
