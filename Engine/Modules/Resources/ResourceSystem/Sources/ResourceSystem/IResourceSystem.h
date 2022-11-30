@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ResourceData.h"
-#include "PackagedResourceRequest.h"
+#include "ResourceDependencyState.h"
 
 #include "Core/HashFunctions/CRC32.h"
 #include "Core/FileName/FileName.h"
@@ -16,30 +16,7 @@ namespace VT
 	class IResourceSystem
 	{
 	public:
-		using LoadedResourceCallback = std::function<void(ResourceDataReference)>;
-
-		struct DelayedResourceRequest final
-		{
-			FileName m_resourceName = nullptr;
-			LoadedResourceCallback m_callback = nullptr;
-
-			DelayedResourceRequest(const FileName& resourceName)
-				: m_resourceName(resourceName)
-			{
-				assert(resourceName);
-			}
-
-			DelayedResourceRequest(const FileName& resourceName, const LoadedResourceCallback& callback)
-				: m_resourceName(resourceName), m_callback(callback)
-			{
-				assert(resourceName);
-				assert(callback);
-			}
-		};
-
-		using PackageResourceRequestCollection = std::vector<FileName>;
-		using PackageResourceRequestResultCollection = std::vector<ResourceDataReference>;
-		using DelayedPackageResourceRequestCollection = std::vector<DelayedResourceRequest>;
+		using LoadingResourceCallback = std::function<void(ResourceDataReference)>;
 
 	public:
 		IResourceSystem() = default;
@@ -49,10 +26,9 @@ namespace VT
 		virtual void release() = 0;
 
 		virtual ResourceDataReference getResource(const FileName& resName) = 0;
-		virtual void getResourceAsync(const FileName& resName, const LoadedResourceCallback& callback = nullptr) = 0;
+		virtual void getResourceAsync(const FileName& resName, const LoadingResourceCallback& callback = nullptr) = 0;
 
-		virtual size_t getPackagedResource(const PackageResourceRequestCollection& request, PackageResourceRequestResultCollection& result) = 0;
-		virtual void getPackagedResourceAsync(const DelayedPackageResourceRequestCollection& request, const PackageRequestCallback& callback = nullptr) = 0;
+		virtual ResourceDependencyStateReference createResourceDependencyState(const ResourceDependencyState::Callback& callback) = 0;
 
 		virtual ResourceSystemType getType() const = 0;
 	};

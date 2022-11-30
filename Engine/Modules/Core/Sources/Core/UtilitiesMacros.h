@@ -16,3 +16,6 @@
 #define VT_SAFE_DESTROY(obj) { if (obj) { delete obj; obj = nullptr; }}
 #define VT_SAFE_DESTROY_ARRAY(obj) { if (obj) { delete[] obj; obj = nullptr; }}
 #define VT_SAFE_DESTROY_WITH_RELEASING(obj) { if (obj) { obj->release(); delete obj; obj = nullptr; }}
+
+#define VT_SAFE_CALL(ft) { if(ft) { ft(); } }
+#define VT_SAFE_CALL_ARGS(ft, ...) { if(ft) { ft(__VA_ARGS__); } }

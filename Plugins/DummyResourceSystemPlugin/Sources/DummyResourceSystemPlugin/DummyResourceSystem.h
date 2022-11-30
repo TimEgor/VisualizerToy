@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ManagedResourceData.h"
-#include "ManagedPackagedResourceRequest.h"
+#include "ManagedResourceDependencyState.h"
 
 #include "Multithreading/Mutex.h"
 
@@ -22,18 +22,18 @@ namespace VT_DUMMY_RS
 	class DummyResourceSystem final : public VT::IResourceSystem
 	{
 		friend ManagedResourceData;
-		friend ManagedPackagedResourceRequest;
+		friend ManagedResourceDependencyState;
 		friend ResourceLoader;
 
 		using ResourceDataContainerType = std::unordered_map<ManagedResourceDataID, ManagedResourceData>;
 
 		using ResourceEventContainer = VT::StaticVector<EventID, 3>;
 		using ResourceEventCollection = std::unordered_map<ManagedResourceDataID, ResourceEventContainer>;
-		using EventCollection = VT::ThreadSafeIndexObjectPool<VT::IResourceSystem::LoadedResourceCallback, EventID>;
+		using EventCollection = VT::ThreadSafeIndexObjectPool<VT::IResourceSystem::LoadingResourceCallback, EventID>;
 
-		using PackageRequestCollection = VT::ThreadSafeIndexObjectPool<ManagedPackagedResourceRequest, PackageRequestID>;
+		using DependencyStateCollection = VT::ThreadSafeIndexObjectPool<ManagedResourceDependencyState, PackageRequestID>;
 
-		using LoadedResourceCallback = VT::IResourceSystem::LoadedResourceCallback;
+		using LoadingResourceCallback = VT::IResourceSystem::LoadingResourceCallback;
 
 	private:
 		ResourceDataContainerType m_datas;
@@ -41,7 +41,7 @@ namespace VT_DUMMY_RS
 		ResourceEventCollection m_resourceEvents;
 		EventCollection m_events;
 
-		PackageRequestCollection m_packageRequests;
+		DependencyStateCollection m_dependencyStates;
 
 		VT::Mutex m_resourceRequestMutex;
 		VT::Mutex m_resoureEventMutex;
@@ -52,12 +52,10 @@ namespace VT_DUMMY_RS
 
 		void onResourceLoaded(ManagedResourceDataID resID, VT::ResourceDataReference resource);
 		void releaseResourceData(ManagedResourceData* data);
-		void releasePackageRequest(ManagedPackagedResourceRequest* request);
+		void releaseDependencyState(ManagedResourceDependencyState* state);
 
-		EventID addEvent(const LoadedResourceCallback& callback);
-		void addResourceEvent(ManagedResourceDataID resourceID, const LoadedResourceCallback& callback);
-
-		ManagedResourceDataID getResourceAsyncInternal(const VT::FileName& resName, const LoadedResourceCallback& callback);
+		EventID addEvent(const LoadingResourceCallback& callback);
+		void addResourceEvent(ManagedResourceDataID resourceID, const LoadingResourceCallback& callback);
 
 	public:
 		DummyResourceSystem() = default;
@@ -67,10 +65,9 @@ namespace VT_DUMMY_RS
 		virtual void release() override;
 
 		virtual VT::ResourceDataReference getResource(const VT::FileName& resName) override;
-		virtual void getResourceAsync(const VT::FileName& resName, const LoadedResourceCallback& callback) override;
+		virtual void getResourceAsync(const VT::FileName& resName, const LoadingResourceCallback& callback) override;
 
-		virtual size_t getPackagedResource(const PackageResourceRequestCollection& request, PackageResourceRequestResultCollection& result) override;
-		virtual void getPackagedResourceAsync(const DelayedPackageResourceRequestCollection& request, const VT::PackageRequestCallback& callback = nullptr) override;
+		virtual VT::ResourceDependencyStateReference createResourceDependencyState(const VT::ResourceDependencyState::Callback& callback) override;
 
 		VT_RESOURCE_SYSTEM_TYPE(VT_RESOURCE_SYSTEM_DUMMY_TYPE)
 	};

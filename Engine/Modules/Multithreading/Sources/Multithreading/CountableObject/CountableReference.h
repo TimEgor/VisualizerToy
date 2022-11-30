@@ -77,7 +77,7 @@ namespace VT
 	};
 }
 
-#define COUNTABLE_REFERENCES_DECLARATION_BY_NAME(TYPE, NAME)			\
+#define COUNTABLE_REFERENCES_DECLARATION_BY_NAME(TYPE, NAME)				\
 	using NAME##Reference = VT::CountableObjetcReference<TYPE>;				\
 	using NAME##ConstReference = VT::CountableConstObjetcReference<TYPE>;
 
