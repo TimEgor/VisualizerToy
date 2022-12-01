@@ -48,6 +48,7 @@ namespace VT
 		bool empty() const { return m_name[0] == '\0'; }
 
 		void clear();
+		void release();
 
 		FileNameID hash() const;
 	};

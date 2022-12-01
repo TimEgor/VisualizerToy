@@ -130,6 +130,11 @@ namespace VT
 		m_name.clear();
 	}
 
+	void FileName::release()
+	{
+		m_name = ResourceNameContainerType();
+	}
+
 	FileName operator+(const FileName& resName, const FileName::ResourceNameCharType* name)
 	{
 		FileName newName(resName);
