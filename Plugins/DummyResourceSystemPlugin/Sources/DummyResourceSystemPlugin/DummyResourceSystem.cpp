@@ -1,6 +1,7 @@
 #include "DummyResourceSystem.h"
 
 #include "ResourceLoader.h"
+#include "ManagedResourceSystemConverterArgs.h"
 
 #include "Multithreading/LockGuard.h"
 
@@ -27,6 +28,18 @@ namespace VT_DUMMY_RS
 		m_events.release();
 
 		VT_SAFE_DESTROY_WITH_RELEASING(m_loader);
+	}
+
+	void DummyResourceSystem::addResourceConverter(VT::IFileResourceConverter* converter)
+	{
+		assert(m_loader);
+		m_loader->addResourceConverter(converter);
+	}
+
+	void DummyResourceSystem::removeResourceConverter(VT::ResourceConverterType converterType)
+	{
+		assert(m_loader);
+		m_loader->removeResourceConverter(converterType);
 	}
 
 	ManagedResourceDataID DummyResourceSystem::getResourceID(const VT::FileName& resName) const
@@ -91,7 +104,23 @@ namespace VT_DUMMY_RS
 		}
 	}
 
-	VT::ResourceDataReference DummyResourceSystem::getResource(const VT::FileName& resName)
+	VT::ResourceSystemConverterArgs* DummyResourceSystem::allocateResourceConverterArgs(VT::ResourceConverterType type)
+	{
+		return m_converterArgsCollection.allocateNewConverterArgsHandler(type);
+	}
+
+	void DummyResourceSystem::addResourceConverterArgs(VT::ResourceConverterType type,
+		VT::IResourceSystemConverterArgsDestructor* destructor, size_t argsSize)
+	{
+		m_converterArgsCollection.addType(type, destructor, argsSize);
+	}
+
+	void DummyResourceSystem::releaseResourceSystemConverterArgs(ManagedResourceSystemConverterArgs* args)
+	{
+		m_converterArgsCollection.deallocateNewConverterArgs(args);
+	}
+
+	VT::ResourceDataReference DummyResourceSystem::getResource(const VT::FileName& resName, VT::ResourceSystemConverterArgsReference args)
 	{
 		assert(resName);
 		assert(m_loader);
@@ -112,12 +141,12 @@ namespace VT_DUMMY_RS
 
 		ManagedResourceData& newResource = newVal.first->second;
 
-		m_loader->loadResource(resName, &newResource);
+		m_loader->loadResource(resName, { &newResource, args });
 
 		return &newResource;
 	}
 
-	void DummyResourceSystem::getResourceAsync(const VT::FileName& resName, const LoadingResourceCallback& callback)
+	void DummyResourceSystem::getResourceAsync(const VT::FileName& resName, VT::ResourceSystemConverterArgsReference args, const LoadingResourceCallback& callback)
 	{
 		assert(resName);
 		assert(m_loader);
@@ -152,7 +181,7 @@ namespace VT_DUMMY_RS
 
 		ManagedResourceData& newResource = newVal.first->second;
 
-		m_loader->loadResourceAsync(resName, &newResource);
+		m_loader->loadResourceAsync(resName, { &newResource, args });
 	}
 
 	VT::ResourceDependencyStateReference DummyResourceSystem::createResourceDependencyState(const VT::ResourceDependencyState::Callback& callback)

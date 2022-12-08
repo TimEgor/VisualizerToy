@@ -4,6 +4,7 @@ set(MODULES_SET
 	ManagedGraphicDevice				ManagedGraphicDevice
 	GraphicResourceCommon				ResourceCommon
 	GraphicResourceManager				ResourceManager/Private
+	Shaders								Shaders
 	SwapChain							SwapChain
 	Textures							Textures
 )

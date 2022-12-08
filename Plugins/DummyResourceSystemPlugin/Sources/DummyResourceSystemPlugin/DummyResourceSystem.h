@@ -2,6 +2,7 @@
 
 #include "ManagedResourceData.h"
 #include "ManagedResourceDependencyState.h"
+#include "ManagedResourceSystemConverterArgs.h"
 
 #include "Multithreading/Mutex.h"
 
@@ -23,17 +24,18 @@ namespace VT_DUMMY_RS
 	{
 		friend ManagedResourceData;
 		friend ManagedResourceDependencyState;
+		friend ManagedResourceSystemConverterArgs;
 		friend ResourceLoader;
+
+		using LoadingResourceCallback = VT::IResourceSystem::LoadingResourceCallback;
 
 		using ResourceDataContainerType = std::unordered_map<ManagedResourceDataID, ManagedResourceData>;
 
 		using ResourceEventContainer = VT::StaticVector<EventID, 3>;
 		using ResourceEventCollection = std::unordered_map<ManagedResourceDataID, ResourceEventContainer>;
-		using EventCollection = VT::ThreadSafeIndexObjectPool<VT::IResourceSystem::LoadingResourceCallback, EventID>;
+		using EventCollection = VT::ThreadSafeIndexObjectPool<LoadingResourceCallback, EventID>;
 
 		using DependencyStateCollection = VT::ThreadSafeIndexObjectPool<ManagedResourceDependencyState, PackageRequestID>;
-
-		using LoadingResourceCallback = VT::IResourceSystem::LoadingResourceCallback;
 
 	private:
 		ResourceDataContainerType m_datas;
@@ -42,6 +44,8 @@ namespace VT_DUMMY_RS
 		EventCollection m_events;
 
 		DependencyStateCollection m_dependencyStates;
+
+		ConverterArgsColllection m_converterArgsCollection;
 
 		VT::Mutex m_resourceRequestMutex;
 		VT::Mutex m_resoureEventMutex;
@@ -57,6 +61,10 @@ namespace VT_DUMMY_RS
 		EventID addEvent(const LoadingResourceCallback& callback);
 		void addResourceEvent(ManagedResourceDataID resourceID, const LoadingResourceCallback& callback);
 
+		virtual VT::ResourceSystemConverterArgs* allocateResourceConverterArgs(VT::ResourceConverterType type) override;
+		virtual void addResourceConverterArgs(VT::ResourceConverterType type, VT::IResourceSystemConverterArgsDestructor* destructor, size_t argsSize) override;
+		void releaseResourceSystemConverterArgs(ManagedResourceSystemConverterArgs* args);
+
 	public:
 		DummyResourceSystem() = default;
 		~DummyResourceSystem() { release(); }
@@ -64,8 +72,11 @@ namespace VT_DUMMY_RS
 		virtual bool init() override;
 		virtual void release() override;
 
-		virtual VT::ResourceDataReference getResource(const VT::FileName& resName) override;
-		virtual void getResourceAsync(const VT::FileName& resName, const LoadingResourceCallback& callback) override;
+		virtual void addResourceConverter(VT::IFileResourceConverter* converter) override;
+		virtual void removeResourceConverter(VT::ResourceConverterType converterType) override;
+
+		virtual VT::ResourceDataReference getResource(const VT::FileName& resName, VT::ResourceSystemConverterArgsReference args) override;
+		virtual void getResourceAsync(const VT::FileName& resName, VT::ResourceSystemConverterArgsReference args, const LoadingResourceCallback& callback) override;
 
 		virtual VT::ResourceDependencyStateReference createResourceDependencyState(const VT::ResourceDependencyState::Callback& callback) override;
 

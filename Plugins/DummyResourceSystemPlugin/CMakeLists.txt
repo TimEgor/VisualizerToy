@@ -13,5 +13,6 @@ target_link_libraries(DummyResourceSystemPlugin
 		Containers
 		PluginSystem_COMMON
 		ResourceSystem
+		FileSystems
 		ObjectPool
 )

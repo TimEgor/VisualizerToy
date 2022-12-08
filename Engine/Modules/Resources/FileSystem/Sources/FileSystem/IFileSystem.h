@@ -21,9 +21,11 @@ namespace VT
 		virtual bool init(const FileName& path) = 0;
 		virtual void release() = 0;
 
-		virtual bool getResourceSize(const FileName& resourceName, size_t& resourceSize) = 0;
-		virtual bool readResourceData(const FileName& resourceName, void* data, size_t resourceSize) = 0;
-		virtual bool readResourceBinaryData(const FileName& resourceName, void* data, size_t resourceSize) = 0;
+		virtual bool getResourceSize(const FileName& resourceName, size_t& resourceSize) const = 0;
+		virtual bool readResourceData(const FileName& resourceName, void* data, size_t resourceSize) const = 0;
+		virtual void* readResourceData(const FileName& resourceName, size_t& resourceSize) const = 0;
+		virtual bool readResourceBinaryData(const FileName& resourceName, void* data, size_t resourceSize) const = 0;
+		virtual void* readResourceBinaryData(const FileName& resourceName, size_t& resourceSize) const = 0;
 
 		virtual bool writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag) = 0;
 
@@ -40,9 +42,11 @@ namespace VT
 	public:
 		IIndexedFileSystem() {}
 
-		virtual bool getResourceSize(ResourceID resourceID, size_t& resourceSize) = 0;
-		virtual bool readResourceData(ResourceID resourceID, void* data, size_t resourceSize) = 0;
-		virtual bool readResourceBinaryData(ResourceID resourceID, void* data, size_t resourceSize) = 0;
+		virtual bool getResourceSize(ResourceID resourceID, size_t& resourceSize) const = 0;
+		virtual bool readResourceData(ResourceID resourceID, void* data, size_t resourceSize) const = 0;
+		virtual void* readResourceData(ResourceID resourceID, size_t& resourceSize) const = 0;
+		virtual bool readResourceBinaryData(ResourceID resourceID, void* data, size_t resourceSize) const = 0;
+		virtual void* readResourceBinaryData(ResourceID resourceID, size_t& resourceSize) const = 0;
 
 		virtual bool writeResource(ResourceID resourceID, void* data, size_t resourceSize, WriteResourceFileFlag flag) = 0;
 

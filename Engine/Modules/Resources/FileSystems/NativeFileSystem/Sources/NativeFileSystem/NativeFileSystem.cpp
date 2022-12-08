@@ -6,7 +6,7 @@
 
 namespace VT
 {
-	bool NativeFileSystem::loadRawDataBase(const FileName& resourceName, void* data, size_t size, OpenMode mode)
+	bool NativeFileSystem::loadRawDataBase(const FileName& resourceName, void* data, size_t size, OpenMode mode) const
 	{
 		FileName targetResourceName;
 		prepareTargetName(resourceName, targetResourceName);
@@ -37,7 +37,7 @@ namespace VT
 		m_rootPath.release();
 	}
 
-	bool NativeFileSystem::getResourceSize(const FileName& resourceName, size_t& resourceSize)
+	bool NativeFileSystem::getResourceSize(const FileName& resourceName, size_t& resourceSize) const
 	{
 		FileName targetResourceName;
 		prepareTargetName(resourceName, targetResourceName);
@@ -46,14 +46,38 @@ namespace VT
 		return true;
 	}
 
-	bool NativeFileSystem::readResourceData(const FileName& resourceName, void* data, size_t resourceSize)
+	bool NativeFileSystem::readResourceData(const FileName& resourceName, void* data, size_t resourceSize) const
 	{
 		return loadRawDataBase(resourceName, data, resourceSize, std::ios_base::in);
 	}
 
-	bool NativeFileSystem::readResourceBinaryData(const FileName& resourceName, void* data, size_t resourceSize)
+	void* NativeFileSystem::readResourceData(const FileName& resourceName, size_t& resourceSize) const
+	{
+		if (!getResourceSize(resourceName, resourceSize) && resourceSize > 0)
+		{
+			return nullptr;
+		}
+
+		uint8_t* data = new uint8_t[resourceSize];
+
+		return readResourceData(resourceName, data, resourceSize) ? data : nullptr;
+	}
+
+	bool NativeFileSystem::readResourceBinaryData(const FileName& resourceName, void* data, size_t resourceSize) const
 	{
 		return loadRawDataBase(resourceName, data, resourceSize, std::ios_base::in | std::ios_base::binary);
+	}
+
+	void* NativeFileSystem::readResourceBinaryData(const FileName& resourceName, size_t& resourceSize) const
+	{
+		if (!getResourceSize(resourceName, resourceSize) && resourceSize > 0)
+		{
+			return nullptr;
+		}
+
+		uint8_t* data = new uint8_t[resourceSize];
+
+		return readResourceBinaryData(resourceName, data, resourceSize) ? data : nullptr;
 	}
 
 	bool NativeFileSystem::writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag)

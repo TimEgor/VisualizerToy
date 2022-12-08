@@ -11,4 +11,5 @@ target_link_libraries(ResourceSystem
 	INTERFACE
 		Core
 		Multithreading
+		ResourceConverter
 )

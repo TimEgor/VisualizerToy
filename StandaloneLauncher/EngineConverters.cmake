@@ -1,3 +1,4 @@
 set(PLUGINS_SET
-	ShaderConverter
+	ConverterCommon
+	ShaderConverterHLSL
 )

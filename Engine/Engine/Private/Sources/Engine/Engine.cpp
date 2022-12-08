@@ -44,6 +44,9 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice
 		&& m_engineEnvironment->m_graphicDevice->init(initParam.m_swapChainEnabled));
 
+	assert(initParam.m_shaderConverterPath);
+	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_shaderConverterPath);
+
 	m_engineEnvironment->m_graphicResourceManager = new GraphicResourceManager();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicResourceManager
 		&& m_engineEnvironment->m_graphicResourceManager->init());

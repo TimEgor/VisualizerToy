@@ -14,6 +14,7 @@
 
 // tmp
 #include "ResourceSystem/IResourceSystem.h"
+#include "ShaderConverter/ShaderConverterArgs.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -24,6 +25,9 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	VT_Launcher::getGraphicsPluginPath(initParams.m_graphicDevicePluginPath);
 	VT_Launcher::getResourceSystemPluginPath(initParams.m_resourceSystenPluginPath);
 
+	VT_Launcher::prepareConverterPath("ShaderConverterHLSL",
+		"HLSL/" + VT::FileName(VT_PLATFORM_NAME), initParams.m_shaderConverterPath);
+
 	VT::IEngine* engine = new VT::Engine();
 	VT::WindowGraphicPresenter* m_graphicPresenter = new VT::WindowGraphicPresenter();
 
@@ -33,24 +37,17 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return VT_LAUNCHER_ENGINE_INIT_ERROR;
 	}
 
-	int counter = 0;
 	{
-
-		auto resourceLoadedCallback = [&counter]()
-		{
-			++counter;
-		};
-
-		auto dependencyLink = engineInst->getEnvironment()->m_resourceSystem->createResourceDependencyState(resourceLoadedCallback);
-
-		engineInst->getEnvironment()->m_resourceSystem->getResourceAsync("Test.txt", [dependencyLink](VT::ResourceDataReference) {});
-		engineInst->getEnvironment()->m_resourceSystem->getResourceAsync("Test1.txt", [dependencyLink](VT::ResourceDataReference) {});
+		VT::IResourceSystem* resSystem = engineInst->getEnvironment()->m_resourceSystem;
+		resSystem->addResourceConverterArgsType<VT::ShaderResourceConverterArgs>();
+		auto argsHandler = resSystem->createResourceConverterArgs<VT::ShaderResourceConverterArgs>(VT::ShaderStageType::Pixel);
+		VT::ShaderResourceConverterArgs* args = argsHandler->getArgsCast<VT::ShaderResourceConverterArgs>();
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);
 
 	VT::SwapChainDesc swapChainDesc{};
-	swapChainDesc.m_format = VT::Format::R8G8B8A8_UNORM;
+	swapChainDesc.m_format = VT::Format::B8G8R8A8_UNORM;
 	swapChainDesc.m_presentMode = VT::SwapChainPresentMode::FIFO;
 	swapChainDesc.m_imageCount = 2;
 	if (!m_graphicPresenter->init("VT LAUNCHER", defaultWindowSize, swapChainDesc))

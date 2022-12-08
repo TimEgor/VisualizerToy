@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 namespace VT
 {
@@ -16,5 +17,7 @@ namespace VT
 			std::snprintf(tmpBuffer.get(), size, format, args...);
 			return std::string(tmpBuffer.get(), tmpBuffer.get() + size - 1);
 		}
+
+		return std::string();
 	}
 }

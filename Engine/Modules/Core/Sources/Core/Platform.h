@@ -1,6 +1,7 @@
 #pragma once
 
-#if defined(WIN32) || defined(WIN64)
+#if defined(WIN32) || defined(WIN64)	\
+	|| defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
 
 #define VT_DLL_EXPORT __declspec(dllexport)
@@ -22,12 +23,12 @@ namespace VT
 {
 	constexpr char* getPlatformName()
 	{
-#ifdef WIN32
-        return "Win32";
-#elif WIN64
-        return "x64";
+#if defined(WIN32) || defined(_WIN32)
+		return "Win32";
+#elif defined(WIN64) || defined(_WIN64)
+		return "x64";
 #else
-        return "";
+		return "";
 #endif
 	}
 }

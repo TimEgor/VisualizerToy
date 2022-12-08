@@ -357,5 +357,6 @@ healthchecksdb
 #ThirdParty install dir
 Libs/Install/
 
-#Plugins
+#Out results
+AssetConverters/Out/
 Plugins/Out/

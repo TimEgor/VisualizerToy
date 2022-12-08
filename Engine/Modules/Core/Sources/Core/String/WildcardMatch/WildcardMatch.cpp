@@ -1,6 +1,6 @@
 #include "WildcardMatch.h"
 
-bool VT::WildcardMatch(const char *pat, const char *str)
+bool VT::wildcardMatch(const char *pat, const char *str)
 {
 	int i, star;
 

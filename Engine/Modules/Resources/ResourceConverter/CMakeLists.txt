@@ -10,4 +10,6 @@ vt_add_module_target(ResourceConverter INTERFACE "VT_Engine/Resources")
 target_link_libraries(ResourceConverter
 	INTERFACE
 		Core
+		FileSystem
+		Multithreading
 )

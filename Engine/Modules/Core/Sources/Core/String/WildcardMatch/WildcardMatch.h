@@ -2,5 +2,5 @@
 
 namespace VT
 {
-	bool WildcardMatch(const char* pat, const char* str);
+	bool wildcardMatch(const char* pat, const char* str);
 }

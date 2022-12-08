@@ -12,19 +12,21 @@ namespace VT
 	private:
 		FileName m_rootPath;
 
-		bool loadRawDataBase(const FileName& resourceName, void* data, size_t size, OpenMode mode);
+		bool loadRawDataBase(const FileName& resourceName, void* data, size_t size, OpenMode mode) const;
 		void prepareTargetName(const FileName& resourceName, FileName& targetName) const;
 
 	public:
-		NativeFileSystem() {}
+		NativeFileSystem() = default;
 		virtual ~NativeFileSystem() {}
 
 		virtual bool init(const FileName& path = "") override;
 		virtual void release() override;
 
-		virtual bool getResourceSize(const FileName& resourceName, size_t& resourceSize) override;
-		virtual bool readResourceData(const FileName& resourceName, void* data, size_t resourceSize) override;
-		virtual bool readResourceBinaryData(const FileName& resourceName, void* data, size_t resourceSize) override;
+		virtual bool getResourceSize(const FileName& resourceName, size_t& resourceSize) const override;
+		virtual bool readResourceData(const FileName& resourceName, void* data, size_t resourceSize) const override;
+		virtual void* readResourceData(const FileName& resourceName, size_t& resourceSize) const override;
+		virtual bool readResourceBinaryData(const FileName& resourceName, void* data, size_t resourceSize) const override;
+		virtual void* readResourceBinaryData(const FileName& resourceName, size_t& resourceSize) const override;
 
 		virtual bool writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag) override;
 

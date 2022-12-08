@@ -12,6 +12,8 @@ namespace VT
 		FileName m_graphicDevicePluginPath;
 		FileName m_resourceSystenPluginPath;
 
+		FileName m_shaderConverterPath;
+
 		bool m_swapChainEnabled = true;
 	};
 
