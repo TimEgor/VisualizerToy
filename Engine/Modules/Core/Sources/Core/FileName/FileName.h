@@ -41,8 +41,6 @@ namespace VT
 		const ResourceNameCharType& operator[](size_t index) const;
 		ResourceNameCharType& operator[](size_t index);
 
-		const ResourceNameContainerType& getNameContainer() const { return m_name; }
-
 		const ResourceNameCharType* c_str() const { return m_name.c_str(); }
 		size_t length() const;
 		bool empty() const { return m_name[0] == '\0'; }

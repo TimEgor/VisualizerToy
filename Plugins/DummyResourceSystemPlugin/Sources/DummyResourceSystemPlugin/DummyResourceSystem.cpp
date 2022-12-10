@@ -146,7 +146,7 @@ namespace VT_DUMMY_RS
 		return &newResource;
 	}
 
-	void DummyResourceSystem::getResourceAsync(const VT::FileName& resName, VT::ResourceSystemConverterArgsReference args, const LoadingResourceCallback& callback)
+	void DummyResourceSystem::getResourceAsync(const VT::FileName& resName, const LoadingResourceCallback& callback, VT::ResourceSystemConverterArgsReference args)
 	{
 		assert(resName);
 		assert(m_loader);

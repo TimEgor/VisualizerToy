@@ -1,0 +1,1 @@
+DXC has been compiled from "release-1.7.2207" brach for x86/x64

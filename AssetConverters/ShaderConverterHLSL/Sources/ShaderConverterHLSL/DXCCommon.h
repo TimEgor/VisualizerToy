@@ -1,11 +1,7 @@
 #pragma once
 
-#include <d3dcommon.h>
-
-#include <dxcapi.h>
-#include <dxgi1_6.h>
-
 #include <wrl/client.h>
+#include <dxcapi.h>
 
 using Microsoft::WRL::ComPtr;
 

@@ -2,6 +2,12 @@
 
 #include <filesystem>
 
+bool VT::FileNameUtils::exist(const FileName& name)
+{
+    return std::filesystem::exists(name.c_str());
+}
+
+
 void VT::FileNameUtils::getFileName(const FileName& path, FileName& resultName)
 {
     std::filesystem::path tmpPath(path.c_str());
@@ -36,4 +42,9 @@ VT::FileName VT::FileNameUtils::removeExtension(const FileName& name)
 {
     std::filesystem::path tmpPath(name.c_str());
     return tmpPath.replace_extension().string();
+}
+
+void VT::FileNameUtils::createDir(const FileName& path)
+{
+    std::filesystem::create_directories(path.c_str());
 }

@@ -10,7 +10,7 @@
 #include "NativeFileSystem/NativeFileSystem.h"
 
 
-constexpr char* ConvertedResourceDir = "./CONVERTED/";
+constexpr char* ConvertedResourceDir = "CONVERTED/";
 
 bool VT_DUMMY_RS::ResourceLoader::init(DummyResourceSystem* resourceSystem)
 {
@@ -69,7 +69,7 @@ void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, Request
         VT::hashCombine(id, converter->getType());
         VT::hashCombine(id, converter->getVersion());
 
-        const VT::FileName convertedName = ConvertedResourceDir + VT::stringFormat("/%x", id);
+        const VT::FileName convertedName = ConvertedResourceDir + VT::stringFormat("%x", id);
 
         if (!m_fileSystem->exist(convertedName))
         {

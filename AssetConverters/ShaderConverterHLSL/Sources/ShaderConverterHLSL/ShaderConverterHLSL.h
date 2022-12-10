@@ -38,6 +38,7 @@ namespace VT_SHADER_RC
 	public:
 		ShaderConverterHLSL(OutputILType outputType)
 			: m_ilType(outputType) {}
+		~ShaderConverterHLSL() { release(); }
 
 		virtual bool init() override;
 		virtual void release() override;

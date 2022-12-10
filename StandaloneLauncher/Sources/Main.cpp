@@ -40,8 +40,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	{
 		VT::IResourceSystem* resSystem = engineInst->getEnvironment()->m_resourceSystem;
 		resSystem->addResourceConverterArgsType<VT::ShaderResourceConverterArgs>();
-		auto argsHandler = resSystem->createResourceConverterArgs<VT::ShaderResourceConverterArgs>(VT::ShaderStageType::Pixel);
-		VT::ShaderResourceConverterArgs* args = argsHandler->getArgsCast<VT::ShaderResourceConverterArgs>();
+		auto argsHandler = resSystem->createResourceConverterArgs<VT::ShaderResourceConverterArgs>(VT::ShaderStageType::Vertex);
+		VT::ResourceDataReference shaderData = resSystem->getResource("TestVertexShader.hlsl", argsHandler);
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);

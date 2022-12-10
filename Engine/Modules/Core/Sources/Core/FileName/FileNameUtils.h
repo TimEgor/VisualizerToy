@@ -4,6 +4,8 @@
 
 namespace VT::FileNameUtils
 {
+	bool exist(const FileName& name);
+
 	void getFileName(const FileName& path, FileName& resultName);
 	FileName getFileName(const FileName& path);
 
@@ -12,4 +14,6 @@ namespace VT::FileNameUtils
 
 	void removeExtension(FileName& name);
 	FileName removeExtension(const FileName& name);
+
+	void createDir(const FileName& path);
 }

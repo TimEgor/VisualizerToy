@@ -29,6 +29,7 @@ void VT_RC::ResourceConverterPluginBase::onLoaded()
 		return;
 	}
 
+	resConverter->init();
 	resSystem->addResourceConverter(resConverter);
 }
 

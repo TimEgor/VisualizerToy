@@ -28,7 +28,9 @@ function(vt_build_module MODULE_NAME)
 		WORKING_DIRECTORY ${MODULE_BINARY_PATH}
 	)
 
-	set(PREBUILD_CONFIGURATIONS "Debug" "Release")
+	if (NOT DEFINED PREBUILD_CONFIGURATIONS)
+		set(PREBUILD_CONFIGURATIONS "Debug" "Release")
+	endif()
 
 	foreach(CONFIGURATION ${PREBUILD_CONFIGURATIONS})
 		execute_process(COMMAND ${CMAKE_COMMAND} --build . --config ${CONFIGURATION}

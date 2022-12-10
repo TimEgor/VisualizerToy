@@ -351,6 +351,8 @@ healthchecksdb
 ####   VT   ####
 ################
 
+!/Libs/dxc/**
+
 # ImGUI
 *imgui.ini
 

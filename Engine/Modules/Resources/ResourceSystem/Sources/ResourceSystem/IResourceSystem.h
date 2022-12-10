@@ -37,8 +37,8 @@ namespace VT
 		virtual void addResourceConverter(IFileResourceConverter* converter) = 0;
 		virtual void removeResourceConverter(ResourceConverterType converterType) = 0;
 
-		virtual ResourceDataReference getResource(const FileName& resName, ResourceSystemConverterArgsReference args) = 0;
-		virtual void getResourceAsync(const FileName& resName, ResourceSystemConverterArgsReference args, const LoadingResourceCallback& callback = nullptr) = 0;
+		virtual ResourceDataReference getResource(const FileName& resName, ResourceSystemConverterArgsReference args = nullptr) = 0;
+		virtual void getResourceAsync(const FileName& resName, const LoadingResourceCallback& callback = nullptr, ResourceSystemConverterArgsReference args = nullptr) = 0;
 
 		virtual ResourceDependencyStateReference createResourceDependencyState(const ResourceDependencyState::Callback& callback) = 0;
 

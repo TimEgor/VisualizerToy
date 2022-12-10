@@ -1,5 +1,7 @@
 #include "NativeFileSystem.h"
 
+#include "Core/FileName/FileNameUtils.h"
+
 #include <filesystem>
 #include <fstream>
 #include <cassert>
@@ -84,8 +86,14 @@ namespace VT
 	{
 		FileName targetResourceName = m_rootPath + resourceName;
 
+		FileName parentPath = FileNameUtils::getFileDirPath(targetResourceName);
+		if (!FileNameUtils::exist(parentPath))
+		{
+			FileNameUtils::createDir(parentPath);
+		}
+
 		std::fstream fileStream(targetResourceName.c_str(),
-			std::ios_base::out | (flag == WriteResourceFileFlag::APPEND ? std::ios_base::app : std::ios_base::trunc | std::ios_base::binary));
+			std::ios_base::out | ((flag == WriteResourceFileFlag::APPEND ? std::ios_base::app : std::ios_base::trunc) | std::ios_base::binary));
 		assert(fileStream.is_open());
 
 		fileStream.write(reinterpret_cast<char*>(data), resourceSize);

@@ -62,7 +62,8 @@ namespace VT_DUMMY_RS
 		void addResourceEvent(ManagedResourceDataID resourceID, const LoadingResourceCallback& callback);
 
 		virtual VT::ResourceSystemConverterArgs* allocateResourceConverterArgs(VT::ResourceConverterType type) override;
-		virtual void addResourceConverterArgs(VT::ResourceConverterType type, VT::IResourceSystemConverterArgsDestructor* destructor, size_t argsSize) override;
+		virtual void addResourceConverterArgs(VT::ResourceConverterType type,
+			VT::IResourceSystemConverterArgsDestructor* destructor, size_t argsSize) override;
 		void releaseResourceSystemConverterArgs(ManagedResourceSystemConverterArgs* args);
 
 	public:
@@ -75,8 +76,10 @@ namespace VT_DUMMY_RS
 		virtual void addResourceConverter(VT::IFileResourceConverter* converter) override;
 		virtual void removeResourceConverter(VT::ResourceConverterType converterType) override;
 
-		virtual VT::ResourceDataReference getResource(const VT::FileName& resName, VT::ResourceSystemConverterArgsReference args) override;
-		virtual void getResourceAsync(const VT::FileName& resName, VT::ResourceSystemConverterArgsReference args, const LoadingResourceCallback& callback) override;
+		virtual VT::ResourceDataReference getResource(const VT::FileName& resName,
+			VT::ResourceSystemConverterArgsReference args = nullptr) override;
+		virtual void getResourceAsync(const VT::FileName& resName, const LoadingResourceCallback& callback = nullptr,
+			VT::ResourceSystemConverterArgsReference args = nullptr) override;
 
 		virtual VT::ResourceDependencyStateReference createResourceDependencyState(const VT::ResourceDependencyState::Callback& callback) override;
 
