@@ -15,6 +15,10 @@ namespace VT
 		bool loadRawDataBase(const FileName& resourceName, void* data, size_t size, OpenMode mode) const;
 		void prepareTargetName(const FileName& resourceName, FileName& targetName) const;
 
+		void createDirectoryInternal(const FileName& path);
+		bool isDirectoryInternal(const FileName& path) const;
+		bool existInternal(const FileName& path) const;
+
 	public:
 		NativeFileSystem() = default;
 		virtual ~NativeFileSystem() {}
@@ -30,7 +34,9 @@ namespace VT
 
 		virtual bool writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag) override;
 
-		virtual bool isDirectory(const FileName& resourceName) const override;
+		virtual void createDirectory(const FileName& path) override;
+
+		virtual bool isDirectory(const FileName& path) const override;
 		virtual bool exist(const FileName& resourceName) const override;
 	};
 }

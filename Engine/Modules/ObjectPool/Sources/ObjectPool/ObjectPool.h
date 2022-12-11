@@ -97,6 +97,8 @@ namespace VT
 		};
 
 	public:
+		using HandleElementType = HandleType;
+
 		struct NewElementInfo final
 		{
 			HandleType m_elementHandle = InvalidHandle;

@@ -12,6 +12,7 @@ namespace VT
 	public:
 		using ObjectPoolType = ObjectPool<ObjectType, HandleType>;
 		using NewElementInfo = typename ObjectPoolType::NewElementInfo;
+		using HandleElementType = HandleType;
 
 	private:
 		ObjectPoolType m_pool;
@@ -22,43 +23,57 @@ namespace VT
 
 		bool init(size_t pageSize = 4096, size_t maxFreePageCount = 2, size_t minFreeIndexCount = 64)
 		{
-			UniqueLockGuard<SharedMutex> locker(m_mutex);
+			UniqueLockGuard locker(m_mutex);
 			return m_pool.init(pageSize, maxFreePageCount, minFreeIndexCount);
 		}
 
 		void release()
 		{
-			UniqueLockGuard<SharedMutex> locker(m_mutex);
+			UniqueLockGuard locker(m_mutex);
 			m_pool.release();
 		}
 
 		void clear()
 		{
-			UniqueLockGuard<SharedMutex> locker(m_mutex);
+			UniqueLockGuard locker(m_mutex);
 			m_pool.clear();
 		}
 
 		bool isValid(HandleType handle) const
 		{
-			SharedLockGuard<SharedMutex> locker(m_mutex);
+			SharedLockGuard locker(m_mutex);
 			return m_pool.isValid(handle);
 		}
 
 		const ObjectType* getElement(HandleType handle) const
 		{
-			SharedLockGuard<SharedMutex> locker(m_mutex);
+			SharedLockGuard locker(m_mutex);
 			return m_pool.getElement(handle);
 		}
 
 		ObjectType* getElement(HandleType handle)
 		{
-			SharedLockGuard<SharedMutex> locker(m_mutex);
+			SharedLockGuard locker(m_mutex);
+			return m_pool.getElement(handle);
+		}
+
+		template <typename T>
+		T getElementCast(HandleType handle) const
+		{
+			SharedLockGuard locker(m_mutex);
+			return m_pool.getElement(handle);
+		}
+
+		template <typename T>
+		T getElementCast(HandleType handle)
+		{
+			SharedLockGuard locker(m_mutex);
 			return m_pool.getElement(handle);
 		}
 
 		void addElementRaw(NewElementInfo& info)
 		{
-			UniqueLockGuard<SharedMutex> locker(m_mutex);
+			UniqueLockGuard locker(m_mutex);
 			m_pool.addElementRaw(info);
 		}
 
@@ -88,7 +103,7 @@ namespace VT
 
 		void removeElement(HandleType handle)
 		{
-			UniqueLockGuard<SharedMutex> locker(m_mutex);
+			UniqueLockGuard locker(m_mutex);
 			m_pool.removeElement(handle);
 		}
 	};

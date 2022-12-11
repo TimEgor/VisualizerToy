@@ -29,6 +29,8 @@ namespace VT
 
 		virtual bool writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag) = 0;
 
+		virtual void createDirectory(const FileName& resourceName) = 0;
+
 		virtual bool isDirectory(const FileName& resourceName) const = 0;
 		virtual bool exist(const FileName& resourceName) const = 0;
 

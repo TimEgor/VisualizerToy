@@ -33,7 +33,7 @@ void VT_DUMMY_RS::ResourceLoader::readResourceData(const VT::FileName& name, VT:
     assert(m_fileSystem);
 
     size_t dataSize = 0;
-    void* data = m_fileSystem->readResourceData(name, dataSize);
+    void* data = m_fileSystem->readResourceBinaryData(name, dataSize);
 
     ManagedResourceData* managedResData = dataRef.getObjectCast<ManagedResourceData>();
     managedResData->setData(data, dataSize);
@@ -75,6 +75,10 @@ void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, Request
         {
             converter->convert(*m_fileSystem, name, &data, dataSize,
                 *m_fileSystem, convertedName, request.m_args->getArgs());
+
+            ManagedResourceData* managedResData = request.m_data.getObjectCast<ManagedResourceData>();
+            managedResData->setData(data, dataSize);
+            managedResData->setState(VT::ResourceState::LOADED);
         }
         else
         {

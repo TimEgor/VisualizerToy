@@ -2,7 +2,7 @@
 
 #include "VulkanGraphicsPlugin/VulkanCore.h"
 #include "VulkanGraphicsPlugin/Textures/VulkanTexture2D.h"
-#include "ManagedGraphicDevice/ManagedGraphicObjects.h"
+#include "ManagedGraphicDevice/ManagedObjects/ManagedSwapChainObject.h"
 
 #include <vector>
 
@@ -30,7 +30,7 @@ namespace VT_VK
 
 	public:
 		VulkanSwapChain(const VT::SwapChainDesc& desc, VkSwapchainKHR swapChain, VkSurfaceKHR surface)
-			: VT::ManagedGraphicDevice::ManagedSwapChainBase(desc), m_vkSwapChain(swapChain), m_vkSurface(surface) {}
+			: ManagedSwapChainBase(desc), m_vkSwapChain(swapChain), m_vkSurface(surface) {}
 
 		virtual uint32_t getTextureCount() const override;
 		virtual const VT::ITexture2D* getTexture(uint32_t index) const override;

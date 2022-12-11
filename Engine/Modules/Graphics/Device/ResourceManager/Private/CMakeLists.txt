@@ -12,7 +12,11 @@ target_link_libraries(GraphicResourceManager
 	PUBLIC
 		Core
 		ObjectPool
+		ResourceSystem
 		Engine_COMMON
+
 		GraphicDevice
 		GraphicResourceManager_COMMON
+
+		ShaderConverter
 )

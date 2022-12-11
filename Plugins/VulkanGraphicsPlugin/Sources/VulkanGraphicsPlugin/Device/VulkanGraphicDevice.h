@@ -6,13 +6,9 @@
 
 #define VT_GRAPHIC_DEVICE_VULKAN_TYPE
 
-namespace VT
-{
-	struct Texture2DDesc;
-}
-
 namespace VT_VK
 {
+	class VulkanShaderBase;
 	struct VulkanSwapChainInfo;
 
 	class VulkanSwapChain;
@@ -41,8 +37,12 @@ namespace VT_VK
 		void findQueueFamiliesIndices();
 
 		void getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info);
-		void createSwapChainInternal(const VT::SwapChainDesc& swapCahinDesc, const VT::IWindow* window, VkSurfaceKHR& surface, VkSwapchainKHR& swapChain, VT::Texture2DDesc& imageDesc);
+		void createSwapChainInternal(const VT::SwapChainDesc& swapCahinDesc, const VT::IWindow* window,
+			VkSurfaceKHR& surface, VkSwapchainKHR& swapChain, VT::Texture2DDesc& imageDesc);
 		void initSwapChainImages(VulkanSwapChain* swapChain, const VT::Texture2DDesc& imageDesc);
+
+		void createShaderInternal(const void* code, size_t codeSize, VkShaderModule& vkShaderModule);
+		void destroyShaderInternal(VulkanShaderBase* shader);
 
 		void destroyResources();
 
@@ -55,8 +55,20 @@ namespace VT_VK
 
 		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
 
-		virtual VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* createSwapChainStorage() const override;
-		virtual VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* createTexture2DStorage() const override;
+		virtual bool createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader, const void* code, size_t codeSize) override;
+		virtual void destroyVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader) override;
+
+		virtual bool createPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader, const void* code, size_t codeSize) override;
+		virtual void destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader) override;
+
+		virtual bool createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
+		virtual void destroyCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
+
+		virtual SwapChainStorage* createSwapChainStorage() const override;
+		virtual Texture2DStorage* createTexture2DStorage() const override;
+		virtual VertexShaderStorage* createVertexShaderStorage() const override;
+		virtual PixelShaderStorage* createPixelShaderStorage() const override;
+		virtual CommandPoolStorage* createCommandPoolStorage() const override;
 
 	public:
 		VulkanGraphicDevice() = default;

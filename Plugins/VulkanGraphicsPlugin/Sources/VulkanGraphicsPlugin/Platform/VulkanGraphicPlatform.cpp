@@ -4,6 +4,10 @@
 
 #include "VulkanGraphicsPlugin/Device/VulkanGraphicDevice.h"
 
+#include "Engine/EngineInstance.h"
+#include "Engine/IEngine.h"
+#include "Engine/EngineEnvironment.h"
+
 namespace VT_VK
 {
 	bool checkAvaliableInstanceLayersSupport(const VulkanNameContainer& layers)
@@ -154,6 +158,22 @@ bool VT_VK::VulkanGraphicPlatform::init(bool isSwapChainEnabled)
 
 void VT_VK::VulkanGraphicPlatform::release()
 {
+	VT::IGraphicDevice* graphicDevie = VT::EngineInstance::getInstance()->getEnvironment()->m_graphicDevice;
+
+	if (!graphicDevie)
+	{
+		assert(false && "VulkanGraphicPlatform::release() : Engine environment graphicDevie is null.");
+		return;
+	}
+
+	if (graphicDevie->getType() != VulkanGraphicDevice::getGraphicDeviceType())
+	{
+		assert(false && "VulkanGraphicPlatform::release() : Engine environment graphicDevie isn't Vulkan.");
+		return;
+	}
+
+	VT_SAFE_DESTROY_WITH_RELEASING(graphicDevie);
+
 	if (m_vkInstance)
 	{
 		vkDestroyInstance(m_vkInstance, nullptr);

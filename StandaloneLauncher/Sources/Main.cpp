@@ -13,8 +13,7 @@
 #include "ReturningCodes.h"
 
 // tmp
-#include "ResourceSystem/IResourceSystem.h"
-#include "ShaderConverter/ShaderConverterArgs.h"
+#include "GraphicResourceManager/IGraphicResourceManager.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -38,10 +37,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	{
-		VT::IResourceSystem* resSystem = engineInst->getEnvironment()->m_resourceSystem;
-		resSystem->addResourceConverterArgsType<VT::ShaderResourceConverterArgs>();
-		auto argsHandler = resSystem->createResourceConverterArgs<VT::ShaderResourceConverterArgs>(VT::ShaderStageType::Vertex);
-		VT::ResourceDataReference shaderData = resSystem->getResource("TestVertexShader.hlsl", argsHandler);
+		VT::IGraphicResourceManager* resManager = engineInst->getEnvironment()->m_graphicResourceManager;
+		VT::VertexShaderResourceHandleReference shader = resManager->loadVertexShader("TestVertexShader.hlsl");
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);

@@ -7,6 +7,9 @@ namespace VT
 	class IWindow;
 	class ISwapChain;
 	class ITexture2D;
+	class IVertexShader;
+	class IPixelShader;
+	class ICommandPool;
 
 	struct SwapChainDesc;
 
@@ -29,6 +32,15 @@ namespace VT
 		virtual void destroySwapChain(ISwapChain* swapChain) = 0;
 
 		virtual void destroyTexture2D(ITexture2D* texture) = 0;
+
+		virtual IVertexShader* createVertexShader(const void* code, size_t codeSize) = 0;
+		virtual void destroyVertexShader(IVertexShader* shader) = 0;
+
+		virtual IPixelShader* createPixelShader(const void* code, size_t codeSize) = 0;
+		virtual void destroyPixelShader(IPixelShader* shader) = 0;
+
+		virtual ICommandPool* createCommandPool() = 0;
+		virtual void destroyCommandPool(ICommandPool* commandPool) = 0;
 
 		virtual GraphicDeviceType getType() const = 0;
 	};

@@ -11,6 +11,9 @@
 #include "WindowSystem/IWindow.h"
 
 #include "VulkanGraphicsPlugin/SwapChain/VulkanSwapChain.h"
+#include "VulkanGraphicsPlugin/Commands/VulkanCommandPool.h"
+#include "VulkanGraphicsPlugin/Shaders/VulkanShaders.h"
+
 #include "VulkanGraphicsPlugin/Utilities/FormatConverter.h"
 #include "VulkanGraphicsPlugin/Utilities/PresentModeConverter.h"
 
@@ -264,20 +267,26 @@ void VT_VK::VulkanGraphicDevice::destroyResources()
 
 	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
 
-	for (VkImage vkImage : m_destroyingResources.m_images)
+	m_destroyingResources.m_images.getLocker().lock();
+	for (VkImage vkImage : m_destroyingResources.m_images.getContainer())
 	{
 		vkDestroyImage(m_vkDevice, vkImage, nullptr);
 	}
+	m_destroyingResources.m_images.getLocker().unlock();
 
-	for (VkSwapchainKHR vkSwapChain : m_destroyingResources.m_swapChains)
+	m_destroyingResources.m_swapChains.getLocker().lock();
+	for (VkSwapchainKHR vkSwapChain : m_destroyingResources.m_swapChains.getContainer())
 	{
 		vkDestroySwapchainKHR(m_vkDevice, vkSwapChain, nullptr);
 	}
+	m_destroyingResources.m_swapChains.getLocker().unlock();
 
-	for (VkSurfaceKHR vkSurface : m_destroyingResources.m_surfaces)
+	m_destroyingResources.m_surfaces.getLocker().lock();
+	for (VkSurfaceKHR vkSurface : m_destroyingResources.m_surfaces.getContainer())
 	{
 		vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
 	}
+	m_destroyingResources.m_surfaces.getLocker().unlock();
 }
 
 void VT_VK::VulkanGraphicDevice::getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info)
@@ -402,8 +411,7 @@ void VT_VK::VulkanGraphicDevice::initSwapChainImages(VulkanSwapChain* swapChain,
 
 	for (size_t i = 0; i < imageCount; ++i)
 	{
-		VkImage vkImage = vkImages[i];
-		new (&swapChain->m_textures[i]) VulkanTexture2D(imageDesc, vkImage);
+		new (&swapChain->m_textures[i]) VulkanTexture2D(imageDesc, vkImages[i]);
 	}
 
 	/*VkImageViewCreateInfo imageViewCreateInfo{};
@@ -422,6 +430,26 @@ void VT_VK::VulkanGraphicDevice::initSwapChainImages(VulkanSwapChain* swapChain,
 	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewCreateInfo.subresourceRange.layerCount = 1;*/
 
+}
+
+void VT_VK::VulkanGraphicDevice::createShaderInternal(const void* code, size_t codeSize, VkShaderModule& vkShaderModule)
+{
+	VkShaderModuleCreateInfo moduleCreateInfo{};
+	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code);
+	moduleCreateInfo.codeSize = codeSize;
+
+	vkCreateShaderModule(m_vkDevice, &moduleCreateInfo, nullptr, &vkShaderModule);
+}
+
+void VT_VK::VulkanGraphicDevice::destroyShaderInternal(VulkanShaderBase* shader)
+{
+	assert(shader);
+
+	if (shader->m_vkShaderModule)
+	{
+		m_destroyingResources.m_shaderModules.addToContainer(shader->m_vkShaderModule);
+	}
 }
 
 bool VT_VK::VulkanGraphicDevice::initDevice(bool isSwapChainEnabled)
@@ -455,7 +483,8 @@ void VT_VK::VulkanGraphicDevice::wait()
 	vkDeviceWaitIdle(m_vkDevice);
 }
 
-bool VT_VK::VulkanGraphicDevice::createSwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain, const VT::SwapChainDesc& desc, const VT::IWindow* window)
+bool VT_VK::VulkanGraphicDevice::createSwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain,
+	const VT::SwapChainDesc& desc, const VT::IWindow* window)
 {
 	VkSurfaceKHR vkSurface = 0;
 	VkSwapchainKHR vkSwapChain = 0;
@@ -488,12 +517,12 @@ void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ManagedGraphicDevice::Mana
 
 	if (vulkanSwapChain->m_vkSwapChain)
 	{
-		m_destroyingResources.m_swapChains.push_back(vulkanSwapChain->m_vkSwapChain);
+		m_destroyingResources.m_swapChains.addToContainer(vulkanSwapChain->m_vkSwapChain);
 	}
 
 	if (vulkanSwapChain->m_vkSurface)
 	{
-		m_destroyingResources.m_surfaces.push_back(vulkanSwapChain->m_vkSurface);
+		m_destroyingResources.m_surfaces.addToContainer(vulkanSwapChain->m_vkSurface);
 	}
 }
 
@@ -505,9 +534,47 @@ void VT_VK::VulkanGraphicDevice::destroyTexture2D(VT::ManagedGraphicDevice::Mana
 
 	if (vulkanTexture->m_vkImage)
 	{
-		m_destroyingResources.m_images.push_back(vulkanTexture->m_vkImage);
+		m_destroyingResources.m_images.addToContainer(vulkanTexture->m_vkImage);
 	}
 }
+
+bool VT_VK::VulkanGraphicDevice::createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader,
+	const void* code, size_t codeSize)
+{
+	VkShaderModule vkShaderModule;
+	createShaderInternal(code, codeSize, vkShaderModule);
+
+	VulkanVertexShader* vertexShader = new (shader) VulkanVertexShader(vkShaderModule);
+	return vertexShader;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader)
+{
+	destroyShaderInternal(reinterpret_cast<VulkanShaderBase*>(shader));
+}
+
+bool VT_VK::VulkanGraphicDevice::createPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader,
+	const void* code, size_t codeSize)
+{
+	VkShaderModule vkShaderModule;
+	createShaderInternal(code, codeSize, vkShaderModule);
+
+	VulkanPixelShader* pixelShader = new (shader) VulkanPixelShader(vkShaderModule);
+	return pixelShader;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader)
+{
+	destroyShaderInternal(reinterpret_cast<VulkanShaderBase*>(shader));
+}
+
+bool VT_VK::VulkanGraphicDevice::createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool)
+{
+	return false;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool)
+{}
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* VT_VK::VulkanGraphicDevice::createSwapChainStorage() const
 {
@@ -516,5 +583,20 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* VT_VK::VulkanG
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* VT_VK::VulkanGraphicDevice::createTexture2DStorage() const
 {
-	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedTexture2DStorageInfo<VulkanTexture2D>>();;
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedTexture2DStorageInfo<VulkanTexture2D>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::VertexShaderStorage* VT_VK::VulkanGraphicDevice::createVertexShaderStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedVertexShaderStorageInfo<VulkanVertexShader>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::PixelShaderStorage* VT_VK::VulkanGraphicDevice::createPixelShaderStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPixelShaderStorageInfo<VulkanPixelShader>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::CommandPoolStorage* VT_VK::VulkanGraphicDevice::createCommandPoolStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedCommandPoolStorageInfo<VulkanCommandPool>>();
 }

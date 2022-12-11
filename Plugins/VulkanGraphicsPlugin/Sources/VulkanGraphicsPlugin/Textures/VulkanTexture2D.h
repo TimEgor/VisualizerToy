@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VulkanGraphicsPlugin/VulkanCore.h"
-#include "ManagedGraphicDevice/ManagedGraphicObjects.h"
+#include "ManagedGraphicDevice/ManagedObjects/ManagedTexture2DObject.h"
 
 namespace VT_VK
 {

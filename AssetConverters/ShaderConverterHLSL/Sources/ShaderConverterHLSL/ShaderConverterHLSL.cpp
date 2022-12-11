@@ -95,10 +95,11 @@ void VT_SHADER_RC::ShaderConverterHLSL::compileShader(void* inData, size_t inDat
 	}
 
 	compilationDxcResult->GetResult(shaderBlob.GetAddressOf());
-	shaderBlob->AddRef();
 
-	*outData = shaderBlob->GetBufferPointer();
+	// TODO: need to remove this mem coping
 	outDataSize = shaderBlob->GetBufferSize();
+	*outData = new uint8_t[outDataSize];
+	memcpy(*outData, shaderBlob->GetBufferPointer(), outDataSize);
 }
 
 bool VT_SHADER_RC::ShaderConverterHLSL::init()
@@ -179,9 +180,9 @@ void VT_SHADER_RC::ShaderConverterHLSL::convert(const VT::IFileSystem& inFileSys
 	{
 		compileShader(inData, inDataSize, outData, outDataSize, args, nullptr);
 
-		if (outData && outDataSize > 0)
+		if (outData && *outData && outDataSize > 0)
 		{
-			outFileSystem.writeResource(outFilePath, outData, outDataSize, VT::WriteResourceFileFlag::OVERRIDE);
+			outFileSystem.writeResource(outFilePath, *outData, outDataSize, VT::WriteResourceFileFlag::OVERRIDE);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ManagedObjectStorageInfo.h"
-#include "ObjectPool/ObjectPool.h"
+#include "ObjectPool/ThreadSafeObjectPool.h"
 
 namespace VT::ManagedGraphicDevice
 {
@@ -34,7 +34,7 @@ namespace VT::ManagedGraphicDevice
 		using HandleType = typename ManagedStorageInfoType::HandleType;
 		using NewObjectInfo = typename ManagedStorageInfoType::NewObjectInfo;
 
-		using ObjectPoolType = ObjectPool<ObjectType, HandleType>;
+		using ObjectPoolType = ThreadSafeObjectPool<ObjectType, HandleType>;
 		using ObjectPoolElementInfo = typename ObjectPoolType::NewElementInfo;
 
 	private:

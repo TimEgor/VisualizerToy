@@ -28,6 +28,21 @@ namespace VT
 		targetName = m_rootPath + resourceName;
 	}
 
+	void NativeFileSystem::createDirectoryInternal(const FileName& path)
+	{
+		std::filesystem::create_directories(path.c_str());
+	}
+
+	bool NativeFileSystem::isDirectoryInternal(const FileName& path) const
+	{
+		return std::filesystem::is_directory(path.c_str());
+	}
+
+	bool NativeFileSystem::existInternal(const FileName& path) const
+	{
+		return std::filesystem::exists(path.c_str());
+	}
+
 	bool NativeFileSystem::init(const FileName& path)
 	{
 		m_rootPath = path + "/";
@@ -84,12 +99,13 @@ namespace VT
 
 	bool NativeFileSystem::writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag)
 	{
-		FileName targetResourceName = m_rootPath + resourceName;
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
 
-		FileName parentPath = FileNameUtils::getFileDirPath(targetResourceName);
-		if (!FileNameUtils::exist(parentPath))
+		const FileName parentPath = FileNameUtils::getFileDirPath(resourceName);
+		if (!existInternal(parentPath))
 		{
-			FileNameUtils::createDir(parentPath);
+			createDirectoryInternal(parentPath);
 		}
 
 		std::fstream fileStream(targetResourceName.c_str(),
@@ -103,11 +119,20 @@ namespace VT
 		return true;
 	}
 
-	bool NativeFileSystem::isDirectory(const FileName& resourceName) const
+	void NativeFileSystem::createDirectory(const FileName& path)
+	{
+		FileName targetPath;
+		prepareTargetName(path, targetPath);
+
+		createDirectoryInternal(targetPath);
+	}
+
+	bool NativeFileSystem::isDirectory(const FileName& path) const
 	{
 		FileName targetResourceName;
-		prepareTargetName(resourceName, targetResourceName);
-		return std::filesystem::is_directory(targetResourceName.c_str());
+		prepareTargetName(path, targetResourceName);
+
+		return isDirectoryInternal(targetResourceName);
 	}
 
 	bool NativeFileSystem::exist(const FileName& resourceName) const
@@ -115,6 +140,6 @@ namespace VT
 		FileName targetResourceName;
 		prepareTargetName(resourceName, targetResourceName);
 
-		return std::filesystem::exists(targetResourceName.c_str());
+		return existInternal(targetResourceName);
 	}
 }

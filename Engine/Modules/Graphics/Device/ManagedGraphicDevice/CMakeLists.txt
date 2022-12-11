@@ -11,7 +11,9 @@ target_link_libraries(ManagedGraphicDevice
 	PUBLIC
 		GraphicDevice
 		SwapChain
+		Shaders
 		Textures
+		GraphicCommandResources
 	PRIVATE
 		ObjectPool
 )

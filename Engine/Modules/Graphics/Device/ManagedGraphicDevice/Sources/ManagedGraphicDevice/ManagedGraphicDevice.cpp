@@ -13,6 +13,12 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 	m_texture2DStorage = createTexture2DStorage();
 	VT_CHECK_INITIALIZATION(m_texture2DStorage && m_texture2DStorage->init(256, 1, 64));
 
+	m_vertexShaderStorage = createVertexShaderStorage();
+	VT_CHECK_INITIALIZATION(m_vertexShaderStorage && m_vertexShaderStorage->init(64, 1, 16));
+
+	m_pixelShaderStorage = createPixelShaderStorage();
+	VT_CHECK_INITIALIZATION(m_pixelShaderStorage && m_pixelShaderStorage->init(128, 1, 16));
+
 	VT_CHECK_INITIALIZATION(initDevice(isSwapChainEnabled));
 
 	return true;
@@ -24,6 +30,8 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_swapChainStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_texture2DStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_vertexShaderStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_pixelShaderStorage);
 }
 
 VT::ISwapChain* VT::ManagedGraphicDevice::ManagedGraphicDevice::createSwapChain(const SwapChainDesc& desc, const IWindow* window)
@@ -37,7 +45,7 @@ VT::ISwapChain* VT::ManagedGraphicDevice::ManagedGraphicDevice::createSwapChain(
 		return nullptr;
 	}
 
-	reinterpret_cast<ManagedSwapChainObject*>(newObjectInfo.m_objectPtr)->m_handle = newObjectInfo.m_objectHandle;
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
 
 	return newObjectInfo.m_objectPtr;
 }
@@ -62,4 +70,78 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture2D(ITexture2D
 
 	destroyTexture2D(managedTexture);
 	m_texture2DStorage->removeObject(managedTexture->getHandle());
+}
+
+VT::IVertexShader* VT::ManagedGraphicDevice::ManagedGraphicDevice::createVertexShader(const void* code, size_t codeSize)
+{
+	assert(m_vertexShaderStorage);
+
+	ManagedVertexShaderStorageInfoBase::NewObjectInfo newObjectInfo = m_vertexShaderStorage->addNewObject();
+	if (!createVertexShader(newObjectInfo.m_objectPtr, code, codeSize))
+	{
+		m_vertexShaderStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyVertexShader(IVertexShader* shader)
+{
+	assert(shader);
+	assert(m_vertexShaderStorage);
+
+	ManagedVertexShaderBase* managedShader = reinterpret_cast<ManagedVertexShaderBase*>(shader);
+
+	destroyVertexShader(managedShader);
+	m_vertexShaderStorage->removeObject(managedShader->getHandle());
+}
+
+VT::IPixelShader* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPixelShader(const void* code, size_t codeSize)
+{
+	assert(m_pixelShaderStorage);
+
+	ManagedPixelShaderStorageInfoBase::NewObjectInfo newObjectInfo = m_pixelShaderStorage->addNewObject();
+	if (!createPixelShader(newObjectInfo.m_objectPtr, code, codeSize))
+	{
+		m_pixelShaderStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPixelShader(IPixelShader* shader)
+{
+}
+
+VT::ICommandPool* VT::ManagedGraphicDevice::ManagedGraphicDevice::createCommandPool()
+{
+	assert(m_commandPoolStorage);
+
+	ManagedCommandPoolStorageInfoBase::NewObjectInfo newObjectInfo = m_commandPoolStorage->addNewObject();
+	if (!createCommandPool(newObjectInfo.m_objectPtr))
+	{
+		m_commandPoolStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyCommandPool(ICommandPool* commandPool)
+{
+	assert(commandPool);
+	assert(m_commandPoolStorage);
+
+	ManagedCommandPoolBase* managedPool = reinterpret_cast<ManagedCommandPoolBase*>(commandPool);
+
+	destroyCommandPool(managedPool);
+	m_commandPoolStorage->removeObject(managedPool->getHandle());
 }

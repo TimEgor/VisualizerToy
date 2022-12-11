@@ -362,3 +362,6 @@ Libs/Install/
 #Out results
 AssetConverters/Out/
 Plugins/Out/
+
+#Converted assets
+CONVERTED/

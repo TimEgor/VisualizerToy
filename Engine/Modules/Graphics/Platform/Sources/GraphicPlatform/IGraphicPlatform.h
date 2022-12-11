@@ -1,18 +1,17 @@
 #pragma once
 
-#include "Core/HashFunctions/CRC32.h"
+#include "Core/TypeHashMacros.h"
 
 namespace VT
 {
-	using GraphicPlatformType = uint32_t;
+	using GraphicPlatformType = HashTyped::Type;
 
 	class IGraphicDevice;
 
-	class IGraphicPlatform
+	class IGraphicPlatform : public HashTyped
 	{
 	public:
 		IGraphicPlatform() = default;
-		virtual ~IGraphicPlatform() {}
 
 		virtual bool init(bool isSwapChainEnabled) = 0;
 		virtual void release() = 0;
@@ -23,6 +22,4 @@ namespace VT
 	};
 }
 
-#define VT_GRAPHIC_PLATFORM_TYPE(PLATFORM_TYPE)																		\
-	static inline constexpr VT::GraphicPlatformType getGraphicPlatformType() { return VT::crc32(#PLATFORM_TYPE); }	\
-	virtual VT::GraphicPlatformType getType() const override { return getGraphicPlatformType(); }
+#define VT_GRAPHIC_PLATFORM_TYPE(PLATFORM_TYPE) VT_HASH_TYPE(#PLATFORM_TYPE, VT::GraphicPlatformType, GraphicPlatform)

@@ -140,10 +140,11 @@ namespace VT_DUMMY_RS
 		locker.unlock();
 
 		ManagedResourceData& newResource = newVal.first->second;
+		VT::ResourceDataReference resourceData = &newResource;
 
-		m_loader->loadResource(resName, { &newResource, args });
+		m_loader->loadResource(resName, { resourceData, args });
 
-		return &newResource;
+		return resourceData;
 	}
 
 	void DummyResourceSystem::getResourceAsync(const VT::FileName& resName, const LoadingResourceCallback& callback, VT::ResourceSystemConverterArgsReference args)
