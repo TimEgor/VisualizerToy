@@ -38,5 +38,7 @@ namespace VT
 
 		virtual bool isDirectory(const FileName& path) const override;
 		virtual bool exist(const FileName& resourceName) const override;
+
+		virtual FileTime getModificationTime(const FileName& resourceName) const;
 	};
 }

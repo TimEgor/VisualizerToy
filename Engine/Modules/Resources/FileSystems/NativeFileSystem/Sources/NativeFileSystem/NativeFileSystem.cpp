@@ -142,4 +142,12 @@ namespace VT
 
 		return existInternal(targetResourceName);
 	}
+
+	IFileSystem::FileTime NativeFileSystem::getModificationTime(const FileName& resourceName) const
+	{
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
+
+		return std::filesystem::last_write_time(targetResourceName.c_str()).time_since_epoch().count();
+	}
 }

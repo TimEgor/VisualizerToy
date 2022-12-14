@@ -15,6 +15,9 @@ namespace VT
 	class IFileSystem
 	{
 	public:
+		using FileTime = long long;
+
+	public:
 		IFileSystem() {}
 		virtual ~IFileSystem() {}
 
@@ -33,6 +36,8 @@ namespace VT
 
 		virtual bool isDirectory(const FileName& resourceName) const = 0;
 		virtual bool exist(const FileName& resourceName) const = 0;
+
+		virtual FileTime getModificationTime(const FileName& resourceName) const = 0;
 
 		virtual bool isIndexed() const { return false; }
 	};
@@ -56,6 +61,8 @@ namespace VT
 
 		virtual bool isDirectory(ResourceID resourceID) const = 0;
 		virtual bool exist(ResourceID resourceID) const = 0;
+
+		virtual FileTime getModificationTime(ResourceID resourceID) const = 0;
 
 		virtual bool isIndexed() const override { return true; }
 	};
