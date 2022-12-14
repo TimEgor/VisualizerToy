@@ -1,4 +1,4 @@
-#include "GraphicResourceManager/CommonGraphicResourceManager.h"
+#include "Common.h"
 
 void VT::GraphicResourceManager::deleteTexture2DInternal(ITexture2D* texture)
 {

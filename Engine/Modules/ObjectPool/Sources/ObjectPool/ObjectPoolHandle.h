@@ -30,6 +30,9 @@ namespace VT
 			: m_index(index), m_version(version)
 		{}
 		constexpr ObjectPoolHandleStorage8(const ObjectPoolHandleStorage8&) = default;
+
+		IndexType getIndex() const { return m_index; }
+		VersionType getVersion() const { return m_version; }
 	};
 
 	struct ObjectPoolHandleStorage16 final
@@ -58,6 +61,9 @@ namespace VT
 			: m_index(index), m_version(version)
 		{}
 		constexpr ObjectPoolHandleStorage16(const ObjectPoolHandleStorage16&) = default;
+
+		IndexType getIndex() const { return m_index; }
+		VersionType getVersion() const { return m_version; }
 	};
 
 	struct ObjectPoolHandleStorage32 final
@@ -85,6 +91,9 @@ namespace VT
 		constexpr ObjectPoolHandleStorage32(IndexType index, VersionType version)
 			: m_index(index), m_version(version) {}
 		constexpr ObjectPoolHandleStorage32(const ObjectPoolHandleStorage32&) = default;
+
+		IndexType getIndex() const { return m_index; }
+		VersionType getVersion() const { return m_version; }
 	};
 
 	struct ObjectPoolHandleStorage64 final
@@ -112,6 +121,9 @@ namespace VT
 		constexpr ObjectPoolHandleStorage64(IndexType index, VersionType version)
 			: m_index(index), m_version(version) {}
 		constexpr ObjectPoolHandleStorage64(const ObjectPoolHandleStorage64&) = default;
+
+		IndexType getIndex() const { return m_index; }
+		VersionType getVersion() const { return m_version; }
 	};
 
 	template <typename ObjectPoolHandleStorageType>
@@ -136,8 +148,8 @@ namespace VT
 		constexpr ObjectPoolHandle(const ObjectPoolHandle&) = default;
 
 		inline KeyType getKey() const { return m_handle.m_key; }
-		inline IndexType getIndex() const { return m_handle.m_index; }
-		inline VersionType getVersion() const { return m_handle.m_version; }
+		inline IndexType getIndex() const { return m_handle.getIndex(); }
+		inline VersionType getVersion() const { return m_handle.getVersion(); }
 
 		static KeyType makeKey(IndexType index, VersionType version)
 		{
@@ -146,12 +158,12 @@ namespace VT
 
 		static IndexType getIndex(KeyType key)
 		{
-			return HandleStorageType(key).m_index;
+			return HandleStorageType(key).getIndex();
 		}
 
 		static VersionType getVersion(KeyType key)
 		{
-			return HandleStorageType(key).m_version;
+			return HandleStorageType(key).getVersion();
 		}
 	};
 

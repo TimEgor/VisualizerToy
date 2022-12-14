@@ -10,9 +10,9 @@ LPWSTR VT_SHADER_RC::ShaderConverterHLSL::getEntryPoint(VT::ShaderStageType stag
 	switch (stage)
 	{
 	case VT::ShaderStageType::Vertex:
-		return L"VT";
+		return L"VS";
 	case VT::ShaderStageType::Pixel:
-		return L"PX";
+		return L"PS";
 	default:
 		return L"";
 	}

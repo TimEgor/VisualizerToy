@@ -1,5 +1,3 @@
-#include "GraphicResourceManager/GraphicResourceManager.h"
-
 #include "Core/UtilitiesMacros.h"
 
 #include "Engine/EngineInstance.h"

@@ -1,19 +1,11 @@
-#include "CommonGraphicResourceManager.h"
-
-#include "ShaderConverter/ShaderConverterArgs.h"
+#include "GraphicResourceManager.h"
 
 bool VT::GraphicResourceManager::init()
 {
-	VT_CHECK_INITIALIZATION(m_textures2D.init(256, 1, 64));
+	VT_CHECK_INITIALIZATION(m_textures2D.init(256, 1, 64))
 
-	VT_CHECK_INITIALIZATION(m_pixelShaders.init(128, 1, 16));
-	VT_CHECK_INITIALIZATION(m_vertexShaders.init(64, 1, 16));
-
-	IResourceSystem* resourceSystem = getResourceSystem();
-	if (resourceSystem)
-	{
-		resourceSystem->addResourceConverterArgsType<ShaderResourceConverterArgs>();
-	}
+	VT_CHECK_INITIALIZATION(m_pixelShaders.init(16, 0, 4))
+	VT_CHECK_INITIALIZATION(m_vertexShaders.init(16, 0, 4))
 
 	return true;
 }

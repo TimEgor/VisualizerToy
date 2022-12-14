@@ -10,7 +10,7 @@
 #include "ResourceSystem/IResourceSystem.h"
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicDevice/IGraphicDevice.h"
-#include "GraphicResourceManager/GraphicResourceManager.h"
+#include "GraphicResourceManager/NamedGraphicResourceSystem.h"
 
 #include <cassert>
 
@@ -47,7 +47,7 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	assert(initParam.m_shaderConverterPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_shaderConverterPath);
 
-	m_engineEnvironment->m_graphicResourceManager = new GraphicResourceManager();
+	m_engineEnvironment->m_graphicResourceManager = new NamedGraphicResourceSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicResourceManager
 		&& m_engineEnvironment->m_graphicResourceManager->init());
 

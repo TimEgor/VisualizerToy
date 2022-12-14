@@ -287,6 +287,13 @@ void VT_VK::VulkanGraphicDevice::destroyResources()
 		vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
 	}
 	m_destroyingResources.m_surfaces.getLocker().unlock();
+
+	m_destroyingResources.m_shaderModules.getLocker().lock();
+	for (VkShaderModule vkModule : m_destroyingResources.m_shaderModules.getContainer())
+	{
+		vkDestroyShaderModule(m_vkDevice, vkModule, nullptr);
+	}
+	m_destroyingResources.m_shaderModules.getLocker().unlock();
 }
 
 void VT_VK::VulkanGraphicDevice::getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info)

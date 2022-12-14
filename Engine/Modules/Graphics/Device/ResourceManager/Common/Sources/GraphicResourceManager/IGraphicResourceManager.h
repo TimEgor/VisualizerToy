@@ -3,10 +3,10 @@
 #include <functional>
 
 #include "ResourceHandles.h"
+#include "Core/FileName/FileName.h"
 
 namespace VT
 {
-	class FileName;
 	class IWindow;
 
 	struct SwapChainDesc;
@@ -35,6 +35,9 @@ namespace VT
 		virtual VertexShaderResourceHandleReference getVertexShader(VertexShaderHandleID handle) = 0;
 		virtual bool isValidVertexShader(VertexShaderHandleID handle) const = 0;
 
+		virtual VertexShaderResourceHandleReference getNamedVertexShader(FileNameID handle) = 0;
+		virtual bool isValidNamedVertexShader(FileNameID handle) const = 0;
+
 		virtual VertexShaderResourceHandleReference loadVertexShader(const FileName& shaderPath) = 0;
 		virtual VertexShaderResourceHandleReference loadVertexShaderAsync(const FileName& shaderPath,
 			OnLoadedVertexShaderCallback callback = nullptr) = 0;
@@ -43,6 +46,9 @@ namespace VT
 		virtual PixelShaderResourceHandleReference createPixelShader(const void* data, size_t dataSize) = 0;
 		virtual PixelShaderResourceHandleReference getPixelShader(PixelShaderHandleID handle) = 0;
 		virtual bool isValidPixelShader(PixelShaderHandleID handle) const = 0;
+
+		virtual PixelShaderResourceHandleReference getNamedPixelShader(FileNameID handle) = 0;
+		virtual bool isValidNamedPixelShader(FileNameID handle) const = 0;
 
 		virtual PixelShaderResourceHandleReference loadPixelShader(const FileName& shaderPath) = 0;
 		virtual PixelShaderResourceHandleReference loadPixelShaderAsync(const FileName& shaderPath,
