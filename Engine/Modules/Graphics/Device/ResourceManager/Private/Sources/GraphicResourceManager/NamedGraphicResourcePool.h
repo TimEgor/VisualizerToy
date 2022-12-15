@@ -13,16 +13,26 @@ namespace VT
 	class NamedGraphicResourcePool final
 	{
 		using ObjectPoolType  = ObjectPool<Resource, ResourcePoolHandle>;
+		using ResourceInfo = typename ObjectPoolType::NewElementInfo;
 		using NamesContainer = std::unordered_map<FileNameID, typename ResourcePoolHandle::KeyType>;
 
 	public:
-		using NewResourceInfo = typename ObjectPoolType::NewElementInfo;
 		using ResourcePoolHandleType = ResourcePoolHandle;
+
+		struct ResourceAccessInfo final
+		{
+			ResourceReference m_resource = nullptr;
+			bool m_isCreatingState = false;
+		};
 
 	private:
 		ObjectPoolType m_pool;
 		NamesContainer m_names;
 		mutable SharedMutex m_lockMutex;
+
+		Resource* addResourceInternal(FileNameID nameID);
+		Resource* getResourceInternal(FileNameID nameID);
+		Resource* getResourceInternal(ResourcePoolHandle handle);
 
 	public:
 		NamedGraphicResourcePool() = default;
@@ -42,13 +52,55 @@ namespace VT
 		ResourceReference getResource(const FileName& name);
 		ResourceReference getResource(FileNameID nameID);
 
-		void addResource(NewResourceInfo& info, const FileName& name);
-		void addResource(NewResourceInfo& info, FileNameID nameID);
-		NewResourceInfo addResource(const FileName& name);
-		NewResourceInfo addResource(FileNameID nameID);
+		ResourceReference addResource(const FileName& name);
+		ResourceReference addResource(FileNameID nameID);
+
+		ResourceAccessInfo getOrAddResource(const FileName& name);
+		ResourceAccessInfo getOrAddResource(FileNameID nameID);
 
 		void removeResource(FileNameID nameID);
 	};
+
+	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
+	Resource* NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::addResourceInternal(
+		FileNameID nameID)
+	{
+		auto findNameIter = m_names.find(nameID);
+		if (findNameIter != m_names.end())
+		{
+			return nullptr;
+		}
+
+		ResourceInfo info = m_pool.addElementRaw();
+		info.m_elementHandle.m_handle.setResourceType(NAMED_RESOURCE_TYPE);
+
+		m_names[nameID] = info.m_elementHandle.getKey();
+
+		Resource* shaderHandle
+			= new (info.m_elementPtr) Resource(nullptr, info.m_elementHandle.getKey(), nameID);
+
+		return shaderHandle;
+	}
+
+	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
+	Resource* NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::getResourceInternal(
+		FileNameID nameID)
+	{
+		auto findNameIter = m_names.find(nameID);
+		if (findNameIter == m_names.end())
+		{
+			return nullptr;
+		}
+
+		return m_pool.getElement(findNameIter->second);
+	}
+
+	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
+	Resource* NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::getResourceInternal(
+		ResourcePoolHandle handle)
+	{
+		return m_pool.getElement(handle);
+	}
 
 	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
 	bool NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::init(size_t pageSize,
@@ -90,8 +142,7 @@ namespace VT
 		ResourcePoolHandle handle) const
 	{
 		SharedLockGuard locker(m_lockMutex);
-
-		return m_pool.getElement(handle);
+		return getResourceInternal(handle);
 	}
 
 	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
@@ -99,8 +150,7 @@ namespace VT
 		ResourcePoolHandle handle)
 	{
 		SharedLockGuard locker(m_lockMutex);
-
-		return m_pool.getElement(handle);
+		return getResourceInternal(handle);
 	}
 
 	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
@@ -115,14 +165,7 @@ namespace VT
 		FileNameID nameID) const
 	{
 		SharedLockGuard locker(m_lockMutex);
-
-		auto findNameIter = m_names.find(nameID);
-		if (findNameIter == m_names.end())
-		{
-			return nullptr;
-		}
-
-		return m_pool.getElement(findNameIter->second);
+		return getResourceInternal(nameID);
 	}
 
 	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
@@ -137,71 +180,44 @@ namespace VT
 		FileNameID nameID)
 	{
 		SharedLockGuard locker(m_lockMutex);
-
-		auto findNameIter = m_names.find(nameID);
-		if (findNameIter == m_names.end())
-		{
-			return nullptr;
-		}
-
-		return m_pool.getElement(findNameIter->second);
+		return getResourceInternal(nameID);
 	}
 
 	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	void NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::addResource(NewResourceInfo& info,
+	ResourceReference NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::addResource(
 		const FileName& name)
-	{
-		addResource(info, name.hash());
-	}
-
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	void NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::addResource(NewResourceInfo& info,
-		FileNameID nameID)
-	{
-		UniqueLockGuard locker(m_lockMutex);
-
-		auto findNameIter = m_names.find(nameID);
-		if (findNameIter != m_names.end())
-		{
-			assert(false);
-
-			info = NewResourceInfo{};
-			return;
-		}
-
-		m_pool.addElementRaw(info);
-		info.m_elementHandle.m_handle.setResourceType(NAMED_RESOURCE_TYPE);
-
-		m_names[nameID] = info.m_elementHandle.getKey();
-	}
-
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	typename NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::NewResourceInfo
-	NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::addResource(const FileName& name)
 	{
 		return addResource(name.hash());
 	}
 
 	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	typename NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::NewResourceInfo
-	NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::addResource(FileNameID nameID)
+	ResourceReference NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::addResource(
+		FileNameID nameID)
+	{
+		UniqueLockGuard locker(m_lockMutex);
+		return addResourceInternal(nameID);
+	}
+
+	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
+	typename NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::ResourceAccessInfo
+	NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::getOrAddResource(const FileName& name)
+	{
+		return getOrAddResource(name.hash());
+	}
+
+	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
+	typename NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::ResourceAccessInfo
+	NamedGraphicResourcePool<Resource, ResourceReference, ResourcePoolHandle>::getOrAddResource(FileNameID nameID)
 	{
 		UniqueLockGuard locker(m_lockMutex);
 
-		auto findNameIter = m_names.find(nameID);
-		if (findNameIter != m_names.end())
+		Resource* resource = getResourceInternal(nameID);
+		if (resource)
 		{
-			assert(false);
-
-			return NewResourceInfo{};
+			return ResourceAccessInfo{ resource, false };
 		}
 
-		NewResourceInfo info = m_pool.addElementRaw();
-		info.m_elementHandle.m_handle.setResourceType(NAMED_RESOURCE_TYPE);
-
-		m_names[nameID] = info.m_elementHandle.getKey();
-
-		return info;
+		return ResourceAccessInfo{ addResourceInternal(nameID), true };
 	}
 
 	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>

@@ -42,91 +42,78 @@ bool VT::NamedGraphicResourceSystem::isValidNamedVertexShader(FileNameID handle)
 
 VT::VertexShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadVertexShader(const FileName& shaderPath)
 {
-	VertexShaderResourceHandleReference shaderRef = m_namedVertexPool.getResource(shaderPath);
-	if (shaderRef)
+	FileNameID nameID = shaderPath.hash();
+	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexPool.getOrAddResource(nameID);
+	if (shaderAccessor.m_isCreatingState)
 	{
-		return shaderRef;
-	}
+		IResourceSystem* resourceSystem = getResourceSystem();
+		assert(resourceSystem);
 
-	IResourceSystem* resourceSystem = getResourceSystem();
-	assert(resourceSystem);
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Vertex);
+		ResourceDataReference resourceData = resourceSystem->getResource(shaderPath, args);
 
-	ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Vertex);
-	ResourceDataReference resourceData = resourceSystem->getResource(shaderPath, args);
-
-	if (resourceData && resourceData->getState() != ResourceState::INVALID)
-	{
-		const void* data = resourceData->getData();
-		size_t dataSize = resourceData->getDataSize();
-
-		if (data && dataSize > 0)
+		if (resourceData && resourceData->getState() != ResourceState::INVALID)
 		{
-			FileNameID nameID = shaderPath.hash();
+			const void* data = resourceData->getData();
+			size_t dataSize = resourceData->getDataSize();
 
-			IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
-			if (!shader)
+			if (data && dataSize > 0)
 			{
-				return nullptr;
+				IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
+				if (!shader)
+				{
+					m_namedVertexPool.removeResource(nameID);
+					return nullptr;
+				}
+
+				shaderAccessor.m_resource->m_resourcePtr = shader;
 			}
-
-			NamedVertexShaderPool::NewResourceInfo elementInfo = m_namedVertexPool.addResource(nameID);
-			NamedManagedVertexShaderResourceHandle* shaderHandle
-				= new (elementInfo.m_elementPtr) NamedManagedVertexShaderResourceHandle(shader, elementInfo.m_elementHandle.getKey(), nameID);
-
-			return shaderHandle;
 		}
 	}
 
-	return nullptr;
+	return shaderAccessor.m_resource;
 }
 
 VT::VertexShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadVertexShaderAsync(
 	const FileName& shaderPath, OnLoadedVertexShaderCallback callback)
 {
-	VertexShaderResourceHandleReference shaderRef = m_namedVertexPool.getResource(shaderPath);
-	if (shaderRef)
+	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexPool.getOrAddResource(shaderPath);
+	if (!shaderAccessor.m_isCreatingState)
 	{
 		if (callback)
 		{
-			callback(shaderRef);
+			callback(shaderAccessor.m_resource);
 		}
+	}
+	else
+	{
+		IResourceSystem* resourceSystem = getResourceSystem();
+		assert(resourceSystem);
 
-		return shaderRef;
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Vertex);
+		resourceSystem->getResourceAsync(shaderPath,
+			[shaderHandleReference = shaderAccessor.m_resource, onLoadedCallback = callback](const ResourceDataReference& resourceData)
+			{
+				if (resourceData && resourceData->getState() != ResourceState::INVALID)
+				{
+					const void* data = resourceData->getData();
+					size_t dataSize = resourceData->getDataSize();
+
+					if (data && dataSize > 0)
+					{
+						IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
+						shaderHandleReference->m_resourcePtr = shader;
+					}
+				}
+
+				if (onLoadedCallback)
+				{
+					onLoadedCallback(shaderHandleReference);
+				}
+			},
+			args
+		);
 	}
 
-	const FileNameID nameID = shaderPath.hash();
-
-	NamedVertexShaderPool::NewResourceInfo elementInfo = m_namedVertexPool.addResource(nameID);
-	NamedManagedVertexShaderResourceHandle* shaderHandle
-		= new (elementInfo.m_elementPtr) NamedManagedVertexShaderResourceHandle(nullptr, elementInfo.m_elementHandle.getKey(), nameID);
-	VertexShaderResourceHandleReference shaderHandleReference = shaderHandle;
-
-	IResourceSystem* resourceSystem = getResourceSystem();
-	assert(resourceSystem);
-
-	ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Vertex);
-	resourceSystem->getResourceAsync(shaderPath,
-		[shaderHandleReference, onLoadedCallback = callback](const ResourceDataReference& resourceData)
-		{
-			if (resourceData && resourceData->getState() != ResourceState::INVALID)
-			{
-				const void* data = resourceData->getData();
-				size_t dataSize = resourceData->getDataSize();
-
-				if (data && dataSize > 0)
-				{
-					IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
-					shaderHandleReference->m_resourcePtr = shader;
-				}
-			}
-
-			if (onLoadedCallback)
-			{
-				onLoadedCallback(shaderHandleReference);
-			}
-		},
-		args
-	);
-
-	return shaderHandleReference;
+	return shaderAccessor.m_resource;
 }

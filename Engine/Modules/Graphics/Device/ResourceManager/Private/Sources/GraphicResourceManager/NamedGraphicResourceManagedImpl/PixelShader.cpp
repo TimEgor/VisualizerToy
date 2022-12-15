@@ -42,91 +42,78 @@ bool VT::NamedGraphicResourceSystem::isValidNamedPixelShader(FileNameID handle) 
 
 VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixelShader(const FileName& shaderPath)
 {
-	PixelShaderResourceHandleReference shaderRef = m_namedPixelPool.getResource(shaderPath);
-	if (shaderRef)
+	FileNameID nameID = shaderPath.hash();
+	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelPool.getOrAddResource(nameID);
+	if (shaderAccessor.m_isCreatingState)
 	{
-		return shaderRef;
-	}
+		IResourceSystem* resourceSystem = getResourceSystem();
+		assert(resourceSystem);
 
-	IResourceSystem* resourceSystem = getResourceSystem();
-	assert(resourceSystem);
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Pixel);
+		ResourceDataReference resourceData = resourceSystem->getResource(shaderPath, args);
 
-	ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Pixel);
-	ResourceDataReference resourceData = resourceSystem->getResource(shaderPath, args);
-
-	if (resourceData && resourceData->getState() != ResourceState::INVALID)
-	{
-		const void* data = resourceData->getData();
-		size_t dataSize = resourceData->getDataSize();
-
-		if (data && dataSize > 0)
+		if (resourceData && resourceData->getState() != ResourceState::INVALID)
 		{
-			FileNameID nameID = shaderPath.hash();
+			const void* data = resourceData->getData();
+			size_t dataSize = resourceData->getDataSize();
 
-			IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
-			if (!shader)
+			if (data && dataSize > 0)
 			{
-				return nullptr;
+				IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
+				if (!shader)
+				{
+					m_namedPixelPool.removeResource(nameID);
+					return nullptr;
+				}
+
+				shaderAccessor.m_resource->m_resourcePtr = shader;
 			}
-
-			NamedPixelShaderPool::NewResourceInfo elementInfo = m_namedPixelPool.addResource(nameID);
-			NamedManagedPixelShaderResourceHandle* shaderHandle
-				= new (elementInfo.m_elementPtr) NamedManagedPixelShaderResourceHandle(shader, elementInfo.m_elementHandle.getKey(), nameID);
-
-			return shaderHandle;
 		}
 	}
 
-	return nullptr;
+	return shaderAccessor.m_resource;
 }
 
 VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixelShaderAsync(
 	const FileName& shaderPath, OnLoadedPixelShaderCallback callback)
 {
-	PixelShaderResourceHandleReference shaderRef = m_namedPixelPool.getResource(shaderPath);
-	if (shaderRef)
+	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelPool.getOrAddResource(shaderPath);
+	if (!shaderAccessor.m_isCreatingState)
 	{
 		if (callback)
 		{
-			callback(shaderRef);
+			callback(shaderAccessor.m_resource);
 		}
+	}
+	else
+	{
+		IResourceSystem* resourceSystem = getResourceSystem();
+		assert(resourceSystem);
 
-		return shaderRef;
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Pixel);
+		resourceSystem->getResourceAsync(shaderPath,
+			[shaderHandleReference = shaderAccessor.m_resource, onLoadedCallback = callback](const ResourceDataReference& resourceData)
+			{
+				if (resourceData && resourceData->getState() != ResourceState::INVALID)
+				{
+					const void* data = resourceData->getData();
+					size_t dataSize = resourceData->getDataSize();
+
+					if (data && dataSize > 0)
+					{
+						IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
+						shaderHandleReference->m_resourcePtr = shader;
+					}
+				}
+
+				if (onLoadedCallback)
+				{
+					onLoadedCallback(shaderHandleReference);
+				}
+			},
+			args
+		);
 	}
 
-	const FileNameID nameID = shaderPath.hash();
-
-	NamedPixelShaderPool::NewResourceInfo elementInfo = m_namedPixelPool.addResource(nameID);
-	NamedManagedPixelShaderResourceHandle* shaderHandle
-		= new (elementInfo.m_elementPtr) NamedManagedPixelShaderResourceHandle(nullptr, elementInfo.m_elementHandle.getKey(), nameID);
-	PixelShaderResourceHandleReference shaderHandleReference = shaderHandle;
-
-	IResourceSystem* resourceSystem = getResourceSystem();
-	assert(resourceSystem);
-
-	ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Pixel);
-	resourceSystem->getResourceAsync(shaderPath,
-		[shaderHandleReference, onLoadedCallback = callback](const ResourceDataReference& resourceData)
-		{
-			if (resourceData && resourceData->getState() != ResourceState::INVALID)
-			{
-				const void* data = resourceData->getData();
-				size_t dataSize = resourceData->getDataSize();
-
-				if (data && dataSize > 0)
-				{
-					IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
-					shaderHandleReference->m_resourcePtr = shader;
-				}
-			}
-
-			if (onLoadedCallback)
-			{
-				onLoadedCallback(shaderHandleReference);
-			}
-		},
-		args
-	);
-
-	return shaderHandleReference;
+	return shaderAccessor.m_resource;
 }
