@@ -5,12 +5,12 @@ void VT::GraphicResourceManager::deleteVertexShaderInternal(IVertexShader* shade
 	getGraphicDevice()->destroyVertexShader(shader);
 }
 
-void VT::GraphicResourceManager::deleteVertexShaderReference(VertexShaderPool::HandleElementType handle)
+void VT::GraphicResourceManager::deleteVertexShaderReference(VertexShaderPool::Handle handle)
 {
 	m_vertexShaders.removeElement(handle);
 }
 
-VT::VertexShaderResourceHandleReference VT::GraphicResourceManager::createVertexShader(const void* code, size_t codeSize)
+VT::VertexShaderReference VT::GraphicResourceManager::createVertexShader(const void* code, size_t codeSize)
 {
 	IVertexShader* shader = getGraphicDevice()->createVertexShader(code, codeSize);
 	if (!shader)
@@ -25,9 +25,9 @@ VT::VertexShaderResourceHandleReference VT::GraphicResourceManager::createVertex
 	return shaderHandle;
 }
 
-VT::VertexShaderResourceHandleReference VT::GraphicResourceManager::getVertexShader(VertexShaderHandleID handle)
+VT::VertexShaderReference VT::GraphicResourceManager::getVertexShader(VertexShaderHandleID handle)
 {
-	return m_vertexShaders.getElementCast<VertexShaderResourceHandleReference>(handle);
+	return m_vertexShaders.getElementCast<VertexShaderReference>(handle);
 }
 
 bool VT::GraphicResourceManager::isValidVertexShader(VertexShaderHandleID handle) const

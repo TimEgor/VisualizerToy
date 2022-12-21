@@ -11,7 +11,7 @@ vt_add_common_module(GraphicResourceManager)
 target_link_libraries(GraphicResourceManager
 	PUBLIC
 		Core
-		ObjectPool
+		NamedReferencePool
 		ResourceSystem
 		Engine_COMMON
 
@@ -19,4 +19,5 @@ target_link_libraries(GraphicResourceManager
 		GraphicResourceManager_COMMON
 
 		ShaderConverter
+		GraphicPipeline
 )

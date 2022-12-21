@@ -37,5 +37,8 @@ namespace VT_VK
 		VulkanDestroyingResourceContainer<VkSurfaceKHR> m_surfaces;
 		VulkanDestroyingResourceContainer<VkImage> m_images;
 		VulkanDestroyingResourceContainer<VkShaderModule> m_shaderModules;
+		VulkanDestroyingResourceContainer<VkPipeline> m_pipelines;
+		VulkanDestroyingResourceContainer<VkPipelineLayout> m_pipelineLayouts;
+		VulkanDestroyingResourceContainer<VkRenderPass> m_renderPasses;
 	};
 }

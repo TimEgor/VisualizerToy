@@ -8,9 +8,9 @@ void VT::NamedGraphicResourceSystem::deletePixelShaderReference(FileNameID nameI
 	m_namedPixelPool.removeResource(nameID);
 }
 
-VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::getPixelShader(PixelShaderHandleID handle)
+VT::PixelShaderReference VT::NamedGraphicResourceSystem::getPixelShader(PixelShaderHandleID handle)
 {
-	NamedPixelShaderPool::ResourcePoolHandleType poolHandle = handle;
+	NamedPixelShaderPool::ResourcePoolHandle poolHandle = handle;
 	if (poolHandle.m_handle.getResourceType() == NAMELESS_RESOURCE_TYPE)
 	{
 		return GraphicResourceManager::getPixelShader(handle);
@@ -21,7 +21,7 @@ VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::getPixelS
 
 bool VT::NamedGraphicResourceSystem::isValidPixelShader(PixelShaderHandleID handle) const
 {
-	NamedPixelShaderPool::ResourcePoolHandleType poolHandle = handle;
+	NamedPixelShaderPool::ResourcePoolHandle poolHandle = handle;
 	if (poolHandle.m_handle.getResourceType() == NAMELESS_RESOURCE_TYPE)
 	{
 		return GraphicResourceManager::isValidPixelShader(handle);
@@ -30,7 +30,12 @@ bool VT::NamedGraphicResourceSystem::isValidPixelShader(PixelShaderHandleID hand
 	return isValidNamedPixelShader(handle);
 }
 
-VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::getNamedPixelShader(FileNameID handle)
+VT::PixelShaderReference VT::NamedGraphicResourceSystem::getNamedPixelShader(const GraphicResourceName& name)
+{
+	return getNamedPixelShader(name.hash());
+}
+
+VT::PixelShaderReference VT::NamedGraphicResourceSystem::getNamedPixelShader(FileNameID handle)
 {
 	return m_namedPixelPool.getResource(handle);
 }
@@ -40,11 +45,11 @@ bool VT::NamedGraphicResourceSystem::isValidNamedPixelShader(FileNameID handle) 
 	return m_namedPixelPool.isValid(handle);
 }
 
-VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixelShader(const FileName& shaderPath)
+VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const FileName& shaderPath)
 {
 	FileNameID nameID = shaderPath.hash();
 	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelPool.getOrAddResource(nameID);
-	if (shaderAccessor.m_isCreatingState)
+	if (shaderAccessor.m_isNew)
 	{
 		IResourceSystem* resourceSystem = getResourceSystem();
 		assert(resourceSystem);
@@ -66,23 +71,23 @@ VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixel
 					return nullptr;
 				}
 
-				shaderAccessor.m_resource->m_resourcePtr = shader;
+				shaderAccessor.m_element.getObjectCast<ManagedPixelShaderResourceHandle>()->setResource(shader);
 			}
 		}
 	}
 
-	return shaderAccessor.m_resource;
+	return shaderAccessor.m_element;
 }
 
-VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixelShaderAsync(
+VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShaderAsync(
 	const FileName& shaderPath, OnLoadedPixelShaderCallback callback)
 {
 	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelPool.getOrAddResource(shaderPath);
-	if (!shaderAccessor.m_isCreatingState)
+	if (!shaderAccessor.m_isNew)
 	{
 		if (callback)
 		{
-			callback(shaderAccessor.m_resource);
+			callback(shaderAccessor.m_element);
 		}
 	}
 	else
@@ -92,7 +97,7 @@ VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixel
 
 		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Pixel);
 		resourceSystem->getResourceAsync(shaderPath,
-			[shaderHandleReference = shaderAccessor.m_resource, onLoadedCallback = callback](const ResourceDataReference& resourceData)
+			[shaderHandleReference = shaderAccessor.m_element, onLoadedCallback = callback](const ResourceDataReference& resourceData)
 			{
 				if (resourceData && resourceData->getState() != ResourceState::INVALID)
 				{
@@ -102,7 +107,7 @@ VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixel
 					if (data && dataSize > 0)
 					{
 						IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
-						shaderHandleReference->m_resourcePtr = shader;
+						shaderHandleReference.getObjectCast<ManagedPixelShaderResourceHandle>()->setResource(shader);
 					}
 				}
 
@@ -115,5 +120,5 @@ VT::PixelShaderResourceHandleReference VT::NamedGraphicResourceSystem::loadPixel
 		);
 	}
 
-	return shaderAccessor.m_resource;
+	return shaderAccessor.m_element;
 }

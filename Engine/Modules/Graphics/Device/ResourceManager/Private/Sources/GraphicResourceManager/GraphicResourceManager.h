@@ -3,8 +3,8 @@
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "ObjectPool/ThreadSafeObjectPool.h"
 #include "ManagedResourceHandles.h"
-#include "ManagedResourceObjectPoolHandle.h"
-#include "ResourceSystem/ResourceData.h"
+#include "NamedReferencePool/NamedObjectPoolHandle.h"
+#include "PipelineStateCollection.h"
 
 namespace VT
 {
@@ -15,10 +15,12 @@ namespace VT
 		friend ManagedVertexShaderResourceHandle;
 		friend ManagedPixelShaderResourceHandle;
 
-		using Texture2DPool = ThreadSafeObjectPool<ManagedTexture2DResourceHandle, ObjectPoolHandle32>;
+		friend ManagedPipelineStateResourceHandle;
 
-		using VertexShaderPool = ThreadSafeObjectPool<ManagedVertexShaderResourceHandle, ManagedResourceObjectPoolHandle32>;
-		using PixelShaderPool = ThreadSafeObjectPool<ManagedPixelShaderResourceHandle, ManagedResourceObjectPoolHandle32>;
+		using Texture2DPool = ThreadSafeObjectPool<ManagedTexture2DResourceHandle, NamedObjectPoolHandle32>;
+
+		using VertexShaderPool = ThreadSafeObjectPool<ManagedVertexShaderResourceHandle, NamedObjectPoolHandle32>;
+		using PixelShaderPool = ThreadSafeObjectPool<ManagedPixelShaderResourceHandle, NamedObjectPoolHandle32>;
 
 	private:
 		Texture2DPool m_textures2D;
@@ -26,14 +28,21 @@ namespace VT
 		VertexShaderPool m_vertexShaders;
 		PixelShaderPool m_pixelShaders;
 
+		PipelineStateCollection m_pipelineStateCollection;
+
+		//Resource deleting
 		void deleteTexture2DInternal(ITexture2D* texture);
-		void deleteTexture2DReference(Texture2DPool::HandleElementType handle);
 
 		void deleteVertexShaderInternal(IVertexShader* shader);
-		void deleteVertexShaderReference(VertexShaderPool::HandleElementType handle);
-
 		void deletePixelShaderInternal(IPixelShader* shader);
-		void deletePixelShaderReference(PixelShaderPool::HandleElementType handle);
+
+		void deletePipelineStateInternal(IPipelineState* state);
+
+		//Reference deleting
+		void deleteTexture2DReference(Texture2DPool::Handle handle);
+
+		void deleteVertexShaderReference(VertexShaderPool::Handle handle);
+		void deletePixelShaderReference(PixelShaderPool::Handle handle);
 
 	public:
 		GraphicResourceManager() = default;
@@ -42,18 +51,22 @@ namespace VT
 		virtual bool init() override;
 		virtual void release() override;
 
-		virtual Texture2DResourceHandleReference createTexture2D(const Texture2DDesc& desc) override;
-		virtual Texture2DResourceHandleReference getTexture2D(Texture2DHandleID handle) override;
+		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) override;
+		virtual Texture2DReference getTexture2D(Texture2DHandleID handle) override;
 		virtual bool isValidTexture2D(Texture2DHandleID handle) const override;
 
 		// Vertex Shader
-		virtual VertexShaderResourceHandleReference createVertexShader(const void* code, size_t codeSize) override;
-		virtual VertexShaderResourceHandleReference getVertexShader(VertexShaderHandleID handle) override;
+		virtual VertexShaderReference createVertexShader(const void* code, size_t codeSize) override;
+		virtual VertexShaderReference getVertexShader(VertexShaderHandleID handle) override;
 		virtual bool isValidVertexShader(VertexShaderHandleID handle) const override;
 
 		// Pixel Shader
-		virtual PixelShaderResourceHandleReference createPixelShader(const void* code, size_t codeSize) override;
-		virtual PixelShaderResourceHandleReference getPixelShader(PixelShaderHandleID handle) override;
+		virtual PixelShaderReference createPixelShader(const void* code, size_t codeSize) override;
+		virtual PixelShaderReference getPixelShader(PixelShaderHandleID handle) override;
 		virtual bool isValidPixelShader(PixelShaderHandleID handle) const override;
+
+		//PipelineState
+		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc, const IRenderPass& renderPass) override;
+		virtual bool isValidPipelineState(PipelineStateHandleID handle) const override;
 	};
 }

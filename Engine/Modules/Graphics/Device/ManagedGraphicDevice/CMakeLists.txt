@@ -10,10 +10,12 @@ vt_add_module_target(ManagedGraphicDevice STATIC "VT_Engine/Graphics/Device")
 target_link_libraries(ManagedGraphicDevice
 	PUBLIC
 		GraphicDevice
+		GraphicCommandResources
+		GraphicPipeline
 		SwapChain
 		Shaders
 		Textures
-		GraphicCommandResources
+
 	PRIVATE
 		ObjectPool
 )

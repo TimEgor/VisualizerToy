@@ -13,6 +13,8 @@
 #include "VulkanGraphicsPlugin/SwapChain/VulkanSwapChain.h"
 #include "VulkanGraphicsPlugin/Commands/VulkanCommandPool.h"
 #include "VulkanGraphicsPlugin/Shaders/VulkanShaders.h"
+#include "VulkanGraphicsPlugin/PipelineState/VulkanPipelineState.h"
+#include "VulkanGraphicsPlugin/PipelineState/VulkanRenderPass.h"
 
 #include "VulkanGraphicsPlugin/Utilities/FormatConverter.h"
 #include "VulkanGraphicsPlugin/Utilities/PresentModeConverter.h"
@@ -60,13 +62,11 @@ namespace VT_VK
 
 	bool checkAvaliableDeviceExtensionsSupport(VkPhysicalDevice device, const VulkanNameContainer& extensions)
 	{
-		bool result = true;
-
 		uint32_t extensionCount = 0;
 
 		VkResult vkResult;
 		vkResult = vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-		result = checkVkResultReturnAssert(vkResult);
+		bool result = checkVkResultReturnAssert(vkResult);
 
 		if (result && extensionCount > 0)
 		{
@@ -124,11 +124,11 @@ bool VT_VK::VulkanGraphicDevice::initVkDevice(VkInstance vkInstance, bool isSwap
 	std::vector<VulkanQueueFamilyIndex> requiringFamiliesQueue = { m_graphicQueueFamilyIndex, m_transferQueueFamilyIndex, m_computeQueueFamilyIndex };
 	std::sort(requiringFamiliesQueue.begin(), requiringFamiliesQueue.end());
 	requiringFamiliesQueue.erase(std::unique(requiringFamiliesQueue.begin(), requiringFamiliesQueue.end()), requiringFamiliesQueue.end());
-	uint32_t familyCount = static_cast<uint32_t>(requiringFamiliesQueue.size());
+	const uint32_t familyCount = static_cast<uint32_t>(requiringFamiliesQueue.size());
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfo(familyCount);
 
-	float queuePriority = 1.0f;
+	const float queuePriority = 1.0f;
 	for (uint32_t queueIndex = 0; queueIndex < familyCount; ++queueIndex)
 	{
 		VkDeviceQueueCreateInfo& queueInfo = queueCreateInfo[queueIndex];
@@ -294,6 +294,27 @@ void VT_VK::VulkanGraphicDevice::destroyResources()
 		vkDestroyShaderModule(m_vkDevice, vkModule, nullptr);
 	}
 	m_destroyingResources.m_shaderModules.getLocker().unlock();
+
+	m_destroyingResources.m_pipelineLayouts.getLocker().lock();
+	for (VkPipelineLayout vkPipelineLayout : m_destroyingResources.m_pipelineLayouts.getContainer())
+	{
+		vkDestroyPipelineLayout(m_vkDevice, vkPipelineLayout, nullptr);
+	}
+	m_destroyingResources.m_pipelineLayouts.getLocker().unlock();
+
+	m_destroyingResources.m_pipelines.getLocker().lock();
+	for (VkPipeline vkPipeline : m_destroyingResources.m_pipelines.getContainer())
+	{
+		vkDestroyPipeline(m_vkDevice, vkPipeline, nullptr);
+	}
+	m_destroyingResources.m_pipelines.getLocker().unlock();
+
+	m_destroyingResources.m_renderPasses.getLocker().lock();
+	for (VkRenderPass vkPass : m_destroyingResources.m_renderPasses.getContainer())
+	{
+		vkDestroyRenderPass(m_vkDevice, vkPass, nullptr);
+	}
+	m_destroyingResources.m_renderPasses.getLocker().unlock();
 }
 
 void VT_VK::VulkanGraphicDevice::getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info)
@@ -575,6 +596,204 @@ void VT_VK::VulkanGraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::Ma
 	destroyShaderInternal(reinterpret_cast<VulkanShaderBase*>(shader));
 }
 
+bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
+	const VT::PipelineStateInfo& info, const VT::IRenderPass* renderPass)
+{
+	VkPipelineVertexInputStateCreateInfo vertInputCreateInfo{};
+	vertInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertInputCreateInfo.vertexBindingDescriptionCount = 0;
+	vertInputCreateInfo.pVertexBindingDescriptions = nullptr;
+	vertInputCreateInfo.vertexAttributeDescriptionCount = 0;
+	vertInputCreateInfo.pVertexAttributeDescriptions = nullptr;
+
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
+	inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssemblyCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	inputAssemblyCreateInfo.primitiveRestartEnable = false;
+
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = 500.0f;
+	viewport.height = 500.0f;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	VkRect2D scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent = { 500, 500 };
+
+	VkPipelineViewportStateCreateInfo viewportCreateInfo{};
+	viewportCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportCreateInfo.viewportCount = 1;
+	viewportCreateInfo.pViewports = &viewport;
+	viewportCreateInfo.scissorCount = 1;
+	viewportCreateInfo.pScissors = &scissor;
+
+	VkPipelineRasterizationStateCreateInfo rasterizationCreateInfo{};
+	rasterizationCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizationCreateInfo.depthClampEnable = false;
+	rasterizationCreateInfo.rasterizerDiscardEnable = false;
+	rasterizationCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterizationCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizationCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizationCreateInfo.depthBiasEnable = false;
+
+	VkPipelineMultisampleStateCreateInfo multisampleCreateInfo{};
+	multisampleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	multisampleCreateInfo.sampleShadingEnable = false;
+	multisampleCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT
+		| VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	colorBlendAttachment.blendEnable = false;
+
+	VkPipelineColorBlendStateCreateInfo blendCreateInfo{};
+	blendCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	blendCreateInfo.logicOpEnable = false;
+	blendCreateInfo.attachmentCount = 1;
+	blendCreateInfo.pAttachments = &colorBlendAttachment;
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
+	VkPipelineLayout vkPipelineLayout;
+	if (!checkVkResult(
+		vkCreatePipelineLayout(m_vkDevice, &pipelineLayoutCreateInfo, nullptr, &vkPipelineLayout)))
+	{
+		return false;
+	}
+
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+	if (info.m_vertexShader)
+	{
+		VulkanVertexShader* shader = reinterpret_cast<VulkanVertexShader*>(info.m_vertexShader);
+		VkPipelineShaderStageCreateInfo stageCreateInfo{};
+		stageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		stageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		stageCreateInfo.module = shader->getVkShaderModule();
+		stageCreateInfo.pName = "VS";
+
+		shaderStages.push_back(stageCreateInfo);
+	}
+	if (info.m_pixelShader)
+	{
+		VulkanPixelShader* shader = reinterpret_cast<VulkanPixelShader*>(info.m_pixelShader);
+		VkPipelineShaderStageCreateInfo stageCreateInfo{};
+		stageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		stageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		stageCreateInfo.module = shader->getVkShaderModule();
+		stageCreateInfo.pName = "PS";
+
+		shaderStages.push_back(stageCreateInfo);
+	}
+
+	const VulkanRenderPass* vulkanRenderPass = reinterpret_cast<const VulkanRenderPass*>(renderPass);
+
+	VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
+	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineCreateInfo.stageCount = shaderStages.size();
+	pipelineCreateInfo.pStages = shaderStages.data();
+	pipelineCreateInfo.pVertexInputState = &vertInputCreateInfo;
+	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
+	pipelineCreateInfo.pViewportState = &viewportCreateInfo;
+	pipelineCreateInfo.pRasterizationState = &rasterizationCreateInfo;
+	pipelineCreateInfo.pMultisampleState = &multisampleCreateInfo;
+	pipelineCreateInfo.pColorBlendState = &blendCreateInfo;
+	pipelineCreateInfo.layout = vkPipelineLayout;
+	pipelineCreateInfo.renderPass = vulkanRenderPass->getVkRenderPass();
+
+	VkPipeline vkPipeline;
+	if (!vkCreateGraphicsPipelines(m_vkDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &vkPipeline))
+	{
+		m_destroyingResources.m_pipelineLayouts.addToContainer(vkPipelineLayout);
+		return false;
+	}
+
+	new (state) VulkanPipelineState(vkPipeline, vkPipelineLayout, info.getHash());
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state)
+{
+	assert(state);
+
+	VulkanPipelineState* vulkanState = reinterpret_cast<VulkanPipelineState*>(state);
+	if (vulkanState->m_vkPipeline)
+	{
+		m_destroyingResources.m_pipelines.addToContainer(vulkanState->m_vkPipeline);
+	}
+
+	if (vulkanState->m_vkPipelineLayout)
+	{
+		m_destroyingResources.m_pipelineLayouts.addToContainer(vulkanState->m_vkPipelineLayout);
+	}
+}
+
+bool VT_VK::VulkanGraphicDevice::createRenderPass(VT::ManagedGraphicDevice::ManagedRenderPassBase* pass,
+	const VT::RenderPassInfo& info)
+{
+	const VT::RenderPassInfo::AttachmentsContainer& attachments = info.m_attachments;
+	const size_t attachmentsCount = attachments.size();
+
+	std::vector<VkAttachmentDescription> attachmentDescs;
+	for (uint32_t attachmentIndex = 0; attachmentIndex < attachmentsCount; ++attachmentIndex)
+	{
+		const VT::RenderPassAttachment& attachment = attachments[attachmentIndex];
+
+		VkAttachmentDescription& desc = attachmentDescs.emplace_back();
+		desc.format = convertFormat_VT_to_VK(attachment.m_format);
+		desc.samples = VK_SAMPLE_COUNT_1_BIT;
+		desc.loadOp = convertLoadingOperation_VT_to_VK(attachment.m_loadingOperation);
+		desc.storeOp = convertStoringOperation_VT_to_VK(attachment.m_storingOperation);
+
+		desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+		desc.initialLayout = convertResourceLayout_VT_to_VK(attachment.m_initialLayout);
+		desc.finalLayout = convertResourceLayout_VT_to_VK(attachment.m_targetLayout);
+	}
+
+	VkAttachmentReference colorAttachmentRef{};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass{};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+
+	VkRenderPassCreateInfo renderPassCreateInfo{};
+	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassCreateInfo.attachmentCount = attachmentDescs.size();
+	renderPassCreateInfo.pAttachments = attachmentDescs.data();
+	renderPassCreateInfo.subpassCount = 1;
+	renderPassCreateInfo.pSubpasses = &subpass;
+
+	VkRenderPass vkRenderPass;
+	if (!checkVkResult(vkCreateRenderPass(m_vkDevice, &renderPassCreateInfo, nullptr, &vkRenderPass)))
+	{
+		return false;
+	}
+
+	new (pass) VulkanRenderPass(vkRenderPass, info.getHash());
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyRenderPass(VT::ManagedGraphicDevice::ManagedRenderPassBase* pass)
+{
+	assert(pass);
+
+	VulkanRenderPass* vulkanPass = reinterpret_cast<VulkanRenderPass*>(pass);
+	if (vulkanPass->m_vkRenderPass)
+	{
+		m_destroyingResources.m_renderPasses.addToContainer(vulkanPass->m_vkRenderPass);
+	}
+}
+
 bool VT_VK::VulkanGraphicDevice::createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool)
 {
 	return false;
@@ -601,6 +820,16 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::VertexShaderStorage* VT_VK::Vulk
 VT::ManagedGraphicDevice::ManagedGraphicDevice::PixelShaderStorage* VT_VK::VulkanGraphicDevice::createPixelShaderStorage() const
 {
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPixelShaderStorageInfo<VulkanPixelShader>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineStateStorage* VT_VK::VulkanGraphicDevice::createPipelineStateStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineStateStorageInfo<VulkanPipelineState>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::RenderPassStorage* VT_VK::VulkanGraphicDevice::createRenderPassStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedRenderPassStorageInfo<VulkanRenderPass>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::CommandPoolStorage* VT_VK::VulkanGraphicDevice::createCommandPoolStorage() const

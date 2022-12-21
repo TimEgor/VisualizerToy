@@ -1,21 +1,32 @@
 #pragma once
 
-#include "Core/HashFunctions/CRC32.h"
+#include "Core/TypeHashMacros.h"
 
 namespace VT
 {
 	class IWindow;
 	class ISwapChain;
+
 	class ITexture2D;
+
 	class IVertexShader;
 	class IPixelShader;
+
+	class IPipelineState;
+	class IRenderPass;
+
 	class ICommandPool;
+
 
 	struct SwapChainDesc;
 
-	using GraphicDeviceType = uint32_t;
+	struct PipelineStateInfo;
+	struct RenderPassInfo;
+	
+	using GraphicDeviceType = HashTyped::Type;
+	using GraphicDeviceTypeHash = uint32_t;
 
-	class IGraphicDevice
+	class IGraphicDevice : public HashTyped
 	{
 	public:
 		IGraphicDevice() = default;
@@ -39,6 +50,12 @@ namespace VT
 		virtual IPixelShader* createPixelShader(const void* code, size_t codeSize) = 0;
 		virtual void destroyPixelShader(IPixelShader* shader) = 0;
 
+		virtual IPipelineState* createPipelineState(const PipelineStateInfo& info, const IRenderPass* renderPass) = 0;
+		virtual void destroyPipelineState(IPipelineState* state) = 0;
+
+		virtual IRenderPass* createRenderPass(const RenderPassInfo& info) = 0;
+		virtual void destroyRenderPass(IRenderPass* pass) = 0;
+
 		virtual ICommandPool* createCommandPool() = 0;
 		virtual void destroyCommandPool(ICommandPool* commandPool) = 0;
 
@@ -46,6 +63,4 @@ namespace VT
 	};
 }
 
-#define VT_GRAPHIC_DEVICE_TYPE(DEVICE_TYPE)																		\
-	static inline constexpr VT::GraphicDeviceType getGraphicDeviceType() { return VT::crc32(#DEVICE_TYPE); }	\
-	virtual VT::GraphicDeviceType getType() const override { return getGraphicDeviceType(); }
+#define VT_GRAPHIC_DEVICE_TYPE(DEVICE_TYPE) VT_HASH_TYPE(#DEVICE_TYPE, VT::GraphicDeviceType, GraphicDevice)

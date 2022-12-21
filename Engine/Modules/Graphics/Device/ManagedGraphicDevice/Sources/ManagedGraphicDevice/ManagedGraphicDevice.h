@@ -14,6 +14,8 @@ namespace VT::ManagedGraphicDevice
 		using Texture2DStorage = ManagedObjectStorageBase<ManagedTexture2DStorageInfoBase>;
 		using VertexShaderStorage = ManagedObjectStorageBase<ManagedVertexShaderStorageInfoBase>;
 		using PixelShaderStorage = ManagedObjectStorageBase<ManagedPixelShaderStorageInfoBase>;
+		using PipelineStateStorage = ManagedObjectStorageBase<ManagedPipelineStateStorageInfoBase>;
+		using RenderPassStorage = ManagedObjectStorageBase<ManagedRenderPassStorageInfoBase>;
 		using CommandPoolStorage = ManagedObjectStorageBase<ManagedCommandPoolStorageInfoBase>;
 
 	private:
@@ -21,6 +23,8 @@ namespace VT::ManagedGraphicDevice
 		Texture2DStorage* m_texture2DStorage = nullptr;
 		VertexShaderStorage* m_vertexShaderStorage = nullptr;
 		PixelShaderStorage* m_pixelShaderStorage = nullptr;
+		PipelineStateStorage* m_pipelineStateStorage = nullptr;
+		RenderPassStorage* m_renderPassStorage = nullptr;
 		CommandPoolStorage* m_commandPoolStorage = nullptr;
 
 	protected:
@@ -38,6 +42,13 @@ namespace VT::ManagedGraphicDevice
 		virtual bool createPixelShader(ManagedPixelShaderBase* shader, const void* code, size_t codeSize) = 0;
 		virtual void destroyPixelShader(ManagedPixelShaderBase* shader) = 0;
 
+		virtual bool createPipelineState(ManagedPipelineStateBase* state, const PipelineStateInfo& info, 
+			const IRenderPass* renderPass) = 0;
+		virtual void destroyPipelineState(ManagedPipelineStateBase* state) = 0;
+
+		virtual bool createRenderPass(ManagedRenderPassBase* pass, const RenderPassInfo& info) = 0;
+		virtual void destroyRenderPass(ManagedRenderPassBase* pass) = 0;
+
 		virtual bool createCommandPool(ManagedCommandPoolBase* commandPool) = 0;
 		virtual void destroyCommandPool(ManagedCommandPoolBase* commandPool) = 0;
 
@@ -45,6 +56,8 @@ namespace VT::ManagedGraphicDevice
 		virtual Texture2DStorage* createTexture2DStorage() const = 0;
 		virtual VertexShaderStorage* createVertexShaderStorage() const = 0;
 		virtual PixelShaderStorage* createPixelShaderStorage() const = 0;
+		virtual PipelineStateStorage* createPipelineStateStorage() const = 0;
+		virtual RenderPassStorage* createRenderPassStorage() const = 0;
 		virtual CommandPoolStorage* createCommandPoolStorage() const = 0;
 
 	public:
@@ -64,11 +77,14 @@ namespace VT::ManagedGraphicDevice
 		virtual IPixelShader* createPixelShader(const void* code, size_t codeSize) override;
 		virtual void destroyPixelShader(IPixelShader* shader) override;
 
+		virtual IPipelineState* createPipelineState(const PipelineStateInfo& info,
+			const IRenderPass* renderPasss) override;
+		virtual void destroyPipelineState(IPipelineState* state) override;
+
+		virtual IRenderPass* createRenderPass(const RenderPassInfo& info) override;
+		virtual void destroyRenderPass(IRenderPass* pass) override;
+
 		virtual ICommandPool* createCommandPool() override;
 		virtual void destroyCommandPool(ICommandPool* commandPool) override;
 	};
 }
-
-#define VT_GRAPHIC_DEVICE_TYPE(DEVICE_TYPE)																		\
-	static inline constexpr VT::GraphicDeviceType getGraphicDeviceType() { return VT::crc32(#DEVICE_TYPE); }	\
-	virtual VT::GraphicDeviceType getType() const override { return getGraphicDeviceType(); }

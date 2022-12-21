@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GraphicResourceManager.h"
-#include "NamedGraphicResourcePool.h"
+#include "NamedReferencePool/NamedObjectPool.h"
 
 namespace VT
 {
@@ -10,17 +10,17 @@ namespace VT
 		friend NamedManagedVertexShaderResourceHandle;
 		friend NamedManagedPixelShaderResourceHandle;
 
-		using NamedVertexShaderPool = NamedGraphicResourcePool<NamedManagedVertexShaderResourceHandle,
-		VertexShaderResourceHandleReference, ManagedResourceObjectPoolHandle32>;
-		using NamedPixelShaderPool = NamedGraphicResourcePool<NamedManagedPixelShaderResourceHandle,
-		PixelShaderResourceHandleReference, ManagedResourceObjectPoolHandle32>;
+		using NamedVertexShaderPool = NamedObjectPool<NamedManagedVertexShaderResourceHandle,
+		VertexShaderReference, NamedObjectPoolHandle32>;
+		using NamedPixelShaderPool = NamedObjectPool<NamedManagedPixelShaderResourceHandle,
+		PixelShaderReference, NamedObjectPoolHandle32>;
 
 	private:
 		NamedVertexShaderPool m_namedVertexPool;
 		NamedPixelShaderPool m_namedPixelPool;
 
-		void deleteVertexShaderReference(FileNameID nameID);
-		void deletePixelShaderReference(FileNameID nameID);
+		void deleteVertexShaderReference(GraphicResourceNameID nameID);
+		void deletePixelShaderReference(GraphicResourceNameID nameID);
 
 	public:
 		NamedGraphicResourceSystem() = default;
@@ -29,25 +29,27 @@ namespace VT
 		virtual void release() override;
 
 		// Vertex Shader
-		virtual VertexShaderResourceHandleReference getVertexShader(VertexShaderHandleID handle) override;
+		virtual VertexShaderReference getVertexShader(VertexShaderHandleID handle) override;
 		virtual bool isValidVertexShader(VertexShaderHandleID handle) const override;
 
-		virtual VertexShaderResourceHandleReference getNamedVertexShader(FileNameID handle) override;
-		virtual bool isValidNamedVertexShader(FileNameID handle) const override;
+		virtual VertexShaderReference getNamedVertexShader(const GraphicResourceName& name) override;
+		virtual VertexShaderReference getNamedVertexShader(GraphicResourceNameID handle) override;
+		virtual bool isValidNamedVertexShader(GraphicResourceNameID handle) const override;
 
-		virtual VertexShaderResourceHandleReference loadVertexShader(const FileName& shaderPath) override;
-		virtual VertexShaderResourceHandleReference loadVertexShaderAsync(const FileName& shaderPath,
+		virtual VertexShaderReference loadVertexShader(const GraphicResourceName& shaderPath) override;
+		virtual VertexShaderReference loadVertexShaderAsync(const GraphicResourceName& shaderPath,
 			OnLoadedVertexShaderCallback callback) override;
 
 		// Pixel Shader
-		virtual PixelShaderResourceHandleReference getPixelShader(PixelShaderHandleID handle) override;
+		virtual PixelShaderReference getPixelShader(PixelShaderHandleID handle) override;
 		virtual bool isValidPixelShader(PixelShaderHandleID handle) const override;
 
-		virtual PixelShaderResourceHandleReference getNamedPixelShader(FileNameID handle) override;
-		virtual bool isValidNamedPixelShader(FileNameID handle) const override;
+		virtual PixelShaderReference getNamedPixelShader(const GraphicResourceName& name) override;
+		virtual PixelShaderReference getNamedPixelShader(GraphicResourceNameID handle) override;
+		virtual bool isValidNamedPixelShader(GraphicResourceNameID handle) const override;
 
-		virtual PixelShaderResourceHandleReference loadPixelShader(const FileName& shaderPath) override;
-		virtual PixelShaderResourceHandleReference loadPixelShaderAsync(const FileName& shaderPath,
+		virtual PixelShaderReference loadPixelShader(const GraphicResourceName& shaderPath) override;
+		virtual PixelShaderReference loadPixelShaderAsync(const GraphicResourceName& shaderPath,
 			OnLoadedPixelShaderCallback callback) override;
 	};
 }

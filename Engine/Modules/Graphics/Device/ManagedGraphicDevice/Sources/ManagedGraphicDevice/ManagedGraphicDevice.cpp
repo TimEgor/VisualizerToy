@@ -19,6 +19,12 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 	m_pixelShaderStorage = createPixelShaderStorage();
 	VT_CHECK_INITIALIZATION(m_pixelShaderStorage && m_pixelShaderStorage->init(128, 1, 16));
 
+	m_pipelineStateStorage = createPipelineStateStorage();
+	VT_CHECK_INITIALIZATION(m_pipelineStateStorage && m_pipelineStateStorage->init(256, 1, 64));
+
+	m_renderPassStorage = createRenderPassStorage();
+	VT_CHECK_INITIALIZATION(m_renderPassStorage && m_renderPassStorage->init(32, 0, 16));
+
 	VT_CHECK_INITIALIZATION(initDevice(isSwapChainEnabled));
 
 	return true;
@@ -32,6 +38,8 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 	VT_SAFE_DESTROY_WITH_RELEASING(m_texture2DStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_vertexShaderStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pixelShaderStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_pipelineStateStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_renderPassStorage);
 }
 
 VT::ISwapChain* VT::ManagedGraphicDevice::ManagedGraphicDevice::createSwapChain(const SwapChainDesc& desc, const IWindow* window)
@@ -117,6 +125,68 @@ VT::IPixelShader* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPixelSha
 
 void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPixelShader(IPixelShader* shader)
 {
+	assert(shader);
+	assert(m_pixelShaderStorage);
+
+	ManagedPixelShaderBase* managedShader = reinterpret_cast<ManagedPixelShaderBase*>(shader);
+
+	destroyPixelShader(managedShader);
+	m_pixelShaderStorage->removeObject(managedShader->getHandle());
+}
+
+VT::IPipelineState* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPipelineState(
+	const PipelineStateInfo& pipelineStateInfo, const IRenderPass* renderPass)
+{
+	assert(m_pipelineStateStorage);
+
+	ManagedPipelineStateStorageInfoBase::NewObjectInfo newObjectInfo = m_pipelineStateStorage->addNewObject();
+	if (!createPipelineState(newObjectInfo.m_objectPtr, pipelineStateInfo, renderPass))
+	{
+		m_pipelineStateStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPipelineState(IPipelineState* state)
+{
+	assert(state);
+	assert(m_pipelineStateStorage);
+
+	ManagedPipelineStateBase* managedState = reinterpret_cast<ManagedPipelineStateBase*>(state);
+
+	destroyPipelineState(managedState);
+	m_pipelineStateStorage->removeObject(managedState->getHandle());
+}
+
+VT::IRenderPass* VT::ManagedGraphicDevice::ManagedGraphicDevice::createRenderPass(const RenderPassInfo& info)
+{
+	assert(m_renderPassStorage);
+
+	ManagedRenderPassStorageInfoBase::NewObjectInfo newObjectInfo = m_renderPassStorage->addNewObject();
+	if (!createRenderPass(newObjectInfo.m_objectPtr, info))
+	{
+		m_renderPassStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyRenderPass(IRenderPass* pass)
+{
+	assert(pass);
+	assert(m_renderPassStorage);
+
+	ManagedRenderPassBase* managedPass = reinterpret_cast<ManagedRenderPassBase*>(pass);
+
+	destroyRenderPass(managedPass);
+	m_renderPassStorage->removeObject(managedPass->getHandle());
 }
 
 VT::ICommandPool* VT::ManagedGraphicDevice::ManagedGraphicDevice::createCommandPool()

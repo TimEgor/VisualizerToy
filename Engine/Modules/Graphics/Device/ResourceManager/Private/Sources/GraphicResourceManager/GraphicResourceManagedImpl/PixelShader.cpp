@@ -7,12 +7,12 @@ void VT::GraphicResourceManager::deletePixelShaderInternal(IPixelShader* shader)
 	getGraphicDevice()->destroyPixelShader(shader);
 }
 
-void VT::GraphicResourceManager::deletePixelShaderReference(PixelShaderPool::HandleElementType handle)
+void VT::GraphicResourceManager::deletePixelShaderReference(PixelShaderPool::Handle handle)
 {
 	m_pixelShaders.removeElement(handle);
 }
 
-VT::PixelShaderResourceHandleReference VT::GraphicResourceManager::createPixelShader(const void* code, size_t codeSize)
+VT::PixelShaderReference VT::GraphicResourceManager::createPixelShader(const void* code, size_t codeSize)
 {
 	IPixelShader* shader = getGraphicDevice()->createPixelShader(code, codeSize);
 	if (!shader)
@@ -27,9 +27,9 @@ VT::PixelShaderResourceHandleReference VT::GraphicResourceManager::createPixelSh
 	return shaderHandle;
 }
 
-VT::PixelShaderResourceHandleReference VT::GraphicResourceManager::getPixelShader(PixelShaderHandleID handle)
+VT::PixelShaderReference VT::GraphicResourceManager::getPixelShader(PixelShaderHandleID handle)
 {
-	return m_pixelShaders.getElementCast<PixelShaderResourceHandleReference>(handle);
+	return m_pixelShaders.getElementCast<PixelShaderReference>(handle);
 }
 
 bool VT::GraphicResourceManager::isValidPixelShader(PixelShaderHandleID handle) const

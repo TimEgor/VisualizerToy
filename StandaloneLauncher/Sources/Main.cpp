@@ -38,11 +38,11 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 	{
 		VT::IGraphicResourceManager* resManager = engineInst->getEnvironment()->m_graphicResourceManager;
-		VT::VertexShaderResourceHandleReference vertShader = resManager->loadVertexShader("TestVertexShader.hlsl");
-		VT::PixelShaderResourceHandleReference pixelShader = resManager->loadPixelShader("TestPixelShader.hlsl");
+		VT::VertexShaderReference vertShader = resManager->loadVertexShader("TestVertexShader.hlsl");
+		VT::PixelShaderReference pixelShader = resManager->loadPixelShader("TestPixelShader.hlsl");
 
-		VT::VertexShaderResourceHandleReference vertShader1 = resManager->loadVertexShader("TestVertexShader.hlsl");
-		VT::PixelShaderResourceHandleReference pixelShader1 = resManager->loadPixelShader("TestPixelShader.hlsl");
+		VT::VertexShaderReference vertShader1 = resManager->loadVertexShader("TestVertexShader.hlsl");
+		VT::PixelShaderReference pixelShader1 = resManager->loadPixelShader("TestPixelShader.hlsl");
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);

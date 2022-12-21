@@ -13,11 +13,14 @@ namespace VT
 
 	private:
 		virtual void selfDestroy() override;
+
 	public:
 		ManagedGraphicResourceHandle() = default;
 		ManagedGraphicResourceHandle(typename BaseType::BaseResourceType* resource, typename BaseType::HandleType id)
 			: BaseType(resource, id) {}
 		~ManagedGraphicResourceHandle();
+
+		void setResource(typename BaseType::BaseResourceType* resource) { m_resourcePtr = resource; }
 	};
 
 	template <typename ManagedBaseType>
@@ -38,17 +41,19 @@ namespace VT
 		FileNameID getNameID() const { return m_nameID; }
 	};
 
-#define MANAGED_GRAPHIC_RESOURCE_TEST(BASE_TYPE)	\
+#define MANAGED_GRAPHIC_RESOURCE(BASE_TYPE)	\
 	using Managed##BASE_TYPE = ManagedGraphicResourceHandle<BASE_TYPE>;
 
-#define NAMED_MANAGED_GRAPHIC_RESOURCE_TEST(BASE_TYPE)	\
+#define NAMED_MANAGED_GRAPHIC_RESOURCE(BASE_TYPE)	\
 	using NamedManaged##BASE_TYPE = NamedManagedGraphicResourceHandle<ManagedGraphicResourceHandle<BASE_TYPE>>;
 
-	MANAGED_GRAPHIC_RESOURCE_TEST(Texture2DResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE(Texture2DResourceHandle)
 
-	MANAGED_GRAPHIC_RESOURCE_TEST(VertexShaderResourceHandle)
-	MANAGED_GRAPHIC_RESOURCE_TEST(PixelShaderResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE(VertexShaderResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE(PixelShaderResourceHandle)
 
-	NAMED_MANAGED_GRAPHIC_RESOURCE_TEST(VertexShaderResourceHandle)
-	NAMED_MANAGED_GRAPHIC_RESOURCE_TEST(PixelShaderResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE(PipelineStateResourceHandle)
+
+	NAMED_MANAGED_GRAPHIC_RESOURCE(VertexShaderResourceHandle)
+	NAMED_MANAGED_GRAPHIC_RESOURCE(PixelShaderResourceHandle)
 }

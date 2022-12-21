@@ -17,7 +17,7 @@ bool VT_DUMMY_RS::ResourceLoader::init(DummyResourceSystem* resourceSystem)
 	m_resourceSystem = resourceSystem;
 	m_fileSystem = new VT::NativeFileSystem();
 
-	VT_CHECK_INITIALIZATION(m_resourceSystem, m_fileSystem);
+	VT_CHECK_INITIALIZATION(m_resourceSystem && m_fileSystem);
 
 	return true;
 }

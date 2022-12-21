@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicResourceCommon/Format.h"
+#include "GraphicPipeline/IRenderPass.h"
 #include "VulkanGraphicsPlugin/VulkanCore.h"
 
 namespace VT_VK
@@ -173,6 +174,47 @@ namespace VT_VK
 		case VT::Format::UNDEFINED:
 		default:
 			return VK_FORMAT_UNDEFINED;
+		}
+	}
+
+	VkAttachmentLoadOp convertLoadingOperation_VT_to_VK(const VT::RenderPassAttachmentLoadingOperation operation)
+	{
+		switch (operation)
+		{
+		case VT::RenderPassAttachmentLoadingOperation::LOADING:
+			return VK_ATTACHMENT_LOAD_OP_LOAD;
+		case VT::RenderPassAttachmentLoadingOperation::CLEARING:
+			return VK_ATTACHMENT_LOAD_OP_CLEAR;
+		case VT::RenderPassAttachmentLoadingOperation::DONT_CARE:
+		default:
+			return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		}
+	}
+
+	VkAttachmentStoreOp convertStoringOperation_VT_to_VK(const VT::RenderPassAttachmentStoringOperation operation)
+	{
+		switch (operation)
+		{
+		case VT::RenderPassAttachmentStoringOperation::STORING:
+			return VK_ATTACHMENT_STORE_OP_STORE;
+		case VT::RenderPassAttachmentStoringOperation::DONT_CARE:
+		default:
+			return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		}
+	}
+
+	VkImageLayout convertResourceLayout_VT_to_VK(const VT::ResourceLayout layout)
+	{
+		switch (layout) {
+		case VT::ResourceLayout::COLOR:
+			return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		case VT::ResourceLayout::PRESENT:
+			return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		case VT::ResourceLayout::TRANSFER:
+			return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		case VT::ResourceLayout::UNDEFINED:
+		default:
+			return VK_IMAGE_LAYOUT_UNDEFINED;
 		}
 	}
 }

@@ -6,13 +6,13 @@
 
 namespace VT
 {
-	enum ManagedHandleResourceType
+	enum NamedHandleResourceType
 	{
 		NAMELESS_RESOURCE_TYPE = 0,
 		NAMED_RESOURCE_TYPE = 1
 	};
 
-	struct ManagedResourceObjectPoolHandleStorage32 final
+	struct NamedObjectPoolHandleStorage32 final
 	{
 		using KeyType = uint32_t;
 		using IndexType = uint16_t;
@@ -41,21 +41,21 @@ namespace VT
 			};
 		};
 
-		constexpr ManagedResourceObjectPoolHandleStorage32() = default;
-		constexpr ManagedResourceObjectPoolHandleStorage32(KeyType key) : m_key(key) {}
-		constexpr ManagedResourceObjectPoolHandleStorage32(IndexType index, VersionType version)
+		constexpr NamedObjectPoolHandleStorage32() = default;
+		constexpr NamedObjectPoolHandleStorage32(KeyType key) : m_key(key) {}
+		constexpr NamedObjectPoolHandleStorage32(IndexType index, VersionType version)
 			: m_index(index), m_resourceType(0)
 		{
 			setVersion(version);
 		}
-		ManagedResourceObjectPoolHandleStorage32(IndexType index, VersionType version, UserResourceType resourceType)
+		NamedObjectPoolHandleStorage32(IndexType index, VersionType version, UserResourceType resourceType)
 			: m_index(index)
 		{
 			setVersion(version);
 			setResourceType(resourceType);
 		}
 
-		constexpr ManagedResourceObjectPoolHandleStorage32(const ManagedResourceObjectPoolHandleStorage32&) = default;
+		constexpr NamedObjectPoolHandleStorage32(const NamedObjectPoolHandleStorage32&) = default;
 
 		constexpr IndexType getIndex() const { return m_index; }
 		constexpr VersionType getVersion() const { return m_version; }
@@ -72,7 +72,7 @@ namespace VT
 		}
 	};
 
-	struct ManagedResourceObjectPoolHandleStorage64 final
+	struct NamedObjectPoolHandleStorage64 final
 	{
 		using KeyType = uint64_t;
 		using IndexType = uint32_t;
@@ -101,20 +101,20 @@ namespace VT
 			};
 		};
 
-		constexpr ManagedResourceObjectPoolHandleStorage64() = default;
-		constexpr ManagedResourceObjectPoolHandleStorage64(KeyType key) : m_key(key) {}
-		constexpr ManagedResourceObjectPoolHandleStorage64(IndexType index, VersionType version)
+		constexpr NamedObjectPoolHandleStorage64() = default;
+		constexpr NamedObjectPoolHandleStorage64(KeyType key) : m_key(key) {}
+		constexpr NamedObjectPoolHandleStorage64(IndexType index, VersionType version)
 			: m_index(index), m_resourceType(0)
 		{
 			setVersion(version);
 		}
-		constexpr ManagedResourceObjectPoolHandleStorage64(IndexType index, VersionType version, UserResourceType resourceType)
+		constexpr NamedObjectPoolHandleStorage64(IndexType index, VersionType version, UserResourceType resourceType)
 			: m_index(index)
 		{
 			setVersion(version);
 			setResourceType(resourceType);
 		}
-		constexpr ManagedResourceObjectPoolHandleStorage64(const ManagedResourceObjectPoolHandleStorage64&) = default;
+		constexpr NamedObjectPoolHandleStorage64(const NamedObjectPoolHandleStorage64&) = default;
 
 		constexpr IndexType getIndex() const { return m_index; }
 		constexpr VersionType getVersion() const { return m_version; }
@@ -131,6 +131,6 @@ namespace VT
 		}
 	};
 
-	using ManagedResourceObjectPoolHandle32 = ObjectPoolHandle<ManagedResourceObjectPoolHandleStorage32>;
-	using ManagedResourceObjectPoolHandle64 = ObjectPoolHandle<ManagedResourceObjectPoolHandleStorage64>;
+	using NamedObjectPoolHandle32 = ObjectPoolHandle<NamedObjectPoolHandleStorage32>;
+	using NamedObjectPoolHandle64 = ObjectPoolHandle<NamedObjectPoolHandleStorage64>;
 }
