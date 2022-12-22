@@ -26,6 +26,7 @@ namespace VT_VK
 		VkSurfaceKHR m_vkSurface = 0;
 
 		VulkanTexture2D* m_textures = nullptr;
+		VulkanTexture2DView* m_targetViews = nullptr;
 		uint32_t m_textureCount = 0;
 
 	public:
@@ -34,6 +35,7 @@ namespace VT_VK
 
 		virtual uint32_t getTextureCount() const override;
 		virtual const VT::ITexture2D* getTexture(uint32_t index) const override;
+		virtual const VT::ITexture2DView* getTargetView(uint32_t index) const override;
 
 		VkSwapchainKHR getVkSwapChain() const { return m_vkSwapChain; }
 		VkSurfaceKHR getVkSurface() const { return m_vkSurface; }

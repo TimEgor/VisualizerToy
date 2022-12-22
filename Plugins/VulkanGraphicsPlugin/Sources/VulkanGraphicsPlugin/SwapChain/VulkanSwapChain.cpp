@@ -13,3 +13,9 @@ const VT::ITexture2D* VT_VK::VulkanSwapChain::getTexture(uint32_t index) const
 	assert(m_textures);
 	return &m_textures[index];
 }
+
+const VT::ITexture2DView* VT_VK::VulkanSwapChain::getTargetView(uint32_t index) const
+{
+	assert(m_targetViews);
+	return &m_targetViews[index];
+}

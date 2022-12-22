@@ -55,6 +55,9 @@ namespace VT_VK
 
 		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
 
+		virtual bool createTexture2DView(VT::ManagedGraphicDevice::ManagedTexture2DViewBase* view, VT::ITexture2D* texture, const VT::TextureViewDesc& desc) override;
+		virtual void destroyTexture2DView(VT::ManagedGraphicDevice::ManagedTexture2DViewBase* view) override;
+
 		virtual bool createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader, const void* code, size_t codeSize) override;
 		virtual void destroyVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader) override;
 
@@ -72,11 +75,16 @@ namespace VT_VK
 		virtual void destroyCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
 
 		virtual SwapChainStorage* createSwapChainStorage() const override;
+
 		virtual Texture2DStorage* createTexture2DStorage() const override;
+		virtual Texture2DViewStorage* createTexture2DViewStorage() const override;
+
 		virtual VertexShaderStorage* createVertexShaderStorage() const override;
 		virtual PixelShaderStorage* createPixelShaderStorage() const override;
+
 		virtual PipelineStateStorage* createPipelineStateStorage() const override;
 		virtual RenderPassStorage* createRenderPassStorage() const override;
+
 		virtual CommandPoolStorage* createCommandPoolStorage() const override;
 
 	public:

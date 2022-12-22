@@ -4,6 +4,7 @@
 
 namespace VT
 {
+
 	enum class SwapChainPresentMode
 	{
 		IMMIDIATE,
@@ -20,6 +21,7 @@ namespace VT
 	};
 
 	class ITexture2D;
+	class ITexture2DView;
 
 	class ISwapChain
 	{
@@ -30,6 +32,7 @@ namespace VT
 		virtual const SwapChainDesc& getDesc() const = 0;
 
 		virtual uint32_t getTextureCount() const = 0;
-		virtual const VT::ITexture2D* getTexture(uint32_t index) const = 0;
+		virtual const ITexture2D* getTexture(uint32_t index) const = 0;
+		virtual const ITexture2DView* getTargetView(uint32_t index) const = 0;
 	};
 }

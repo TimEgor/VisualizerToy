@@ -48,6 +48,7 @@ namespace VT
 	using NamedManaged##BASE_TYPE = NamedManagedGraphicResourceHandle<ManagedGraphicResourceHandle<BASE_TYPE>>;
 
 	MANAGED_GRAPHIC_RESOURCE(Texture2DResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE(Texture2DViewResourceHandle)
 
 	MANAGED_GRAPHIC_RESOURCE(VertexShaderResourceHandle)
 	MANAGED_GRAPHIC_RESOURCE(PixelShaderResourceHandle)

@@ -13,6 +13,9 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 	m_texture2DStorage = createTexture2DStorage();
 	VT_CHECK_INITIALIZATION(m_texture2DStorage && m_texture2DStorage->init(256, 1, 64));
 
+	m_texture2DViewStorage = createTexture2DViewStorage();
+	VT_CHECK_INITIALIZATION(m_texture2DViewStorage && m_texture2DViewStorage->init(256, 1, 64));
+
 	m_vertexShaderStorage = createVertexShaderStorage();
 	VT_CHECK_INITIALIZATION(m_vertexShaderStorage && m_vertexShaderStorage->init(64, 1, 16));
 
@@ -35,9 +38,13 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 	releaseDevice();
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_swapChainStorage);
+
 	VT_SAFE_DESTROY_WITH_RELEASING(m_texture2DStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_texture2DViewStorage);
+
 	VT_SAFE_DESTROY_WITH_RELEASING(m_vertexShaderStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pixelShaderStorage);
+
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pipelineStateStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_renderPassStorage);
 }
@@ -78,6 +85,26 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture2D(ITexture2D
 
 	destroyTexture2D(managedTexture);
 	m_texture2DStorage->removeObject(managedTexture->getHandle());
+}
+
+VT::ITexture2DView* VT::ManagedGraphicDevice::ManagedGraphicDevice::createTexture2DView(ITexture2D* texture, const TextureViewDesc& desc)
+{
+	assert(texture);
+
+	ManagedTexture2DViewStorageInfoBase::NewObjectInfo newObjectInfo = m_texture2DViewStorage->addNewObject();
+	if (!createTexture2DView(newObjectInfo.m_objectPtr, texture, desc))
+	{
+		m_texture2DViewStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture(ITexture2DView* view)
+{
 }
 
 VT::IVertexShader* VT::ManagedGraphicDevice::ManagedGraphicDevice::createVertexShader(const void* code, size_t codeSize)

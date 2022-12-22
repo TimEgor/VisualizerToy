@@ -274,6 +274,13 @@ void VT_VK::VulkanGraphicDevice::destroyResources()
 	}
 	m_destroyingResources.m_images.getLocker().unlock();
 
+	m_destroyingResources.m_imageViews.getLocker().lock();
+	for (VkImageView vkImageView : m_destroyingResources.m_imageViews.getContainer())
+	{
+		vkDestroyImageView(m_vkDevice, vkImageView, nullptr);
+	}
+	m_destroyingResources.m_imageViews.getLocker().unlock();
+
 	m_destroyingResources.m_swapChains.getLocker().lock();
 	for (VkSwapchainKHR vkSwapChain : m_destroyingResources.m_swapChains.getContainer())
 	{
@@ -433,31 +440,22 @@ void VT_VK::VulkanGraphicDevice::initSwapChainImages(VulkanSwapChain* swapChain,
 
 	std::vector<VkImage> vkImages(imageCount);
 	swapChain->m_textures = reinterpret_cast<VulkanTexture2D*>(new uint8_t[sizeof(VulkanTexture2D) * imageCount]);
+	swapChain->m_targetViews = reinterpret_cast<VulkanTexture2DView*>(new uint8_t[sizeof(VulkanTexture2DView) * imageCount]);
 
 	vkGetSwapchainImagesKHR(m_vkDevice, swapChain->m_vkSwapChain, &imageCount, vkImages.data());
 
+	VT::TextureViewDesc targetViewDesc{};
+	targetViewDesc.m_aspect = VT::TextureViewAspect::COLOR;
+	targetViewDesc.m_baseMipLevel = 0;
+	targetViewDesc.m_mipLevelCount = 1;
+	targetViewDesc.m_baseArrayLayer = 0;
+	targetViewDesc.m_arrayLayerCount = 1;
 
 	for (size_t i = 0; i < imageCount; ++i)
 	{
-		new (&swapChain->m_textures[i]) VulkanTexture2D(imageDesc, vkImages[i]);
+		VulkanTexture2D* targetTexture = new (&swapChain->m_textures[i]) VulkanTexture2D(imageDesc, vkImages[i]);
+		createTexture2DView(&swapChain->m_targetViews[i], targetTexture, targetViewDesc);
 	}
-
-	/*VkImageViewCreateInfo imageViewCreateInfo{};
-	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewCreateInfo.format = convertFormat_VT_to_VK(swapChain->getDesc().m_format);
-
-	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-	imageViewCreateInfo.subresourceRange.levelCount = 1;
-	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-	imageViewCreateInfo.subresourceRange.layerCount = 1;*/
-
 }
 
 void VT_VK::VulkanGraphicDevice::createShaderInternal(const void* code, size_t codeSize, VkShaderModule& vkShaderModule)
@@ -491,6 +489,8 @@ bool VT_VK::VulkanGraphicDevice::initDevice(bool isSwapChainEnabled)
 
 void VT_VK::VulkanGraphicDevice::releaseDevice()
 {
+	destroyResources();
+
 	if (m_vkDevice)
 	{
 		wait();
@@ -563,6 +563,44 @@ void VT_VK::VulkanGraphicDevice::destroyTexture2D(VT::ManagedGraphicDevice::Mana
 	if (vulkanTexture->m_vkImage)
 	{
 		m_destroyingResources.m_images.addToContainer(vulkanTexture->m_vkImage);
+	}
+}
+
+bool VT_VK::VulkanGraphicDevice::createTexture2DView(VT::ManagedGraphicDevice::ManagedTexture2DViewBase* view, VT::ITexture2D* texture, const VT::TextureViewDesc& desc)
+{
+	VkImageViewCreateInfo imageViewCreateInfo{};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = convertFormat_VT_to_VK(texture->getDesc().m_format);
+
+	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+	imageViewCreateInfo.subresourceRange.aspectMask = convertImageAspect_VT_to_VK(desc.m_aspect);
+	imageViewCreateInfo.subresourceRange.baseMipLevel = desc.m_baseMipLevel;
+	imageViewCreateInfo.subresourceRange.levelCount = desc.m_mipLevelCount;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = desc.m_baseMipLevel;
+	imageViewCreateInfo.subresourceRange.layerCount = desc.m_arrayLayerCount;
+
+	VkImageView vkImageView = 0;
+	if (!vkCreateImageView(m_vkDevice, &imageViewCreateInfo, nullptr, &vkImageView))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyTexture2DView(VT::ManagedGraphicDevice::ManagedTexture2DViewBase* view)
+{
+	assert(view);
+
+	VulkanTexture2DView* vulkanView = reinterpret_cast<VulkanTexture2DView*>(view);
+	if(vulkanView->m_vkImageView)
+	{
+		m_destroyingResources.m_imageViews.addToContainer(vulkanView->m_vkImageView);
 	}
 }
 
@@ -810,6 +848,11 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* VT_VK::VulkanG
 VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* VT_VK::VulkanGraphicDevice::createTexture2DStorage() const
 {
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedTexture2DStorageInfo<VulkanTexture2D>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DViewStorage* VT_VK::VulkanGraphicDevice::createTexture2DViewStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedTexture2DViewStorageInfo<VulkanTexture2DView>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::VertexShaderStorage* VT_VK::VulkanGraphicDevice::createVertexShaderStorage() const

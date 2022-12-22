@@ -8,6 +8,7 @@ namespace VT
 	class ISwapChain;
 
 	class ITexture2D;
+	class ITexture2DView;
 
 	class IVertexShader;
 	class IPixelShader;
@@ -19,6 +20,8 @@ namespace VT
 
 
 	struct SwapChainDesc;
+
+	struct TextureViewDesc;
 
 	struct PipelineStateInfo;
 	struct RenderPassInfo;
@@ -43,6 +46,9 @@ namespace VT
 		virtual void destroySwapChain(ISwapChain* swapChain) = 0;
 
 		virtual void destroyTexture2D(ITexture2D* texture) = 0;
+
+		virtual ITexture2DView* createTexture2DView(ITexture2D* texture, const TextureViewDesc& desc) = 0;
+		virtual void destroyTexture(ITexture2DView* view) = 0;
 
 		virtual IVertexShader* createVertexShader(const void* code, size_t codeSize) = 0;
 		virtual void destroyVertexShader(IVertexShader* shader) = 0;

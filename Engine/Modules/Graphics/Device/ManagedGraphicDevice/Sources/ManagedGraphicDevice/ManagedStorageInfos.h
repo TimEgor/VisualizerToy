@@ -24,7 +24,9 @@ namespace VT::ManagedGraphicDevice
 	};
 
 	MANAGED_OBJECT_STORAGE_INFO(ManagedSwapChain, ManagedSwapChainBase)
+
 	MANAGED_OBJECT_STORAGE_INFO(ManagedTexture2D, ManagedTexture2DBase)
+	MANAGED_OBJECT_STORAGE_INFO(ManagedTexture2DView, ManagedTexture2DViewBase)
 
 	MANAGED_OBJECT_STORAGE_INFO(ManagedVertexShader, ManagedVertexShaderBase)
 	MANAGED_OBJECT_STORAGE_INFO(ManagedPixelShader, ManagedPixelShaderBase)
