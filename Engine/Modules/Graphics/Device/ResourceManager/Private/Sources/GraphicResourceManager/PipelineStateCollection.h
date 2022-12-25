@@ -20,20 +20,24 @@ namespace VT
 			bool m_isNew = false;
 		};
 
+		struct HashStateData final
+		{
+			PipelineStateReference m_state = nullptr;
+			typename PipelineStatePoolHandle::KeyType m_handleID = 0;
+		};
+
 	private:
 		using PipelineStatePool = ObjectPool<ManagedPipelineStateResourceHandle, PipelineStatePoolHandle>;
 		using PipelineStateHandleInfo = typename PipelineStatePool::NewElementInfo;
-		using HashCotainer = std::unordered_map<PipelineStateHash, typename PipelineStatePoolHandle::KeyType>;
+		using HashCotainer = std::unordered_map<PipelineStateHash, HashStateData>;
 
 		PipelineStatePool m_states;
 		HashCotainer m_stateIDs;
 		mutable SharedMutex m_lockMutex;
 
-		ManagedPipelineStateResourceHandle* addPipelineStateInternal(PipelineStateHash hash);
-		ManagedPipelineStateResourceHandle* getPipelineStateInternal(PipelineStateHash hash);
-		const ManagedPipelineStateResourceHandle* getPipelineStateInternal(PipelineStateHash hash) const;
-		ManagedPipelineStateResourceHandle* getPipelineStateInternal(PipelineStatePoolHandle handle);
-		const ManagedPipelineStateResourceHandle* getPipelineStateInternal(PipelineStatePoolHandle handle) const;
+		PipelineStateReference addPipelineStateInternal(PipelineStateHash hash);
+		PipelineStateReference getPipelineStateInternal(PipelineStateHash hash);
+		PipelineStateConstReference getPipelineStateInternal(PipelineStateHash hash) const;
 
 	public:
 		PipelineStateCollection() = default;
@@ -44,9 +48,6 @@ namespace VT
 		void clear();
 
 		bool isValid(PipelineStatePoolHandle handle) const;
-
-		PipelineStateConstReference getPipelineState(PipelineStatePoolHandle handle) const;
-		PipelineStateReference getPipelineState(PipelineStatePoolHandle handle);
 
 		PipelineStateConstReference getPipelineState(PipelineStateHash hash) const;
 		PipelineStateReference getPipelineState(PipelineStateHash hash);

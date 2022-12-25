@@ -6,7 +6,8 @@
 #include "ManagedGraphicDevice/ManagedObjects/ManagedRenderPassObject.h"
 #include "ManagedGraphicDevice/ManagedObjects/ManagedTexture2DObject.h"
 #include "ManagedGraphicDevice/ManagedObjects/ManagedSwapChainObject.h"
-#include "ManagedGraphicDevice/ManagedObjects/ManagedCommandPoolObject.h"
+#include "ManagedGraphicDevice/ManagedObjects/ManagedCommandObjects.h"
+#include "ManagedGraphicDevice/ManagedObjects/ManagedSyncObjects.h"
 
 namespace VT::ManagedGraphicDevice
 {
@@ -35,4 +36,8 @@ namespace VT::ManagedGraphicDevice
 	MANAGED_OBJECT_STORAGE_INFO(ManagedRenderPass, ManagedRenderPassBase)
 
 	MANAGED_OBJECT_STORAGE_INFO(ManagedCommandPool, ManagedCommandPoolBase)
+	MANAGED_OBJECT_STORAGE_INFO(ManagedCommandList, ManagedCommandListBase)
+
+	MANAGED_OBJECT_STORAGE_INFO(ManagedFence, ManagedFenceBase)
+	MANAGED_OBJECT_STORAGE_INFO(ManagedSemaphore, ManagedSemaphoreBase)
 }

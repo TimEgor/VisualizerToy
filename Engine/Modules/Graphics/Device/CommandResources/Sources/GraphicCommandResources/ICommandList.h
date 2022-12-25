@@ -7,7 +7,5 @@ namespace VT
 	public:
 		ICommandList() = default;
 		virtual ~ICommandList() {}
-
-		virtual void reset() = 0;
 	};
 }

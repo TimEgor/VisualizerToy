@@ -12,6 +12,7 @@ target_link_libraries(ManagedGraphicDevice
 		GraphicDevice
 		GraphicCommandResources
 		GraphicPipeline
+		GraphicSynchronization
 		SwapChain
 		Shaders
 		Textures

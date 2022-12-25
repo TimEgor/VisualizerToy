@@ -25,6 +25,7 @@ namespace VT_VK
 		VkInstance getInstance() const { return m_vkInstance; }
 
 		virtual VT::IGraphicDevice* createGraphicDevice() override;
+		virtual VT::IRenderContext* createRenderContext() override;
 
 		VT_GRAPHIC_PLATFORM_TYPE(VT_GRAPHIC_PLARFORM_VULKAN_TYPE)
 	};

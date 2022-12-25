@@ -3,6 +3,7 @@
 #include "Core/UtilitiesMacros.h"
 
 #include "VulkanGraphicsPlugin/Device/VulkanGraphicDevice.h"
+#include "VulkanGraphicsPlugin/Render/VulkanRenderContext.h"
 
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
@@ -183,4 +184,9 @@ void VT_VK::VulkanGraphicPlatform::release()
 VT::IGraphicDevice* VT_VK::VulkanGraphicPlatform::createGraphicDevice()
 {
 	return new VulkanGraphicDevice();
+}
+
+VT::IRenderContext* VT_VK::VulkanGraphicPlatform::createRenderContext()
+{
+	return new VulkanRenderContext();
 }

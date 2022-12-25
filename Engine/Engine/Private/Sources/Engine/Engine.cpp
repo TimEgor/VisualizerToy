@@ -11,8 +11,10 @@
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicResourceManager/NamedGraphicResourceSystem.h"
+#include "RenderSystem/RenderSystem.h"
 
 #include <cassert>
+
 
 bool VT::Engine::init(const EngineInitParam& initParam)
 {
@@ -51,6 +53,10 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicResourceManager
 		&& m_engineEnvironment->m_graphicResourceManager->init());
 
+	m_engineEnvironment->m_renderSystem = new RenderSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_renderSystem
+		&& m_engineEnvironment->m_renderSystem->init());
+
 	return true;
 }
 
@@ -58,13 +64,14 @@ void VT::Engine::release()
 {
 	if (m_engineEnvironment)
 	{
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_renderSystem);
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_graphicResourceManager);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_graphicDevice);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_windowSystem);
-		VT_SAFE_DESTROY(m_engineEnvironment->m_platform);
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_platform);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_pluginSystem);
 
-		delete m_engineEnvironment;
-		m_engineEnvironment = nullptr;
+		VT_SAFE_DESTROY(m_engineEnvironment);
 	}
 }
 

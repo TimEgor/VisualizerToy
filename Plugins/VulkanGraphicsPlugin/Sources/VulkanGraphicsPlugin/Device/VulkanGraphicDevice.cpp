@@ -15,6 +15,8 @@
 #include "VulkanGraphicsPlugin/Shaders/VulkanShaders.h"
 #include "VulkanGraphicsPlugin/PipelineState/VulkanPipelineState.h"
 #include "VulkanGraphicsPlugin/PipelineState/VulkanRenderPass.h"
+#include "VulkanGraphicsPlugin/Synchronization/VulkanFence.h"
+#include "VulkanGraphicsPlugin/Synchronization/VulkanSemaphore.h"
 
 #include "VulkanGraphicsPlugin/Utilities/FormatConverter.h"
 #include "VulkanGraphicsPlugin/Utilities/PresentModeConverter.h"
@@ -22,6 +24,7 @@
 #include "VulkanGraphicsPlugin/Utilities/VulkanEnvironmentGraphicPlatform.h"
 
 #include <algorithm>
+
 
 namespace VT_VK
 {
@@ -108,10 +111,13 @@ bool VT_VK::VulkanGraphicDevice::initVkDevice(VkInstance vkInstance, bool isSwap
 {
 	VulkanNameContainer extensionNames;
 
+	extensionNames.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+
 	if (isSwapChainEnabled)
 	{
 		extensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 	}
+
 
 	VT_CHECK_RETURN_FALSE(chooseVkPhysDevice(vkInstance, extensionNames));
 
@@ -139,9 +145,13 @@ bool VT_VK::VulkanGraphicDevice::initVkDevice(VkInstance vkInstance, bool isSwap
 		queueInfo.queueFamilyIndex = requiringFamiliesQueue[queueIndex];
 	}
 
+	VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeature{};
+	dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+	dynamicRenderingFeature.dynamicRendering = true;
+
 	VkDeviceCreateInfo deviceCreateInfo{};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
+	deviceCreateInfo.pNext = &dynamicRenderingFeature;
 	deviceCreateInfo.queueCreateInfoCount = familyCount;
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfo.data();
 
@@ -267,61 +277,7 @@ void VT_VK::VulkanGraphicDevice::destroyResources()
 
 	VkInstance vkInstance = getVulkanEnvironmentGraphicPlatform()->getInstance();
 
-	m_destroyingResources.m_images.getLocker().lock();
-	for (VkImage vkImage : m_destroyingResources.m_images.getContainer())
-	{
-		vkDestroyImage(m_vkDevice, vkImage, nullptr);
-	}
-	m_destroyingResources.m_images.getLocker().unlock();
-
-	m_destroyingResources.m_imageViews.getLocker().lock();
-	for (VkImageView vkImageView : m_destroyingResources.m_imageViews.getContainer())
-	{
-		vkDestroyImageView(m_vkDevice, vkImageView, nullptr);
-	}
-	m_destroyingResources.m_imageViews.getLocker().unlock();
-
-	m_destroyingResources.m_swapChains.getLocker().lock();
-	for (VkSwapchainKHR vkSwapChain : m_destroyingResources.m_swapChains.getContainer())
-	{
-		vkDestroySwapchainKHR(m_vkDevice, vkSwapChain, nullptr);
-	}
-	m_destroyingResources.m_swapChains.getLocker().unlock();
-
-	m_destroyingResources.m_surfaces.getLocker().lock();
-	for (VkSurfaceKHR vkSurface : m_destroyingResources.m_surfaces.getContainer())
-	{
-		vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
-	}
-	m_destroyingResources.m_surfaces.getLocker().unlock();
-
-	m_destroyingResources.m_shaderModules.getLocker().lock();
-	for (VkShaderModule vkModule : m_destroyingResources.m_shaderModules.getContainer())
-	{
-		vkDestroyShaderModule(m_vkDevice, vkModule, nullptr);
-	}
-	m_destroyingResources.m_shaderModules.getLocker().unlock();
-
-	m_destroyingResources.m_pipelineLayouts.getLocker().lock();
-	for (VkPipelineLayout vkPipelineLayout : m_destroyingResources.m_pipelineLayouts.getContainer())
-	{
-		vkDestroyPipelineLayout(m_vkDevice, vkPipelineLayout, nullptr);
-	}
-	m_destroyingResources.m_pipelineLayouts.getLocker().unlock();
-
-	m_destroyingResources.m_pipelines.getLocker().lock();
-	for (VkPipeline vkPipeline : m_destroyingResources.m_pipelines.getContainer())
-	{
-		vkDestroyPipeline(m_vkDevice, vkPipeline, nullptr);
-	}
-	m_destroyingResources.m_pipelines.getLocker().unlock();
-
-	m_destroyingResources.m_renderPasses.getLocker().lock();
-	for (VkRenderPass vkPass : m_destroyingResources.m_renderPasses.getContainer())
-	{
-		vkDestroyRenderPass(m_vkDevice, vkPass, nullptr);
-	}
-	m_destroyingResources.m_renderPasses.getLocker().unlock();
+	m_destroyingResources.destroyResources(vkInstance, m_vkDevice);
 }
 
 void VT_VK::VulkanGraphicDevice::getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info)
@@ -363,7 +319,7 @@ void VT_VK::VulkanGraphicDevice::createSwapChainInternal(const VT::SwapChainDesc
 	surfaceCreateInfo.hwnd = reinterpret_cast<HWND>(window->getNativeHandle());
 	surfaceCreateInfo.hinstance = reinterpret_cast<HINSTANCE>(platform->getNativeHandle());
 
-	vkCreateWin32SurfaceKHR(vkInstance, &surfaceCreateInfo, nullptr, &surface);
+	checkVkResultAssert(vkCreateWin32SurfaceKHR(vkInstance, &surfaceCreateInfo, nullptr, &surface));
 #endif
 
 	VT_CHECK_RETURN_ASSERT(surface);
@@ -441,6 +397,7 @@ void VT_VK::VulkanGraphicDevice::initSwapChainImages(VulkanSwapChain* swapChain,
 	std::vector<VkImage> vkImages(imageCount);
 	swapChain->m_textures = reinterpret_cast<VulkanTexture2D*>(new uint8_t[sizeof(VulkanTexture2D) * imageCount]);
 	swapChain->m_targetViews = reinterpret_cast<VulkanTexture2DView*>(new uint8_t[sizeof(VulkanTexture2DView) * imageCount]);
+	swapChain->m_textureCount = imageCount;
 
 	vkGetSwapchainImagesKHR(m_vkDevice, swapChain->m_vkSwapChain, &imageCount, vkImages.data());
 
@@ -475,6 +432,17 @@ void VT_VK::VulkanGraphicDevice::destroyShaderInternal(VulkanShaderBase* shader)
 	if (shader->m_vkShaderModule)
 	{
 		m_destroyingResources.m_shaderModules.addToContainer(shader->m_vkShaderModule);
+	}
+}
+
+void VT_VK::VulkanGraphicDevice::createSemaphoreInternal(VkSemaphore& vkSemaphore)
+{
+	VkSemaphoreCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	if (!checkVkResult(vkCreateSemaphore(m_vkDevice, &createInfo, nullptr, &vkSemaphore)))
+	{
+		vkSemaphore = 0;
 	}
 }
 
@@ -526,7 +494,15 @@ bool VT_VK::VulkanGraphicDevice::createSwapChain(VT::ManagedGraphicDevice::Manag
 		return false;
 	}
 
-	VulkanSwapChain* vulkanSwapChain = new (swapChain) VulkanSwapChain(desc, vkSwapChain, vkSurface);
+	VkSemaphore vkTextureAvailableSemaphore = 0;
+	createSemaphoreInternal(vkTextureAvailableSemaphore);
+	if (vkTextureAvailableSemaphore == 0)
+	{
+		return false;
+	}
+
+	VulkanSwapChain* vulkanSwapChain = new (swapChain) VulkanSwapChain(desc, m_vkDevice,
+		vkSwapChain, vkSurface, m_vkGraphicQueue, vkTextureAvailableSemaphore);
 	initSwapChainImages(vulkanSwapChain, imageDesc);
 
 	return true;
@@ -568,10 +544,15 @@ void VT_VK::VulkanGraphicDevice::destroyTexture2D(VT::ManagedGraphicDevice::Mana
 
 bool VT_VK::VulkanGraphicDevice::createTexture2DView(VT::ManagedGraphicDevice::ManagedTexture2DViewBase* view, VT::ITexture2D* texture, const VT::TextureViewDesc& desc)
 {
+	assert(texture);
+
+	VulkanTexture2D* vulkanTexture = reinterpret_cast<VulkanTexture2D*>(texture);
+
 	VkImageViewCreateInfo imageViewCreateInfo{};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewCreateInfo.format = convertFormat_VT_to_VK(texture->getDesc().m_format);
+	imageViewCreateInfo.format = convertFormat_VT_to_VK(vulkanTexture->m_desc.m_format);
+	imageViewCreateInfo.image = vulkanTexture->m_vkImage;
 
 	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -581,14 +562,16 @@ bool VT_VK::VulkanGraphicDevice::createTexture2DView(VT::ManagedGraphicDevice::M
 	imageViewCreateInfo.subresourceRange.aspectMask = convertImageAspect_VT_to_VK(desc.m_aspect);
 	imageViewCreateInfo.subresourceRange.baseMipLevel = desc.m_baseMipLevel;
 	imageViewCreateInfo.subresourceRange.levelCount = desc.m_mipLevelCount;
-	imageViewCreateInfo.subresourceRange.baseArrayLayer = desc.m_baseMipLevel;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = desc.m_baseArrayLayer;
 	imageViewCreateInfo.subresourceRange.layerCount = desc.m_arrayLayerCount;
 
 	VkImageView vkImageView = 0;
-	if (!vkCreateImageView(m_vkDevice, &imageViewCreateInfo, nullptr, &vkImageView))
+	if (!checkVkResult(vkCreateImageView(m_vkDevice, &imageViewCreateInfo, nullptr, &vkImageView)))
 	{
 		return false;
 	}
+
+	new (view) VulkanTexture2DView(desc, vkImageView);
 
 	return true;
 }
@@ -610,8 +593,9 @@ bool VT_VK::VulkanGraphicDevice::createVertexShader(VT::ManagedGraphicDevice::Ma
 	VkShaderModule vkShaderModule;
 	createShaderInternal(code, codeSize, vkShaderModule);
 
-	VulkanVertexShader* vertexShader = new (shader) VulkanVertexShader(vkShaderModule);
-	return vertexShader;
+	new (shader) VulkanVertexShader(vkShaderModule);
+
+	return true;
 }
 
 void VT_VK::VulkanGraphicDevice::destroyVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader)
@@ -625,8 +609,9 @@ bool VT_VK::VulkanGraphicDevice::createPixelShader(VT::ManagedGraphicDevice::Man
 	VkShaderModule vkShaderModule;
 	createShaderInternal(code, codeSize, vkShaderModule);
 
-	VulkanPixelShader* pixelShader = new (shader) VulkanPixelShader(vkShaderModule);
-	return pixelShader;
+	new (shader) VulkanPixelShader(vkShaderModule);
+
+	return true;
 }
 
 void VT_VK::VulkanGraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader)
@@ -635,7 +620,7 @@ void VT_VK::VulkanGraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::Ma
 }
 
 bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
-	const VT::PipelineStateInfo& info, const VT::IRenderPass* renderPass)
+	const VT::PipelineStateInfo& info)
 {
 	VkPipelineVertexInputStateCreateInfo vertInputCreateInfo{};
 	vertInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -676,6 +661,7 @@ bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::M
 	rasterizationCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 	rasterizationCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizationCreateInfo.depthBiasEnable = false;
+	rasterizationCreateInfo.lineWidth = 1.0f;
 
 	VkPipelineMultisampleStateCreateInfo multisampleCreateInfo{};
 	multisampleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -727,10 +713,22 @@ bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::M
 		shaderStages.push_back(stageCreateInfo);
 	}
 
-	const VulkanRenderPass* vulkanRenderPass = reinterpret_cast<const VulkanRenderPass*>(renderPass);
+	std::vector<VkFormat> vkFormats;
+	vkFormats.reserve(info.m_formats.size());
+
+	for (VT::Format format : info.m_formats)
+	{
+		vkFormats.push_back(convertFormat_VT_to_VK(format));
+	}
+
+	VkPipelineRenderingCreateInfoKHR pipelineRenderingCreateInfo{};
+	pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+	pipelineRenderingCreateInfo.colorAttachmentCount = vkFormats.size();
+	pipelineRenderingCreateInfo.pColorAttachmentFormats = vkFormats.data();
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
 	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineCreateInfo.pNext = &pipelineRenderingCreateInfo;
 	pipelineCreateInfo.stageCount = shaderStages.size();
 	pipelineCreateInfo.pStages = shaderStages.data();
 	pipelineCreateInfo.pVertexInputState = &vertInputCreateInfo;
@@ -740,10 +738,10 @@ bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::M
 	pipelineCreateInfo.pMultisampleState = &multisampleCreateInfo;
 	pipelineCreateInfo.pColorBlendState = &blendCreateInfo;
 	pipelineCreateInfo.layout = vkPipelineLayout;
-	pipelineCreateInfo.renderPass = vulkanRenderPass->getVkRenderPass();
+	pipelineCreateInfo.renderPass = VK_NULL_HANDLE;
 
 	VkPipeline vkPipeline;
-	if (!vkCreateGraphicsPipelines(m_vkDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &vkPipeline))
+	if (!checkVkResult(vkCreateGraphicsPipelines(m_vkDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &vkPipeline)))
 	{
 		m_destroyingResources.m_pipelineLayouts.addToContainer(vkPipelineLayout);
 		return false;
@@ -834,11 +832,167 @@ void VT_VK::VulkanGraphicDevice::destroyRenderPass(VT::ManagedGraphicDevice::Man
 
 bool VT_VK::VulkanGraphicDevice::createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool)
 {
-	return false;
+	VkCommandPoolCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	createInfo.queueFamilyIndex = m_graphicQueueFamilyIndex;
+	createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	VkCommandPool vkCommandPool = 0;
+	if (!checkVkResult(vkCreateCommandPool(m_vkDevice, &createInfo, nullptr, &vkCommandPool)))
+	{
+		return false;
+	}
+
+	new (commandPool) VulkanCommandPool(vkCommandPool);
+
+	return true;
 }
 
 void VT_VK::VulkanGraphicDevice::destroyCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool)
-{}
+{
+	assert(commandPool);
+
+	VulkanCommandPool* vulkanCommandPool = reinterpret_cast<VulkanCommandPool*>(commandPool);
+	if (vulkanCommandPool->m_vkCommandPool)
+	{
+		m_destroyingResources.m_commandPools.addToContainer(vulkanCommandPool->m_vkCommandPool);
+	}
+}
+
+bool VT_VK::VulkanGraphicDevice::allocateCommandList(VT::ManagedGraphicDevice::ManagedCommandListBase* commandList, VT::ICommandPool* pool)
+{
+	assert(pool);
+
+	VulkanCommandPool* vulkanPool = reinterpret_cast<VulkanCommandPool*>(pool);
+
+	VkCommandBufferAllocateInfo allocateInfo{};
+	allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocateInfo.commandPool = vulkanPool->m_vkCommandPool;
+	allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocateInfo.commandBufferCount = 1;
+
+	VkCommandBuffer vkBuffer = 0;
+	if (!checkVkResult(vkAllocateCommandBuffers(m_vkDevice, &allocateInfo, &vkBuffer)))
+	{
+		return false;
+	}
+
+	new (commandList) VulkanCommandList(vkBuffer);
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::submitCommandList(VT::ICommandList* list, const VT::CommandListSubmitInfo& info)
+{
+	VulkanCommandList* vulkanCommandList = reinterpret_cast<VulkanCommandList*>(list);
+
+	VkSemaphore waitSemaphore = info.m_waitSemaphore ?
+		reinterpret_cast<VulkanSemaphore*>(info.m_waitSemaphore)->m_vkSemaphore :
+		VK_NULL_HANDLE;
+	
+	VkSemaphore completeSemaphore = info.m_completeSemaphore ?
+		reinterpret_cast<VulkanSemaphore*>(info.m_completeSemaphore)->m_vkSemaphore :
+		VK_NULL_HANDLE;
+
+	VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	VkFence vkFence = info.m_fence ?
+		reinterpret_cast<VulkanFence*>(info.m_fence)->m_vkFence :
+		VK_NULL_HANDLE;
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &vulkanCommandList->m_vkCommandBuffer;
+	submitInfo.waitSemaphoreCount = waitSemaphore != VK_NULL_HANDLE ? 1 : 0;
+	submitInfo.pWaitSemaphores = &waitSemaphore;
+	submitInfo.pWaitDstStageMask = &waitStages;
+	submitInfo.signalSemaphoreCount = completeSemaphore != VK_NULL_HANDLE ? 1 : 0;
+	submitInfo.pSignalSemaphores = &completeSemaphore;
+
+	checkVkResultAssert(vkQueueSubmit(m_vkGraphicQueue, 1, &submitInfo, vkFence));
+}
+
+bool VT_VK::VulkanGraphicDevice::createFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence, bool signaled)
+{
+	VkFenceCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	createInfo.flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
+
+	VkFence vkFence = 0;
+	if (!checkVkResult(vkCreateFence(m_vkDevice, &createInfo, nullptr, &vkFence)))
+	{
+		return false;
+	}
+
+	new (fence) VulkanFence(vkFence);
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence)
+{
+	assert(fence);
+
+	VulkanFence* vulkanFence = reinterpret_cast<VulkanFence*>(fence);
+	if (vulkanFence->m_vkFence)
+	{
+		m_destroyingResources.m_fences.addToContainer(vulkanFence->m_vkFence);
+	}
+}
+
+void VT_VK::VulkanGraphicDevice::waitFences(uint32_t count, VT::IFence* fences)
+{
+	std::vector<VkFence> vkFences;
+	vkFences.reserve(count);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		VulkanFence* vulkanFence = reinterpret_cast<VulkanFence*>(&fences[i]);
+		vkFences.push_back(vulkanFence->m_vkFence);
+	}
+
+	vkWaitForFences(m_vkDevice, vkFences.size(), vkFences.data(), true, UINT64_MAX);
+}
+
+void VT_VK::VulkanGraphicDevice::resetFences(uint32_t count, VT::IFence* fences)
+{
+	std::vector<VkFence> vkFences;
+	vkFences.reserve(count);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		VulkanFence* vulkanFence = reinterpret_cast<VulkanFence*>(&fences[i]);
+		vkFences.push_back(vulkanFence->m_vkFence);
+	}
+
+	vkResetFences(m_vkDevice, vkFences.size(), vkFences.data());
+}
+
+bool VT_VK::VulkanGraphicDevice::createSemaphore(VT::ManagedGraphicDevice::ManagedSemaphoreBase* semaphore)
+{
+	VkSemaphore vkSemaphore = 0;
+	createSemaphoreInternal(vkSemaphore);
+	if (vkSemaphore == 0)
+	{
+		return false;
+	}
+
+	new (semaphore) VulkanSemaphore(vkSemaphore);
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::destroySemaphore(VT::ManagedGraphicDevice::ManagedSemaphoreBase* semaphore)
+{
+	assert(semaphore);
+
+	VulkanSemaphore* vulkanSemaphore = reinterpret_cast<VulkanSemaphore*>(semaphore);
+	if (vulkanSemaphore->m_vkSemaphore)
+	{
+		m_destroyingResources.m_fences.addToContainer(vulkanSemaphore->m_vkSemaphore);
+	}
+}
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* VT_VK::VulkanGraphicDevice::createSwapChainStorage() const
 {
@@ -878,4 +1032,19 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::RenderPassStorage* VT_VK::Vulkan
 VT::ManagedGraphicDevice::ManagedGraphicDevice::CommandPoolStorage* VT_VK::VulkanGraphicDevice::createCommandPoolStorage() const
 {
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedCommandPoolStorageInfo<VulkanCommandPool>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::CommandListStorage* VT_VK::VulkanGraphicDevice::createCommandListStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedCommandListStorageInfo<VulkanCommandList>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::FenceStorage* VT_VK::VulkanGraphicDevice::createFenceStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedFenceStorageInfo<VulkanFence>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::SemaphoreStorage* VT_VK::VulkanGraphicDevice::createSemaphoreStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedSemaphoreStorageInfo<VulkanSemaphore>>();
 }

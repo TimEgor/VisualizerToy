@@ -7,17 +7,14 @@ void VT::GraphicResourceManager::deletePipelineStateInternal(IPipelineState* sta
 	getGraphicDevice()->destroyPipelineState(state);
 }
 
-VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const PipelineStateInfo& desc, const IRenderPass& renderPass)
+VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const PipelineStateInfo& desc)
 {
-	PipelineStateHash id = 0;
-
-	hashCombine(id, desc.getHash());
-	hashCombine(id, renderPass.getHash());
+	PipelineStateHash id = desc.getHash();
 
 	const PipelineStateCollection::PipelineStateAccessInfo accessInfo = m_pipelineStateCollection.getOrAddPipelineState(id);
 	if (accessInfo.m_isNew)
 	{
-		IPipelineState* state = getGraphicDevice()->createPipelineState(desc, &renderPass);
+		IPipelineState* state = getGraphicDevice()->createPipelineState(desc);
 		accessInfo.m_state.getObjectCast<ManagedPipelineStateResourceHandle>()->setResource(state);
 	}
 

@@ -22,6 +22,7 @@ namespace VT
 
 	class ITexture2D;
 	class ITexture2DView;
+	class ISemaphore;
 
 	class ISwapChain
 	{
@@ -32,7 +33,14 @@ namespace VT
 		virtual const SwapChainDesc& getDesc() const = 0;
 
 		virtual uint32_t getTextureCount() const = 0;
-		virtual const ITexture2D* getTexture(uint32_t index) const = 0;
-		virtual const ITexture2DView* getTargetView(uint32_t index) const = 0;
+		virtual ITexture2D* getTargetTexture(uint32_t index) = 0;
+		virtual ITexture2DView* getTargetTextureView(uint32_t index) = 0;
+
+		virtual ISemaphore* getTextureAvailableSemaphore() = 0;
+
+		virtual void updateCurrentTextureIndex() = 0;
+		virtual uint32_t getCurrentTextureIndex() const = 0;
+
+		virtual void present(ISemaphore* readyPresentSemaphore) = 0;
 	};
 }

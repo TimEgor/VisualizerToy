@@ -24,7 +24,14 @@ namespace VT
 		bool init(const char* windowTitle, const WindowSize& windowSize, const SwapChainDesc& swapChainDesc);
 		void release();
 
+		virtual void updateNextTargetTextureIndex() override;
+		virtual uint32_t getCurrentTargetTextureIndex() const override;
+		virtual ISemaphore* getTargetTextureAvailable() override;
+
 		virtual uint32_t getFrameCount() const override;
-		virtual const ITexture2D* getTargetTexture(uint32_t frameIndex) const override;
+		virtual ITexture2D* getTargetTexture(uint32_t frameIndex) override;
+		virtual ITexture2DView* getTargetTextureView(uint32_t frameIndex) override;
+
+		virtual void present(ISemaphore* presentReadySemaphore) override;
 	};
 }

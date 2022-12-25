@@ -10,6 +10,7 @@ namespace VT
 	class IGraphicDevice;
 	class IGraphicResourceManager;
 
+	class IRenderSystem;
 	class IMaterialSystem;
 
 	class IResourceSystem;
@@ -24,6 +25,7 @@ namespace VT
 		IGraphicDevice* m_graphicDevice = nullptr;
 		IGraphicResourceManager* m_graphicResourceManager = nullptr;
 
+		IRenderSystem* m_renderSystem = nullptr;
 		IMaterialSystem* m_materialSystem = nullptr;
 
 		IResourceSystem* m_resourceSystem = nullptr;

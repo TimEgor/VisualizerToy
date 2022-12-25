@@ -3,6 +3,7 @@ set(MODULES_SET
 	GraphicDevice						GraphicDevice
 	ManagedGraphicDevice				ManagedGraphicDevice
 	GraphicPipeline						GraphicPipeline
+	GraphicSynchronization				GraphicSynchronization
 	GraphicResourceCommon				ResourceCommon
 	GraphicResourceManager				ResourceManager/Private
 	Shaders								Shaders

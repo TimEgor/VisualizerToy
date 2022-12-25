@@ -7,6 +7,7 @@ namespace VT
 	using GraphicPlatformType = HashTyped::Type;
 
 	class IGraphicDevice;
+	class IRenderContext;
 
 	class IGraphicPlatform : public HashTyped
 	{
@@ -17,6 +18,7 @@ namespace VT
 		virtual void release() = 0;
 
 		virtual IGraphicDevice* createGraphicDevice() = 0;
+		virtual VT::IRenderContext* createRenderContext() = 0;
 
 		virtual GraphicPlatformType getType() const = 0;
 	};

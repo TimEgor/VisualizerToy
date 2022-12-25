@@ -7,7 +7,5 @@ namespace VT
 	public:
 		ICommandPool() = default;
 		virtual ~ICommandPool() {}
-
-		virtual void reset() = 0;
 	};
 }

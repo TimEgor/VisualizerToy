@@ -6,7 +6,7 @@
 
 #include "NamedReferencePool/NamedObjectPoolHandle.h"
 
-VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::addPipelineStateInternal(
+VT::PipelineStateReference VT::PipelineStateCollection::addPipelineStateInternal(
 	PipelineStateHash hash)
 {
 	auto findStateIDIter = m_stateIDs.find(hash);
@@ -16,15 +16,16 @@ VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::addPipeline
 	}
 
 	PipelineStateHandleInfo info = m_states.addElementRaw();
-	m_stateIDs[hash] = info.m_elementHandle.getKey();
 
 	ManagedPipelineStateResourceHandle* handle
 		= new (info.m_elementPtr) ManagedPipelineStateResourceHandle(nullptr, info.m_elementHandle.getKey());
 
+	m_stateIDs[hash] = HashStateData{ handle, info.m_elementHandle.getKey() };
+
 	return handle;
 }
 
-VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::getPipelineStateInternal(
+VT::PipelineStateReference VT::PipelineStateCollection::getPipelineStateInternal(
 	PipelineStateHash hash)
 {
 	auto findStateIDIter = m_stateIDs.find(hash);
@@ -33,10 +34,10 @@ VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::getPipeline
 		return nullptr;
 	}
 
-	return m_states.getElement(findStateIDIter->second);
+	return findStateIDIter->second.m_state;
 }
 
-const VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::getPipelineStateInternal(
+VT::PipelineStateConstReference VT::PipelineStateCollection::getPipelineStateInternal(
 	PipelineStateHash hash) const
 {
 	auto findStateIDIter = m_stateIDs.find(hash);
@@ -45,19 +46,7 @@ const VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::getPi
 		return nullptr;
 	}
 
-	return m_states.getElement(findStateIDIter->second);
-}
-
-VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::getPipelineStateInternal(
-	PipelineStatePoolHandle handle)
-{
-	return m_states.getElement(handle);
-}
-
-const VT::ManagedPipelineStateResourceHandle* VT::PipelineStateCollection::getPipelineStateInternal(
-	PipelineStatePoolHandle handle) const
-{
-	return m_states.getElement(handle);
+	return findStateIDIter->second.m_state;
 }
 
 bool VT::PipelineStateCollection::init(size_t pageSize, size_t maxFreePageCount, size_t minFreeIndexCount)
@@ -91,18 +80,6 @@ bool VT::PipelineStateCollection::isValid(PipelineStatePoolHandle handle) const
 	return m_states.isValid(handle);
 }
 
-VT::PipelineStateConstReference VT::PipelineStateCollection::getPipelineState(PipelineStatePoolHandle handle) const
-{
-	SharedLockGuard locker(m_lockMutex);
-	return getPipelineStateInternal(handle);
-}
-
-VT::PipelineStateReference VT::PipelineStateCollection::getPipelineState(PipelineStatePoolHandle handle)
-{
-	SharedLockGuard locker(m_lockMutex);
-	return getPipelineStateInternal(handle);
-}
-
 VT::PipelineStateConstReference VT::PipelineStateCollection::getPipelineState(PipelineStateHash hash) const
 {
 	SharedLockGuard locker(m_lockMutex);
@@ -126,7 +103,7 @@ VT::PipelineStateCollection::PipelineStateAccessInfo VT::PipelineStateCollection
 {
 	UniqueLockGuard locker(m_lockMutex);
 
-	PipelineStateResourceHandle* handle = getPipelineStateInternal(hash);
+	PipelineStateReference handle = getPipelineStateInternal(hash);
 	if (handle)
 	{
 		return PipelineStateAccessInfo{ handle, false };
@@ -146,6 +123,8 @@ void VT::PipelineStateCollection::removePipelineState(PipelineStateHash hash)
 		return;
 	}
 
-	m_states.removeElement(findStateIDIter->second);
+	findStateIDIter->second.m_state.release();
+
+	m_states.removeElement(findStateIDIter->second.m_handleID);
 	m_stateIDs.erase(findStateIDIter);
 }

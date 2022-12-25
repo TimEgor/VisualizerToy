@@ -24,30 +24,42 @@ namespace VT
 		return reinterpret_cast<NamedGraphicResourceSystem*>(getEnvironmentGraphicResourceManager());
 	}
 
-#define MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(TYPE, FUNCTION_DSCTOR, FUNCTION_REF_RELEASE)	\
-	void ManagedGraphicResourceHandle<##TYPE##>::selfDestroy()								\
-	{																						\
-		getResourceManager()->FUNCTION_REF_RELEASE(m_resourceHandle);						\
-	}																						\
-	ManagedGraphicResourceHandle<##TYPE##>::~ManagedGraphicResourceHandle<##TYPE##>()		\
-	{																						\
-		if (m_resourcePtr)																	\
-		{																					\
-			getResourceManager()->FUNCTION_DSCTOR(m_resourcePtr);							\
-		}																					\
+#define MANAGED_GRAPHIC_RESOURCE_DESTROY_RELEASE_IMPL(TYPE, FUNCTION_DSCTOR, FUNCTION_REF_RELEASE)	\
+	void ManagedGraphicResourceHandle<##TYPE##>::selfDestroy()										\
+	{																								\
+		getResourceManager()->FUNCTION_REF_RELEASE(m_id);											\
+	}																								\
+	ManagedGraphicResourceHandle<##TYPE##>::~ManagedGraphicResourceHandle<##TYPE##>()				\
+	{																								\
+		if (m_resourcePtr)																			\
+		{																							\
+			getResourceManager()->FUNCTION_DSCTOR(m_resourcePtr);									\
+		}																							\
 	}
 
-#define MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(TYPE, FUNCTION_DSCTOR)						\
-	void ManagedGraphicResourceHandle<##TYPE##>::selfDestroy()								\
-	{																						\
-	}																						\
-																							\
-	ManagedGraphicResourceHandle<##TYPE##>::~ManagedGraphicResourceHandle<##TYPE##>()		\
-	{																						\
-		if (m_resourcePtr)																	\
-		{																					\
-			getResourceManager()->FUNCTION_DSCTOR(m_resourcePtr);							\
-		}																					\
+#define MANAGED_GRAPHIC_RESOURCE_RELEASE_IMPL(TYPE, FUNCTION_DSCTOR)								\
+	void ManagedGraphicResourceHandle<##TYPE##>::selfDestroy()										\
+	{																								\
+	}																								\
+	ManagedGraphicResourceHandle<##TYPE##>::~ManagedGraphicResourceHandle<##TYPE##>()				\
+	{																								\
+		if (m_resourcePtr)																			\
+		{																							\
+			getResourceManager()->FUNCTION_DSCTOR(m_resourcePtr);									\
+		}																							\
+	}
+
+#define MANAGED_GRAPHIC_RESOURCE_VIEW_DESTROY_IMPL(TYPE, FUNCTION_DSCTOR, FUNCTION_REF_RELEASE)		\
+	void ManagedGraphicResourceViewHandle<##TYPE##>::selfDestroy()									\
+	{																								\
+		getResourceManager()->FUNCTION_REF_RELEASE(m_id);											\
+	}																								\
+	ManagedGraphicResourceViewHandle<##TYPE##>::~ManagedGraphicResourceViewHandle<##TYPE##>()		\
+	{																								\
+		if (m_resourceViewPtr)																		\
+		{																							\
+			getResourceManager()->FUNCTION_DSCTOR(m_resourceViewPtr);								\
+		}																							\
 	}
 
 #define NAMED_MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(TYPE, FUNCTION_REF_RELEASE)						\
@@ -59,12 +71,13 @@ namespace VT
 		}																							\
 	}
 
-	MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(Texture2DResourceHandle, deleteTexture2DInternal, deleteTexture2DReference)
+	MANAGED_GRAPHIC_RESOURCE_DESTROY_RELEASE_IMPL(Texture2DResourceHandle, deleteTexture2DInternal, deleteTexture2DReference)
+	MANAGED_GRAPHIC_RESOURCE_VIEW_DESTROY_IMPL(Texture2DViewResourceHandle, deleteTexture2DViewInternal, deleteTexture2DViewReference)
 
-	MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(VertexShaderResourceHandle, deleteVertexShaderInternal, deleteVertexShaderReference)
-	MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(PixelShaderResourceHandle, deletePixelShaderInternal, deletePixelShaderReference)
+	MANAGED_GRAPHIC_RESOURCE_DESTROY_RELEASE_IMPL(VertexShaderResourceHandle, deleteVertexShaderInternal, deleteVertexShaderReference)
+	MANAGED_GRAPHIC_RESOURCE_DESTROY_RELEASE_IMPL(PixelShaderResourceHandle, deletePixelShaderInternal, deletePixelShaderReference)
 
-	MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(PipelineStateResourceHandle, deletePipelineStateInternal)
+	MANAGED_GRAPHIC_RESOURCE_RELEASE_IMPL(PipelineStateResourceHandle, deletePipelineStateInternal)
 
 	NAMED_MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(VertexShaderResourceHandle, deleteVertexShaderReference)
 	NAMED_MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(PixelShaderResourceHandle, deletePixelShaderReference)

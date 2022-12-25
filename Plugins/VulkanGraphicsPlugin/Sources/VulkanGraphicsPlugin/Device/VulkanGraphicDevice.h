@@ -44,6 +44,8 @@ namespace VT_VK
 		void createShaderInternal(const void* code, size_t codeSize, VkShaderModule& vkShaderModule);
 		void destroyShaderInternal(VulkanShaderBase* shader);
 
+		void createSemaphoreInternal(VkSemaphore& semaphore);
+
 		void destroyResources();
 
 	protected:
@@ -64,8 +66,7 @@ namespace VT_VK
 		virtual bool createPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader, const void* code, size_t codeSize) override;
 		virtual void destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader) override;
 
-		virtual bool createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
-			const VT::PipelineStateInfo& info, const VT::IRenderPass* renderPass) override;
+		virtual bool createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state, const VT::PipelineStateInfo& info) override;
 		virtual void destroyPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state) override;
 
 		virtual bool createRenderPass(VT::ManagedGraphicDevice::ManagedRenderPassBase* pass, const VT::RenderPassInfo& info) override;
@@ -73,6 +74,19 @@ namespace VT_VK
 
 		virtual bool createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
 		virtual void destroyCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
+
+		virtual bool allocateCommandList(VT::ManagedGraphicDevice::ManagedCommandListBase* commandList, VT::ICommandPool* pool) override;
+
+		virtual void submitCommandList(VT::ICommandList* list, const VT::CommandListSubmitInfo& info) override;
+
+		virtual bool createFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence, bool signaled) override;
+		virtual void destroyFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence) override;
+
+		virtual void waitFences(uint32_t count, VT::IFence* fences) override;
+		virtual void resetFences(uint32_t count, VT::IFence* fences) override;
+
+		virtual bool createSemaphore(VT::ManagedGraphicDevice::ManagedSemaphoreBase* semaphore) override;
+		virtual void destroySemaphore(VT::ManagedGraphicDevice::ManagedSemaphoreBase* semaphore) override;
 
 		virtual SwapChainStorage* createSwapChainStorage() const override;
 
@@ -86,6 +100,10 @@ namespace VT_VK
 		virtual RenderPassStorage* createRenderPassStorage() const override;
 
 		virtual CommandPoolStorage* createCommandPoolStorage() const override;
+		virtual CommandListStorage* createCommandListStorage() const override;
+
+		virtual FenceStorage* createFenceStorage() const override;
+		virtual SemaphoreStorage* createSemaphoreStorage() const override;
 
 	public:
 		VulkanGraphicDevice() = default;

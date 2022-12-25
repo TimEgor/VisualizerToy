@@ -16,6 +16,8 @@ target_link_libraries(VulkanGraphicsPlugin
 		GraphicPlatform
 		ManagedGraphicDevice
 
+		RenderSystem_COMMON
+
 		PluginSystem_COMMON
 		WindowSystem_COMMON
 		Platform

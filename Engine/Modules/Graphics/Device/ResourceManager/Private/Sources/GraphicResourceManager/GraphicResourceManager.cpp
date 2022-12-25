@@ -7,6 +7,8 @@ bool VT::GraphicResourceManager::init()
 	VT_CHECK_INITIALIZATION(m_pixelShaders.init(16, 0, 4))
 	VT_CHECK_INITIALIZATION(m_vertexShaders.init(16, 0, 4))
 
+	VT_CHECK_INITIALIZATION(m_pipelineStateCollection.init(128, 1, 64))
+
 	return true;
 }
 

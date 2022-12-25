@@ -36,14 +36,44 @@ void VT::WindowGraphicPresenter::release()
 	m_swapChain = nullptr;
 }
 
+void VT::WindowGraphicPresenter::updateNextTargetTextureIndex()
+{
+	assert(m_swapChain);
+	m_swapChain->updateCurrentTextureIndex();
+}
+
+uint32_t VT::WindowGraphicPresenter::getCurrentTargetTextureIndex() const
+{
+	assert(m_swapChain);
+	return m_swapChain->getCurrentTextureIndex();
+}
+
+VT::ISemaphore* VT::WindowGraphicPresenter::getTargetTextureAvailable()
+{
+	assert(m_swapChain);
+	return m_swapChain->getTextureAvailableSemaphore();
+}
+
 uint32_t VT::WindowGraphicPresenter::getFrameCount() const
 {
 	assert(m_swapChain);
 	return m_swapChain->getTextureCount();
 }
 
-const VT::ITexture2D* VT::WindowGraphicPresenter::getTargetTexture(uint32_t frameIndex) const
+VT::ITexture2D* VT::WindowGraphicPresenter::getTargetTexture(uint32_t frameIndex)
 {
 	assert(m_swapChain);
-	return m_swapChain->getTexture(frameIndex);
+	return m_swapChain->getTargetTexture(frameIndex);
+}
+
+VT::ITexture2DView* VT::WindowGraphicPresenter::getTargetTextureView(uint32_t frameIndex)
+{
+	assert(m_swapChain);
+	return m_swapChain->getTargetTextureView(frameIndex);
+}
+
+void VT::WindowGraphicPresenter::present(ISemaphore* presentReadySemaphore)
+{
+	assert(m_swapChain);
+	m_swapChain->present(presentReadySemaphore);
 }

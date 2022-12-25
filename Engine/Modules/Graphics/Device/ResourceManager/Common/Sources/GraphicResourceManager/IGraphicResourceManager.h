@@ -8,6 +8,7 @@ class IRenderPass;
 
 namespace VT
 {
+	struct TextureViewDesc;
 	class IWindow;
 	class IRenderPass;
 
@@ -32,6 +33,10 @@ namespace VT
 		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) = 0;
 		virtual Texture2DReference getTexture2D(Texture2DHandleID handle) = 0;
 		virtual bool isValidTexture2D(Texture2DHandleID handle) const = 0;
+
+		virtual Texture2DViewReference createTexture2DView(Texture2DReference texture, const TextureViewDesc& desc) = 0;
+		virtual Texture2DViewReference getTexture2DView(Texture2DViewHandleID handle) = 0;
+		virtual bool isValidTexture2DView(Texture2DViewHandleID handle) = 0;
 
 		//Vertex shader
 		virtual VertexShaderReference createVertexShader(const void* data, size_t dataSize) = 0;
@@ -58,7 +63,7 @@ namespace VT
 			OnLoadedPixelShaderCallback callback = nullptr) = 0;
 
 		//PipelineState
-		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc, const IRenderPass& renderPass) = 0;
+		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc) = 0;
 		virtual bool isValidPipelineState(PipelineStateHandleID handle) const = 0;
 	};
 }

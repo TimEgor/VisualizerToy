@@ -15,39 +15,45 @@ namespace VT
 	class GraphicResourceHandle : public CountableObjectBase
 	{
 	public:
-		using BaseResourceType = ResourceType;
-		using HandleType = HandleIDType;
+		using BaseResource = ResourceType;
+		using HandleID = HandleIDType;
 
 		static_assert(std::is_integral<HandleIDType>::value);
 
 	protected:
 		ResourceType* m_resourcePtr = nullptr;
-		HandleIDType m_resourceHandle = 0;
+		HandleIDType m_id = 0;
 
 	public:
 		GraphicResourceHandle() = default;
-		GraphicResourceHandle(ResourceType* resource, HandleIDType handle)
-			: m_resourcePtr(resource), m_resourceHandle(handle) {}
+		GraphicResourceHandle(ResourceType* resource, HandleIDType handleID)
+			: m_resourcePtr(resource), m_id(handleID) {}
 
 		ResourceType* getResource() const { return m_resourcePtr; }
-		HandleIDType getID() const { return m_resourceHandle; }
+		HandleIDType getID() const { return m_id; }
 	};
 
-	template <typename ResourceViewType, typename ResourceType, typename HandleIDType>
-	class GraphicResourceViewHandle : public GraphicResourceHandle<ResourceType, HandleIDType>
+	template <typename ResourceViewType, typename ResourceHandleIDType, typename HandleIDType>
+	class GraphicResourceViewHandle : public CountableObjectBase
 	{
 	public:
-		using BaseResourceViewType = ResourceViewType;
+		using BaseResourceView = ResourceViewType;
+		using HandleID = HandleIDType;
+		using ResourceHandleID = ResourceHandleIDType;
 
 	protected:
 		ResourceViewType* m_resourceViewPtr = nullptr;
+		HandleIDType m_id = 0;
+		ResourceHandleIDType m_resourceHandleID = 0;
 
 	public:
 		GraphicResourceViewHandle() = default;
-		GraphicResourceViewHandle(ResourceViewType* resourceView, ResourceType* resource, HandleIDType handle)
-			: GraphicResourceHandle(resource, handle), m_resourceViewPtr(resourceView) {}
+		GraphicResourceViewHandle(ResourceViewType* view, HandleIDType viewHandleID, ResourceHandleIDType resourceHandleID)
+			: m_resourceViewPtr(view), m_id(viewHandleID), m_resourceHandleID(resourceHandleID) {}
 
-		ResourceType* getResourceView() const { return m_resourceViewPtr; }
+		ResourceViewType* getResourceView() const { return m_resourceViewPtr; }
+		HandleIDType getID() const { return m_id; }
+		ResourceHandleIDType getResourceHandleID() const { return m_resourceHandleID; }
 	};
 
 #define GRAPHIC_RESOURCE(NAME, INTERFACE_TYPE, HANDLE_ID_TYPE)							\
@@ -63,7 +69,7 @@ namespace VT
 	COUNTABLE_REFERENCES_DECLARATION_BY_NAME(NAME##ResourceHandle, NAME)
 
 	GRAPHIC_RESOURCE(Texture2D, ITexture2D, uint32_t);
-	GRAPHIC_RESOURCE_VIEW(Texture2DView, ITexture2DView, ITexture2D, uint32_t);
+	GRAPHIC_RESOURCE_VIEW(Texture2DView, ITexture2DView, Texture2DHandleID, uint32_t);
 
 	GRAPHIC_RESOURCE(VertexShader, IVertexShader, uint32_t);
 	GRAPHIC_RESOURCE(PixelShader, IPixelShader, uint32_t);

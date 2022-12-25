@@ -4,6 +4,8 @@
 
 bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnabled)
 {
+	VT_CHECK_INITIALIZATION(initDevice(isSwapChainEnabled));
+
 	if (isSwapChainEnabled)
 	{
 		m_swapChainStorage = createSwapChainStorage();
@@ -28,7 +30,17 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 	m_renderPassStorage = createRenderPassStorage();
 	VT_CHECK_INITIALIZATION(m_renderPassStorage && m_renderPassStorage->init(32, 0, 16));
 
-	VT_CHECK_INITIALIZATION(initDevice(isSwapChainEnabled));
+	m_commandPoolStorage = createCommandPoolStorage();
+	VT_CHECK_INITIALIZATION(m_commandPoolStorage && m_commandPoolStorage->init(32, 0, 16));
+
+	m_commandListStorage = createCommandListStorage();
+	VT_CHECK_INITIALIZATION(m_commandListStorage && m_commandListStorage->init(32, 0, 16));
+
+	m_fenceStorage = createFenceStorage();
+	VT_CHECK_INITIALIZATION(m_fenceStorage && m_fenceStorage->init(64, 0, 32));
+
+	m_semaphoreStorage = createSemaphoreStorage();
+	VT_CHECK_INITIALIZATION(m_semaphoreStorage && m_semaphoreStorage->init(64, 0, 32));
 
 	return true;
 }
@@ -47,6 +59,12 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pipelineStateStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_renderPassStorage);
+
+	VT_SAFE_DESTROY_WITH_RELEASING(m_commandPoolStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_commandListStorage);
+
+	VT_SAFE_DESTROY_WITH_RELEASING(m_fenceStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_semaphoreStorage);
 }
 
 VT::ISwapChain* VT::ManagedGraphicDevice::ManagedGraphicDevice::createSwapChain(const SwapChainDesc& desc, const IWindow* window)
@@ -103,8 +121,15 @@ VT::ITexture2DView* VT::ManagedGraphicDevice::ManagedGraphicDevice::createTextur
 	return newObjectInfo.m_objectPtr;
 }
 
-void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture(ITexture2DView* view)
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture2DView(ITexture2DView* view)
 {
+	assert(view);
+	assert(m_texture2DViewStorage);
+
+	ManagedTexture2DViewBase* managedTextureView = reinterpret_cast<ManagedTexture2DViewBase*>(view);
+
+	destroyTexture2DView(managedTextureView);
+	m_texture2DViewStorage->removeObject(managedTextureView->getHandle());
 }
 
 VT::IVertexShader* VT::ManagedGraphicDevice::ManagedGraphicDevice::createVertexShader(const void* code, size_t codeSize)
@@ -162,12 +187,12 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPixelShader(IPixelSh
 }
 
 VT::IPipelineState* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPipelineState(
-	const PipelineStateInfo& pipelineStateInfo, const IRenderPass* renderPass)
+	const PipelineStateInfo& pipelineStateInfo)
 {
 	assert(m_pipelineStateStorage);
 
 	ManagedPipelineStateStorageInfoBase::NewObjectInfo newObjectInfo = m_pipelineStateStorage->addNewObject();
-	if (!createPipelineState(newObjectInfo.m_objectPtr, pipelineStateInfo, renderPass))
+	if (!createPipelineState(newObjectInfo.m_objectPtr, pipelineStateInfo))
 	{
 		m_pipelineStateStorage->removeObject(newObjectInfo.m_objectHandle);
 		return nullptr;
@@ -241,4 +266,74 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyCommandPool(ICommand
 
 	destroyCommandPool(managedPool);
 	m_commandPoolStorage->removeObject(managedPool->getHandle());
+}
+
+VT::ICommandList* VT::ManagedGraphicDevice::ManagedGraphicDevice::allocateCommandList(ICommandPool* pool)
+{
+	assert(m_commandListStorage);
+
+	ManagedCommandListStorageInfoBase::NewObjectInfo newObjectInfo = m_commandListStorage->addNewObject();
+	if (!allocateCommandList(newObjectInfo.m_objectPtr, pool))
+	{
+		m_commandListStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+VT::IFence* VT::ManagedGraphicDevice::ManagedGraphicDevice::createFence(bool signaled)
+{
+	assert(m_fenceStorage);
+
+	ManagedFenceStorageInfoBase::NewObjectInfo newObjectInfo = m_fenceStorage->addNewObject();
+	if (!createFence(newObjectInfo.m_objectPtr, signaled))
+	{
+		m_fenceStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyFence(IFence* fence)
+{
+	assert(fence);
+	assert(m_fenceStorage);
+
+	ManagedFenceBase* managedFence = reinterpret_cast<ManagedFenceBase*>(fence);
+
+	destroyFence(managedFence);
+	m_fenceStorage->removeObject(managedFence->getHandle());
+}
+
+VT::ISemaphore* VT::ManagedGraphicDevice::ManagedGraphicDevice::createSemaphore()
+{
+	assert(m_semaphoreStorage);
+
+	ManagedSemaphoreStorageInfoBase::NewObjectInfo newObjectInfo = m_semaphoreStorage->addNewObject();
+	if (!createSemaphore(newObjectInfo.m_objectPtr))
+	{
+		m_fenceStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroySemaphore(ISemaphore* semaphore)
+{
+	assert(semaphore);
+	assert(m_semaphoreStorage);
+
+	ManagedSemaphoreBase* managedPool = reinterpret_cast<ManagedSemaphoreBase*>(semaphore);
+
+	destroySemaphore(semaphore);
+	m_semaphoreStorage->removeObject(managedPool->getHandle());
 }

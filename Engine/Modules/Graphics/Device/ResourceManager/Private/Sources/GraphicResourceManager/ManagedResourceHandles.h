@@ -16,11 +16,11 @@ namespace VT
 
 	public:
 		ManagedGraphicResourceHandle() = default;
-		ManagedGraphicResourceHandle(typename BaseType::BaseResourceType* resource, typename BaseType::HandleType id)
-			: BaseType(resource, id) {}
+		ManagedGraphicResourceHandle(typename BaseType::BaseResource* resource, typename BaseType::HandleID handleID)
+			: BaseType(resource, handleID) {}
 		~ManagedGraphicResourceHandle();
 
-		void setResource(typename BaseType::BaseResourceType* resource) { m_resourcePtr = resource; }
+		void setResource(typename BaseType::BaseResource* resource) { m_resourcePtr = resource; }
 	};
 
 	template <typename ManagedBaseType>
@@ -33,12 +33,29 @@ namespace VT
 
 	public:
 		NamedManagedGraphicResourceHandle() = default;
-		NamedManagedGraphicResourceHandle(typename ManagedBaseType::ResourceHandleBaseType::BaseResourceType* resource, 
-			typename ManagedBaseType::ResourceHandleBaseType::HandleType id, FileNameID nameID)
-			: ManagedBaseType(resource, id), m_nameID(nameID) {}
+		NamedManagedGraphicResourceHandle(typename ManagedBaseType::ResourceHandleBaseType::BaseResource* resource, 
+			typename ManagedBaseType::ResourceHandleBaseType::HandleID handleID, FileNameID nameID)
+			: ManagedBaseType(resource, handleID), m_nameID(nameID) {}
 		~NamedManagedGraphicResourceHandle() {}
 
 		FileNameID getNameID() const { return m_nameID; }
+	};
+
+	template <typename BaseType>
+	class ManagedGraphicResourceViewHandle : public BaseType
+	{
+	public:
+		using ResourceHandleBaseType = BaseType;
+
+	private:
+		virtual void selfDestroy() override;
+
+	public:
+		ManagedGraphicResourceViewHandle() = default;
+		ManagedGraphicResourceViewHandle(typename BaseType::BaseResourceView* resourceView,
+			typename BaseType::HandleID viewHandleID, typename BaseType::ResourceHandleID resourceHandleID)
+			: BaseType(resourceView, viewHandleID, resourceHandleID) {}
+		~ManagedGraphicResourceViewHandle();
 	};
 
 #define MANAGED_GRAPHIC_RESOURCE(BASE_TYPE)	\
@@ -47,8 +64,11 @@ namespace VT
 #define NAMED_MANAGED_GRAPHIC_RESOURCE(BASE_TYPE)	\
 	using NamedManaged##BASE_TYPE = NamedManagedGraphicResourceHandle<ManagedGraphicResourceHandle<BASE_TYPE>>;
 
+#define MANAGED_GRAPHIC_RESOURCE_VIEW(BASE_TYPE)	\
+	using Managed##BASE_TYPE = ManagedGraphicResourceViewHandle<BASE_TYPE>;
+
 	MANAGED_GRAPHIC_RESOURCE(Texture2DResourceHandle)
-	MANAGED_GRAPHIC_RESOURCE(Texture2DViewResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE_VIEW(Texture2DViewResourceHandle)
 
 	MANAGED_GRAPHIC_RESOURCE(VertexShaderResourceHandle)
 	MANAGED_GRAPHIC_RESOURCE(PixelShaderResourceHandle)
