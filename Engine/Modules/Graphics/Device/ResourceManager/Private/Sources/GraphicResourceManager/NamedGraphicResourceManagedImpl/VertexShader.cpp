@@ -5,7 +5,7 @@
 
 void VT::NamedGraphicResourceSystem::deleteVertexShaderReference(FileNameID nameID)
 {
-	m_namedVertexPool.removeResource(nameID);
+	m_namedVertexShaderPool.removeResource(nameID);
 }
 
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::getVertexShader(VertexShaderHandleID handle)
@@ -37,18 +37,18 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::getNamedVertexShader(c
 
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::getNamedVertexShader(FileNameID handle)
 {
-	return m_namedVertexPool.getResource(handle);
+	return m_namedVertexShaderPool.getResource(handle);
 }
 
 bool VT::NamedGraphicResourceSystem::isValidNamedVertexShader(FileNameID handle) const
 {
-	return m_namedVertexPool.isValid(handle);
+	return m_namedVertexShaderPool.isValid(handle);
 }
 
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const FileName& shaderPath)
 {
 	FileNameID nameID = shaderPath.hash();
-	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexPool.getOrAddResource(nameID);
+	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexShaderPool.getOrAddResource(nameID);
 	if (shaderAccessor.m_isNew)
 	{
 		IResourceSystem* resourceSystem = getResourceSystem();
@@ -67,7 +67,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 				IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
 				if (!shader)
 				{
-					m_namedVertexPool.removeResource(nameID);
+					m_namedVertexShaderPool.removeResource(nameID);
 					return nullptr;
 				}
 
@@ -82,7 +82,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShaderAsync(
 	const FileName& shaderPath, OnLoadedVertexShaderCallback callback)
 {
-	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexPool.getOrAddResource(shaderPath);
+	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexShaderPool.getOrAddResource(shaderPath);
 	if (!shaderAccessor.m_isNew)
 	{
 		if (callback)

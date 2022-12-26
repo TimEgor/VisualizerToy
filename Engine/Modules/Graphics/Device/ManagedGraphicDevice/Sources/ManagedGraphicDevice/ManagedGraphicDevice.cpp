@@ -47,7 +47,6 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 
 void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 {
-	releaseDevice();
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_swapChainStorage);
 
@@ -65,6 +64,8 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_fenceStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_semaphoreStorage);
+
+	releaseDevice();
 }
 
 VT::ISwapChain* VT::ManagedGraphicDevice::ManagedGraphicDevice::createSwapChain(const SwapChainDesc& desc, const IWindow* window)
@@ -332,8 +333,8 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroySemaphore(ISemaphore
 	assert(semaphore);
 	assert(m_semaphoreStorage);
 
-	ManagedSemaphoreBase* managedPool = reinterpret_cast<ManagedSemaphoreBase*>(semaphore);
+	ManagedSemaphoreBase* managedSemaphore = reinterpret_cast<ManagedSemaphoreBase*>(semaphore);
 
-	destroySemaphore(semaphore);
-	m_semaphoreStorage->removeObject(managedPool->getHandle());
+	destroySemaphore(managedSemaphore);
+	m_semaphoreStorage->removeObject(managedSemaphore->getHandle());
 }

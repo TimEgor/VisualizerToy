@@ -16,8 +16,8 @@ namespace VT
 		PixelShaderReference, NamedObjectPoolHandle32>;
 
 	private:
-		NamedVertexShaderPool m_namedVertexPool;
-		NamedPixelShaderPool m_namedPixelPool;
+		NamedVertexShaderPool m_namedVertexShaderPool;
+		NamedPixelShaderPool m_namedPixelShaderPool;
 
 		void deleteVertexShaderReference(GraphicResourceNameID nameID);
 		void deletePixelShaderReference(GraphicResourceNameID nameID);

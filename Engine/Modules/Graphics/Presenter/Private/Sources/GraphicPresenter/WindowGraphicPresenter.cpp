@@ -29,11 +29,17 @@ void VT::WindowGraphicPresenter::release()
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	VT_CHECK_RETURN_ASSERT(environment && environment->m_windowSystem && environment->m_graphicResourceManager);
 
-	environment->m_windowSystem->destroyWindow(m_window);
-	environment->m_graphicDevice->destroySwapChain(m_swapChain);
+	if (m_swapChain)
+	{
+		environment->m_graphicDevice->destroySwapChain(m_swapChain);
+		m_swapChain = nullptr;
+	}
 
-	m_window = nullptr;
-	m_swapChain = nullptr;
+	if (m_window)
+	{
+		environment->m_windowSystem->destroyWindow(m_window);
+		m_window = nullptr;
+	}
 }
 
 void VT::WindowGraphicPresenter::updateNextTargetTextureIndex()

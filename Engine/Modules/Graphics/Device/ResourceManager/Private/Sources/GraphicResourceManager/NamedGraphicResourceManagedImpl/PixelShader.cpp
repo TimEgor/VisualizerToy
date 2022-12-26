@@ -5,7 +5,7 @@
 
 void VT::NamedGraphicResourceSystem::deletePixelShaderReference(FileNameID nameID)
 {
-	m_namedPixelPool.removeResource(nameID);
+	m_namedPixelShaderPool.removeResource(nameID);
 }
 
 VT::PixelShaderReference VT::NamedGraphicResourceSystem::getPixelShader(PixelShaderHandleID handle)
@@ -37,18 +37,18 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::getNamedPixelShader(con
 
 VT::PixelShaderReference VT::NamedGraphicResourceSystem::getNamedPixelShader(FileNameID handle)
 {
-	return m_namedPixelPool.getResource(handle);
+	return m_namedPixelShaderPool.getResource(handle);
 }
 
 bool VT::NamedGraphicResourceSystem::isValidNamedPixelShader(FileNameID handle) const
 {
-	return m_namedPixelPool.isValid(handle);
+	return m_namedPixelShaderPool.isValid(handle);
 }
 
 VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const FileName& shaderPath)
 {
 	FileNameID nameID = shaderPath.hash();
-	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelPool.getOrAddResource(nameID);
+	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelShaderPool.getOrAddResource(nameID);
 	if (shaderAccessor.m_isNew)
 	{
 		IResourceSystem* resourceSystem = getResourceSystem();
@@ -67,7 +67,7 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const F
 				IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
 				if (!shader)
 				{
-					m_namedPixelPool.removeResource(nameID);
+					m_namedPixelShaderPool.removeResource(nameID);
 					return nullptr;
 				}
 
@@ -82,7 +82,7 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const F
 VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShaderAsync(
 	const FileName& shaderPath, OnLoadedPixelShaderCallback callback)
 {
-	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelPool.getOrAddResource(shaderPath);
+	NamedPixelShaderPool::ResourceAccessInfo shaderAccessor = m_namedPixelShaderPool.getOrAddResource(shaderPath);
 	if (!shaderAccessor.m_isNew)
 	{
 		if (callback)

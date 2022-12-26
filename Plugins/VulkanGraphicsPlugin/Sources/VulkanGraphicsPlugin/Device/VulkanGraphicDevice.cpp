@@ -422,7 +422,7 @@ void VT_VK::VulkanGraphicDevice::createShaderInternal(const void* code, size_t c
 	moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code);
 	moduleCreateInfo.codeSize = codeSize;
 
-	vkCreateShaderModule(m_vkDevice, &moduleCreateInfo, nullptr, &vkShaderModule);
+	checkVkResultAssert(vkCreateShaderModule(m_vkDevice, &moduleCreateInfo, nullptr, &vkShaderModule));
 }
 
 void VT_VK::VulkanGraphicDevice::destroyShaderInternal(VulkanShaderBase* shader)
@@ -519,6 +519,18 @@ void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ManagedGraphicDevice::Mana
 		delete[] reinterpret_cast<uint8_t*>(vulkanSwapChain->m_textures);
 	}
 
+	if (vulkanSwapChain->m_targetViews)
+	{
+		for (uint32_t i = 0; i < vulkanSwapChain->getTextureCount(); ++i)
+		{
+			destroyTexture2DView(&vulkanSwapChain->m_targetViews[i]);
+		}
+
+		delete[] reinterpret_cast<uint8_t*>(vulkanSwapChain->m_targetViews);
+	}
+
+	destroySemaphore(&vulkanSwapChain->m_textureAvailableSemaphore);
+
 	if (vulkanSwapChain->m_vkSwapChain)
 	{
 		m_destroyingResources.m_swapChains.addToContainer(vulkanSwapChain->m_vkSwapChain);
@@ -600,7 +612,7 @@ bool VT_VK::VulkanGraphicDevice::createVertexShader(VT::ManagedGraphicDevice::Ma
 
 void VT_VK::VulkanGraphicDevice::destroyVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader)
 {
-	destroyShaderInternal(reinterpret_cast<VulkanShaderBase*>(shader));
+	destroyShaderInternal(reinterpret_cast<VulkanVertexShader*>(shader));
 }
 
 bool VT_VK::VulkanGraphicDevice::createPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader,
@@ -616,7 +628,7 @@ bool VT_VK::VulkanGraphicDevice::createPixelShader(VT::ManagedGraphicDevice::Man
 
 void VT_VK::VulkanGraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader)
 {
-	destroyShaderInternal(reinterpret_cast<VulkanShaderBase*>(shader));
+	destroyShaderInternal(reinterpret_cast<VulkanPixelShader*>(shader));
 }
 
 bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
@@ -990,7 +1002,7 @@ void VT_VK::VulkanGraphicDevice::destroySemaphore(VT::ManagedGraphicDevice::Mana
 	VulkanSemaphore* vulkanSemaphore = reinterpret_cast<VulkanSemaphore*>(semaphore);
 	if (vulkanSemaphore->m_vkSemaphore)
 	{
-		m_destroyingResources.m_fences.addToContainer(vulkanSemaphore->m_vkSemaphore);
+		m_destroyingResources.m_semaphores.addToContainer(vulkanSemaphore->m_vkSemaphore);
 	}
 }
 

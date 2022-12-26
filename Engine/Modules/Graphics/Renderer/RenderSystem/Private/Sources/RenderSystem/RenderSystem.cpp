@@ -54,6 +54,12 @@ void VT::RenderSystem::release()
 		m_frameFence = nullptr;
 	}
 
+	if (m_renderingCompleteSemaphore)
+	{
+		environment->m_graphicDevice->destroySemaphore(m_renderingCompleteSemaphore);
+		m_renderingCompleteSemaphore = nullptr;
+	}
+
 	VT_SAFE_DESTROY_WITH_RELEASING(m_context);
 }
 

@@ -71,6 +71,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 			graphicPresenter->present(renderSystem->getRenderCompletedSemaphore());
 		}
+
+		renderSystem->waitFrame();
 	}
 
 	VT_SAFE_DESTROY(graphicPresenter);
