@@ -69,9 +69,6 @@ namespace VT_VK
 		virtual bool createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state, const VT::PipelineStateInfo& info) override;
 		virtual void destroyPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state) override;
 
-		virtual bool createRenderPass(VT::ManagedGraphicDevice::ManagedRenderPassBase* pass, const VT::RenderPassInfo& info) override;
-		virtual void destroyRenderPass(VT::ManagedGraphicDevice::ManagedRenderPassBase* pass) override;
-
 		virtual bool createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
 		virtual void destroyCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
 
@@ -97,7 +94,6 @@ namespace VT_VK
 		virtual PixelShaderStorage* createPixelShaderStorage() const override;
 
 		virtual PipelineStateStorage* createPipelineStateStorage() const override;
-		virtual RenderPassStorage* createRenderPassStorage() const override;
 
 		virtual CommandPoolStorage* createCommandPoolStorage() const override;
 		virtual CommandListStorage* createCommandListStorage() const override;

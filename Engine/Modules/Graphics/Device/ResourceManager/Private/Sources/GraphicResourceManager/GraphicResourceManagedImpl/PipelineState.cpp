@@ -1,7 +1,5 @@
 #include "Common.h"
 
-#include "GraphicPipeline/IRenderPass.h"
-
 void VT::GraphicResourceManager::deletePipelineStateInternal(IPipelineState* state)
 {
 	getGraphicDevice()->destroyPipelineState(state);

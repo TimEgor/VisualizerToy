@@ -14,7 +14,6 @@
 #include "VulkanGraphicsPlugin/Commands/VulkanCommandPool.h"
 #include "VulkanGraphicsPlugin/Shaders/VulkanShaders.h"
 #include "VulkanGraphicsPlugin/PipelineState/VulkanPipelineState.h"
-#include "VulkanGraphicsPlugin/PipelineState/VulkanRenderPass.h"
 #include "VulkanGraphicsPlugin/Synchronization/VulkanFence.h"
 #include "VulkanGraphicsPlugin/Synchronization/VulkanSemaphore.h"
 
@@ -780,68 +779,6 @@ void VT_VK::VulkanGraphicDevice::destroyPipelineState(VT::ManagedGraphicDevice::
 	}
 }
 
-bool VT_VK::VulkanGraphicDevice::createRenderPass(VT::ManagedGraphicDevice::ManagedRenderPassBase* pass,
-	const VT::RenderPassInfo& info)
-{
-	const VT::RenderPassInfo::AttachmentsContainer& attachments = info.m_attachments;
-	const size_t attachmentsCount = attachments.size();
-
-	std::vector<VkAttachmentDescription> attachmentDescs;
-	for (uint32_t attachmentIndex = 0; attachmentIndex < attachmentsCount; ++attachmentIndex)
-	{
-		const VT::RenderPassAttachment& attachment = attachments[attachmentIndex];
-
-		VkAttachmentDescription& desc = attachmentDescs.emplace_back();
-		desc.format = convertFormat_VT_to_VK(attachment.m_format);
-		desc.samples = VK_SAMPLE_COUNT_1_BIT;
-		desc.loadOp = convertLoadingOperation_VT_to_VK(attachment.m_loadingOperation);
-		desc.storeOp = convertStoringOperation_VT_to_VK(attachment.m_storingOperation);
-
-		desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		desc.initialLayout = convertResourceLayout_VT_to_VK(attachment.m_initialLayout);
-		desc.finalLayout = convertResourceLayout_VT_to_VK(attachment.m_targetLayout);
-	}
-
-	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass{};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-
-	VkRenderPassCreateInfo renderPassCreateInfo{};
-	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassCreateInfo.attachmentCount = attachmentDescs.size();
-	renderPassCreateInfo.pAttachments = attachmentDescs.data();
-	renderPassCreateInfo.subpassCount = 1;
-	renderPassCreateInfo.pSubpasses = &subpass;
-
-	VkRenderPass vkRenderPass;
-	if (!checkVkResult(vkCreateRenderPass(m_vkDevice, &renderPassCreateInfo, nullptr, &vkRenderPass)))
-	{
-		return false;
-	}
-
-	new (pass) VulkanRenderPass(vkRenderPass, info.getHash());
-
-	return true;
-}
-
-void VT_VK::VulkanGraphicDevice::destroyRenderPass(VT::ManagedGraphicDevice::ManagedRenderPassBase* pass)
-{
-	assert(pass);
-
-	VulkanRenderPass* vulkanPass = reinterpret_cast<VulkanRenderPass*>(pass);
-	if (vulkanPass->m_vkRenderPass)
-	{
-		m_destroyingResources.m_renderPasses.addToContainer(vulkanPass->m_vkRenderPass);
-	}
-}
-
 bool VT_VK::VulkanGraphicDevice::createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool)
 {
 	VkCommandPoolCreateInfo createInfo{};
@@ -1034,11 +971,6 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::PixelShaderStorage* VT_VK::Vulka
 VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineStateStorage* VT_VK::VulkanGraphicDevice::createPipelineStateStorage() const
 {
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineStateStorageInfo<VulkanPipelineState>>();
-}
-
-VT::ManagedGraphicDevice::ManagedGraphicDevice::RenderPassStorage* VT_VK::VulkanGraphicDevice::createRenderPassStorage() const
-{
-	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedRenderPassStorageInfo<VulkanRenderPass>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::CommandPoolStorage* VT_VK::VulkanGraphicDevice::createCommandPoolStorage() const

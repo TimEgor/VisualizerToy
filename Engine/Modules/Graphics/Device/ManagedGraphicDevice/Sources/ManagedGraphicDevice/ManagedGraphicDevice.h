@@ -19,7 +19,6 @@ namespace VT::ManagedGraphicDevice
 		using PixelShaderStorage = ManagedObjectStorageBase<ManagedPixelShaderStorageInfoBase>;
 
 		using PipelineStateStorage = ManagedObjectStorageBase<ManagedPipelineStateStorageInfoBase>;
-		using RenderPassStorage = ManagedObjectStorageBase<ManagedRenderPassStorageInfoBase>;
 
 		using CommandPoolStorage = ManagedObjectStorageBase<ManagedCommandPoolStorageInfoBase>;
 		using CommandListStorage = ManagedObjectStorageBase<ManagedCommandListStorageInfoBase>;
@@ -37,7 +36,6 @@ namespace VT::ManagedGraphicDevice
 		PixelShaderStorage* m_pixelShaderStorage = nullptr;
 
 		PipelineStateStorage* m_pipelineStateStorage = nullptr;
-		RenderPassStorage* m_renderPassStorage = nullptr;
 
 		CommandPoolStorage* m_commandPoolStorage = nullptr;
 		CommandListStorage* m_commandListStorage = nullptr;
@@ -65,9 +63,6 @@ namespace VT::ManagedGraphicDevice
 		virtual bool createPipelineState(ManagedPipelineStateBase* state, const PipelineStateInfo& info) = 0;
 		virtual void destroyPipelineState(ManagedPipelineStateBase* state) = 0;
 
-		virtual bool createRenderPass(ManagedRenderPassBase* pass, const RenderPassInfo& info) = 0;
-		virtual void destroyRenderPass(ManagedRenderPassBase* pass) = 0;
-
 		virtual bool createCommandPool(ManagedCommandPoolBase* commandPool) = 0;
 		virtual void destroyCommandPool(ManagedCommandPoolBase* commandPool) = 0;
 
@@ -88,7 +83,6 @@ namespace VT::ManagedGraphicDevice
 		virtual PixelShaderStorage* createPixelShaderStorage() const = 0;
 
 		virtual PipelineStateStorage* createPipelineStateStorage() const = 0;
-		virtual RenderPassStorage* createRenderPassStorage() const = 0;
 
 		virtual CommandPoolStorage* createCommandPoolStorage() const = 0;
 		virtual CommandListStorage* createCommandListStorage() const = 0;
@@ -118,9 +112,6 @@ namespace VT::ManagedGraphicDevice
 
 		virtual IPipelineState* createPipelineState(const PipelineStateInfo& info) override;
 		virtual void destroyPipelineState(IPipelineState* state) override;
-
-		virtual IRenderPass* createRenderPass(const RenderPassInfo& info) override;
-		virtual void destroyRenderPass(IRenderPass* pass) override;
 
 		virtual ICommandPool* createCommandPool() override;
 		virtual void destroyCommandPool(ICommandPool* commandPool) override;

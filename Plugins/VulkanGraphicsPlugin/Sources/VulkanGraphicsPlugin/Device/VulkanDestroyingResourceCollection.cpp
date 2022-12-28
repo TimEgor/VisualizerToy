@@ -91,17 +91,6 @@ void VT_VK::VulkanDestroyingResourceCollection::destroyResources(VkInstance vkIn
 
 	//
 
-	m_renderPasses.getLocker().lock();
-	for (VkRenderPass vkPass : m_renderPasses.getContainer())
-	{
-		vkDestroyRenderPass(vkDevice, vkPass, nullptr);
-	}
-	m_renderPasses.getContainer().clear();
-
-	m_renderPasses.getLocker().unlock();
-
-	//
-
 	m_swapChains.getLocker().lock();
 	for (VkSwapchainKHR vkSwapChain : m_swapChains.getContainer())
 	{

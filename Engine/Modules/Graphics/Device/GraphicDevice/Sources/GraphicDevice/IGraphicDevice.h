@@ -14,7 +14,6 @@ namespace VT
 	class IPixelShader;
 
 	class IPipelineState;
-	class IRenderPass;
 
 	class ICommandPool;
 	class ICommandList;
@@ -69,10 +68,6 @@ namespace VT
 
 		virtual IPipelineState* createPipelineState(const PipelineStateInfo& info) = 0;
 		virtual void destroyPipelineState(IPipelineState* state) = 0;
-
-		//TODO: removed renderPass from the project
-		virtual IRenderPass* createRenderPass(const RenderPassInfo& info) = 0;
-		virtual void destroyRenderPass(IRenderPass* pass) = 0;
 
 		virtual ICommandPool* createCommandPool() = 0;
 		virtual void destroyCommandPool(ICommandPool* commandPool) = 0;

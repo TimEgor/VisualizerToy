@@ -22,7 +22,7 @@ namespace VT
 
 	private:
 		using PipelineStatePool = ObjectPool<ManagedPipelineStateResourceHandle, PipelineStatePoolHandle>;
-		using PipelineStateHandleInfo = typename PipelineStatePool::NewElementInfo;
+		using PipelineStateHandleInfo = PipelineStatePool::NewElementInfo;
 		using HashCotainer = std::unordered_map<PipelineStateHash, PipelineStateReference>;
 
 		PipelineStatePool m_states;

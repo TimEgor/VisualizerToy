@@ -27,9 +27,6 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 	m_pipelineStateStorage = createPipelineStateStorage();
 	VT_CHECK_INITIALIZATION(m_pipelineStateStorage && m_pipelineStateStorage->init(256, 1, 64));
 
-	m_renderPassStorage = createRenderPassStorage();
-	VT_CHECK_INITIALIZATION(m_renderPassStorage && m_renderPassStorage->init(32, 0, 16));
-
 	m_commandPoolStorage = createCommandPoolStorage();
 	VT_CHECK_INITIALIZATION(m_commandPoolStorage && m_commandPoolStorage->init(32, 0, 16));
 
@@ -57,7 +54,6 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pixelShaderStorage);
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pipelineStateStorage);
-	VT_SAFE_DESTROY_WITH_RELEASING(m_renderPassStorage);
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_commandPoolStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_commandListStorage);
@@ -213,33 +209,6 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPipelineState(IPipel
 
 	destroyPipelineState(managedState);
 	m_pipelineStateStorage->removeObject(managedState->getHandle());
-}
-
-VT::IRenderPass* VT::ManagedGraphicDevice::ManagedGraphicDevice::createRenderPass(const RenderPassInfo& info)
-{
-	assert(m_renderPassStorage);
-
-	ManagedRenderPassStorageInfoBase::NewObjectInfo newObjectInfo = m_renderPassStorage->addNewObject();
-	if (!createRenderPass(newObjectInfo.m_objectPtr, info))
-	{
-		m_renderPassStorage->removeObject(newObjectInfo.m_objectHandle);
-		return nullptr;
-	}
-
-	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
-
-	return newObjectInfo.m_objectPtr;
-}
-
-void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyRenderPass(IRenderPass* pass)
-{
-	assert(pass);
-	assert(m_renderPassStorage);
-
-	ManagedRenderPassBase* managedPass = reinterpret_cast<ManagedRenderPassBase*>(pass);
-
-	destroyRenderPass(managedPass);
-	m_renderPassStorage->removeObject(managedPass->getHandle());
 }
 
 VT::ICommandPool* VT::ManagedGraphicDevice::ManagedGraphicDevice::createCommandPool()

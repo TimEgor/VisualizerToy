@@ -44,8 +44,6 @@ namespace VT_VK
 		VulkanDestroyingResourceContainer<VkPipeline> m_pipelines;
 		VulkanDestroyingResourceContainer<VkPipelineLayout> m_pipelineLayouts;
 
-		VulkanDestroyingResourceContainer<VkRenderPass> m_renderPasses;
-
 		VulkanDestroyingResourceContainer<VkCommandPool> m_commandPools;
 
 		VulkanDestroyingResourceContainer<VkFence> m_fences;
