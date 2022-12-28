@@ -18,6 +18,8 @@ set(ALL_SRCS)
 vt_get_all_sources_recurse("${CMAKE_CURRENT_LIST_DIR}/Sources" "StandaloneLauncher" ALL_SRCS)
 vt_generate_source_groups_by_sources("${CMAKE_CURRENT_LIST_DIR}/Sources" "${ALL_SRCS}")
 
+#add_compile_options(-fsanitize=address)
+
 add_executable(StandaloneLauncher WIN32 ${ALL_SRCS})
 
 vt_set_module_default_target_properties_out_path(StandaloneLauncher ${CMAKE_CURRENT_LIST_DIR}/Out/${CMAKE_GENERATOR_PLATFORM})

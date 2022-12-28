@@ -20,16 +20,10 @@ namespace VT
 			bool m_isNew = false;
 		};
 
-		struct HashStateData final
-		{
-			PipelineStateReference m_state = nullptr;
-			typename PipelineStatePoolHandle::KeyType m_handleID = 0;
-		};
-
 	private:
 		using PipelineStatePool = ObjectPool<ManagedPipelineStateResourceHandle, PipelineStatePoolHandle>;
 		using PipelineStateHandleInfo = typename PipelineStatePool::NewElementInfo;
-		using HashCotainer = std::unordered_map<PipelineStateHash, HashStateData>;
+		using HashCotainer = std::unordered_map<PipelineStateHash, PipelineStateReference>;
 
 		PipelineStatePool m_states;
 		HashCotainer m_stateIDs;
@@ -41,6 +35,7 @@ namespace VT
 
 	public:
 		PipelineStateCollection() = default;
+		~PipelineStateCollection() { release(); }
 
 		bool init(size_t pageSize = 128, size_t maxFreePageCount = 2, size_t minFreeIndexCount = 64);
 		void release();

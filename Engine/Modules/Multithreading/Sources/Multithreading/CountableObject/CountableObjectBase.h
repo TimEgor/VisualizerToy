@@ -15,11 +15,13 @@ namespace VT
 
 		void tryDestroy()
 		{
-			LockGuard<SpinLock> locker(m_lockState);
+			UniqueLockGuard<SpinLock> locker(m_lockState);
 
 			if (loadAtomic(&m_counter, MemoryOrder::Relaxed) == 0 && m_isAlive)
 			{
 				m_isAlive = false;
+				locker.unlock();
+
 				selfDestroy();
 			}
 		}

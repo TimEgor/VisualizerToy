@@ -26,7 +26,7 @@ VT::ISemaphore* VT_VK::VulkanSwapChain::getTextureAvailableSemaphore()
 
 void VT_VK::VulkanSwapChain::updateCurrentTextureIndex()
 {
-	checkVkResultAssert(vkAcquireNextImageKHR(getVkDevice(), m_vkSwapChain, UINT64_MAX, m_textureAvailableSemaphore.getVkSemaphore(), VK_NULL_HANDLE, &m_currentTextureIndex));
+	vkAcquireNextImageKHR(getVkDevice(), m_vkSwapChain, UINT64_MAX, m_textureAvailableSemaphore.getVkSemaphore(), VK_NULL_HANDLE, &m_currentTextureIndex);
 }
 
 void VT_VK::VulkanSwapChain::present(VT::ISemaphore* readyPresentSemaphore)
