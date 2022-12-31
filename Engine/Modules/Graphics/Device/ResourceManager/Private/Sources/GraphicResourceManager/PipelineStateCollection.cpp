@@ -4,8 +4,6 @@
 
 #include <cassert>
 
-#include "NamedReferencePool/NamedObjectPoolHandle.h"
-
 VT::PipelineStateReference VT::PipelineStateCollection::addPipelineStateInternal(
 	PipelineStateHash hash)
 {
@@ -71,13 +69,6 @@ void VT::PipelineStateCollection::clear()
 
 	m_states.clear();
 	m_stateIDs.clear();
-}
-
-bool VT::PipelineStateCollection::isValid(PipelineStatePoolHandle handle) const
-{
-	SharedLockGuard locker(m_lockMutex);
-
-	return m_states.isValid(handle);
 }
 
 VT::PipelineStateConstReference VT::PipelineStateCollection::getPipelineState(PipelineStateHash hash) const

@@ -1,9 +1,10 @@
 set(MODULES_SET
 	GraphicCommandResources				CommandResources
 	GraphicDevice						GraphicDevice
-	ManagedGraphicDevice				ManagedGraphicDevice
 	GraphicPipeline						GraphicPipeline
 	GraphicSynchronization				GraphicSynchronization
+	InputLayout							InputLayout
+	ManagedGraphicDevice				ManagedGraphicDevice
 	GraphicResourceCommon				ResourceCommon
 	GraphicResourceManager				ResourceManager/Private
 	Shaders								Shaders

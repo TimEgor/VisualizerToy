@@ -5,9 +5,9 @@ void VT::GraphicResourceManager::deleteVertexShaderInternal(IVertexShader* shade
 	getGraphicDevice()->destroyVertexShader(shader);
 }
 
-void VT::GraphicResourceManager::deleteVertexShaderReference(VertexShaderPool::Handle handle)
+void VT::GraphicResourceManager::deleteVertexShaderReference(VertexShaderHandleID handleID)
 {
-	m_vertexShaders.removeElement(handle);
+	m_vertexShaders.removeElement(handleID);
 }
 
 VT::VertexShaderReference VT::GraphicResourceManager::createVertexShader(const void* code, size_t codeSize)

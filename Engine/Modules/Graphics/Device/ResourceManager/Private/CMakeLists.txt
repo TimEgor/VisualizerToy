@@ -20,4 +20,5 @@ target_link_libraries(GraphicResourceManager
 
 		ShaderConverter
 		GraphicPipeline
+		InputLayout
 )

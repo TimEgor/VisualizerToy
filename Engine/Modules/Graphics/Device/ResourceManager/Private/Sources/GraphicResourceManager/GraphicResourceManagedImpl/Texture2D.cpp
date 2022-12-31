@@ -5,9 +5,9 @@ void VT::GraphicResourceManager::deleteTexture2DInternal(ITexture2D* texture)
 	EngineInstance::getInstance()->getEnvironment()->m_graphicDevice->destroyTexture2D(texture);
 }
 
-void VT::GraphicResourceManager::deleteTexture2DReference(Texture2DPool::Handle handle)
+void VT::GraphicResourceManager::deleteTexture2DReference(Texture2DHandleID handleID)
 {
-	m_textures2D.removeElement(handle);
+	m_textures2D.removeElement(handleID);
 }
 
 VT::Texture2DReference VT::GraphicResourceManager::createTexture2D(const Texture2DDesc& desc)
@@ -31,9 +31,9 @@ void VT::GraphicResourceManager::deleteTexture2DViewInternal(ITexture2DView* vie
 	EngineInstance::getInstance()->getEnvironment()->m_graphicDevice->destroyTexture2DView(view);
 }
 
-void VT::GraphicResourceManager::deleteTexture2DViewReference(Texture2DViewPool::Handle handle)
+void VT::GraphicResourceManager::deleteTexture2DViewReference(Texture2DViewHandleID handleID)
 {
-	m_texture2DViews.removeElement(handle);
+	m_texture2DViews.removeElement(handleID);
 }
 
 VT::Texture2DViewReference VT::GraphicResourceManager::createTexture2DView(Texture2DReference texture, const TextureViewDesc& desc)

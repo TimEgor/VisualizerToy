@@ -7,9 +7,9 @@ void VT::GraphicResourceManager::deletePixelShaderInternal(IPixelShader* shader)
 	getGraphicDevice()->destroyPixelShader(shader);
 }
 
-void VT::GraphicResourceManager::deletePixelShaderReference(PixelShaderPool::Handle handle)
+void VT::GraphicResourceManager::deletePixelShaderReference(PixelShaderHandleID handleID)
 {
-	m_pixelShaders.removeElement(handle);
+	m_pixelShaders.removeElement(handleID);
 }
 
 VT::PixelShaderReference VT::GraphicResourceManager::createPixelShader(const void* code, size_t codeSize)

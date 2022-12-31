@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "ResourceHandles.h"
+#include "InputLayoutHandle.h"
 
 class IRenderPass;
 
@@ -64,6 +65,9 @@ namespace VT
 
 		//PipelineState
 		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc) = 0;
-		virtual bool isValidPipelineState(PipelineStateHandleID handle) const = 0;
+
+		//InputLayout
+		virtual void addInputLayout(const InputLayoutDesc& desc) = 0;
+		virtual InputLayoutReference getInputLayout(InputLayoutHash hash) = 0;
 	};
 }

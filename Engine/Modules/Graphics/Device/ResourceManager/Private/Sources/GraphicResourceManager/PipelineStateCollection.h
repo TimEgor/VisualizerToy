@@ -42,8 +42,6 @@ namespace VT
 
 		void clear();
 
-		bool isValid(PipelineStatePoolHandle handle) const;
-
 		PipelineStateConstReference getPipelineState(PipelineStateHash hash) const;
 		PipelineStateReference getPipelineState(PipelineStateHash hash);
 

@@ -19,7 +19,17 @@ VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const Pi
 	return accessInfo.m_state;
 }
 
-bool VT::GraphicResourceManager::isValidPipelineState(PipelineStateHandleID handle) const
+void VT::GraphicResourceManager::deleteInputLayoutReference(InputLayoutHandleID handleID)
 {
-	return m_pipelineStateCollection.isValid(handle);
+	m_inputLayoutCollection.removeInputLayoutHandle(handleID);
+}
+
+void VT::GraphicResourceManager::addInputLayout(const InputLayoutDesc& desc)
+{
+	m_inputLayoutCollection.addInputLayout(desc);
+}
+
+VT::InputLayoutReference VT::GraphicResourceManager::getInputLayout(InputLayoutHash hash)
+{
+	return m_inputLayoutCollection.getInputLayout(hash);
 }

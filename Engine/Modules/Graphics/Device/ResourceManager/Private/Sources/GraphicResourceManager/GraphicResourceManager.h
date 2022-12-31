@@ -4,6 +4,7 @@
 #include "ObjectPool/ThreadSafeObjectPool.h"
 #include "ManagedResourceHandles.h"
 #include "NamedReferencePool/NamedObjectPoolHandle.h"
+#include "InputLayoutCollection.h"
 #include "PipelineStateCollection.h"
 
 namespace VT
@@ -17,6 +18,8 @@ namespace VT
 		friend ManagedPixelShaderResourceHandle;
 
 		friend ManagedPipelineStateResourceHandle;
+
+		friend class ManagedInputLayoutHandle;
 
 		using Texture2DPool = ThreadSafeObjectPool<ManagedTexture2DResourceHandle, NamedObjectPoolHandle32>;
 		using Texture2DViewPool = ThreadSafeObjectPool<ManagedTexture2DViewResourceHandle, NamedObjectPoolHandle32>;
@@ -32,6 +35,7 @@ namespace VT
 		PixelShaderPool m_pixelShaders;
 
 		PipelineStateCollection m_pipelineStateCollection;
+		InputLayoutCollection m_inputLayoutCollection;
 
 		//Resource deleting
 		void deleteTexture2DInternal(ITexture2D* texture);
@@ -43,11 +47,13 @@ namespace VT
 		void deletePipelineStateInternal(IPipelineState* state);
 
 		//Reference deleting
-		void deleteTexture2DReference(Texture2DPool::Handle handle);
-		void deleteTexture2DViewReference(Texture2DViewPool::Handle handle);
+		void deleteTexture2DReference(Texture2DHandleID handleID);
+		void deleteTexture2DViewReference(Texture2DViewHandleID handleID);
 
-		void deleteVertexShaderReference(VertexShaderPool::Handle handle);
-		void deletePixelShaderReference(PixelShaderPool::Handle handle);
+		void deleteVertexShaderReference(VertexShaderHandleID handleID);
+		void deletePixelShaderReference(PixelShaderHandleID handleID);
+
+		void deleteInputLayoutReference(InputLayoutHandleID handleID);
 
 	public:
 		GraphicResourceManager() = default;
@@ -76,6 +82,9 @@ namespace VT
 
 		//PipelineState
 		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc) override;
-		virtual bool isValidPipelineState(PipelineStateHandleID handle) const override;
+
+		//InputLayout
+		virtual void addInputLayout(const InputLayoutDesc& desc) override;
+		virtual InputLayoutReference getInputLayout(InputLayoutHash hash) override;
 	};
 }
