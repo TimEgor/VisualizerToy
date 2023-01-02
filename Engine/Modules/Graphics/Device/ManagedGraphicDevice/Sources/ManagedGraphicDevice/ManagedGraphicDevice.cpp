@@ -12,6 +12,9 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 		VT_CHECK_INITIALIZATION(m_swapChainStorage && m_swapChainStorage->init(4, 0, 0));
 	}
 
+	m_bufferStorage = createBufferStorage();
+	VT_CHECK_INITIALIZATION(m_bufferStorage && m_bufferStorage->init(256, 1, 128));
+
 	m_texture2DStorage = createTexture2DStorage();
 	VT_CHECK_INITIALIZATION(m_texture2DStorage && m_texture2DStorage->init(256, 1, 64));
 
@@ -46,6 +49,8 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 {
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_swapChainStorage);
+
+	VT_SAFE_DESTROY_WITH_RELEASING(m_bufferStorage);
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_texture2DStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_texture2DViewStorage);
@@ -89,6 +94,33 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroySwapChain(ISwapChain
 
 	destroySwapChain(managedSwapChain);
 	m_swapChainStorage->removeObject(managedSwapChain->getHandle());
+}
+
+VT::IGPUBuffer* VT::ManagedGraphicDevice::ManagedGraphicDevice::createBuffer(const GPUBufferDesc& desc)
+{
+	assert(m_bufferStorage);
+
+	ManagedGPUBufferStorageInfoBase::NewObjectInfo newObjectInfo = m_bufferStorage->addNewObject();
+	if (!createBuffer(newObjectInfo.m_objectPtr, desc))
+	{
+		m_bufferStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyBuffer(IGPUBuffer* buffer)
+{
+	assert(buffer);
+	assert(m_bufferStorage);
+
+	ManagedGPUBufferBase* managedBuffer = reinterpret_cast<ManagedGPUBufferBase*>(buffer);
+
+	destroyBuffer(managedBuffer);
+	m_bufferStorage->removeObject(managedBuffer->getHandle());
 }
 
 void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture2D(ITexture2D* texture)
@@ -184,12 +216,12 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPixelShader(IPixelSh
 }
 
 VT::IPipelineState* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPipelineState(
-	const PipelineStateInfo& pipelineStateInfo)
+	const PipelineStateInfo& pipelineStateInfo, const InputLayoutDesc* inputLayoutDesc)
 {
 	assert(m_pipelineStateStorage);
 
 	ManagedPipelineStateStorageInfoBase::NewObjectInfo newObjectInfo = m_pipelineStateStorage->addNewObject();
-	if (!createPipelineState(newObjectInfo.m_objectPtr, pipelineStateInfo))
+	if (!createPipelineState(newObjectInfo.m_objectPtr, pipelineStateInfo, inputLayoutDesc))
 	{
 		m_pipelineStateStorage->removeObject(newObjectInfo.m_objectHandle);
 		return nullptr;

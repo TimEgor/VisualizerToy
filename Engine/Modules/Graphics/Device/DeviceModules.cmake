@@ -1,4 +1,5 @@
 set(MODULES_SET
+	GPUBuffer							Buffer
 	GraphicCommandResources				CommandResources
 	GraphicDevice						GraphicDevice
 	GraphicPipeline						GraphicPipeline

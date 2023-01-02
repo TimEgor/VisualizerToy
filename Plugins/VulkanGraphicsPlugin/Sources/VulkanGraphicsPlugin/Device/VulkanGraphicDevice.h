@@ -21,6 +21,8 @@ namespace VT_VK
 		VkDevice m_vkDevice = nullptr;
 		VkPhysicalDevice m_vkPhysDevice = nullptr;
 
+		VkPhysicalDeviceMemoryProperties m_physMemoryProps;
+
 		VkQueue m_vkGraphicQueue = nullptr;
 		VkQueue m_vkTransferQueue = nullptr;
 		VkQueue m_vkComputeQueue = nullptr;
@@ -35,6 +37,8 @@ namespace VT_VK
 		bool checkVkPhysDevice(VkPhysicalDevice device, const VulkanNameContainer& extensions);
 
 		void findQueueFamiliesIndices();
+
+		uint32_t chooseMemoryType(uint32_t filterBits, VkMemoryPropertyFlags properties);
 
 		void getSwapChainCapabilitiesInfo(VkSurfaceKHR surface, VulkanSwapChainInfo& info);
 		void createSwapChainInternal(const VT::SwapChainDesc& swapCahinDesc, const VT::IWindow* window,
@@ -52,23 +56,33 @@ namespace VT_VK
 		virtual bool initDevice(bool isSwapChainEnabled) override;
 		virtual void releaseDevice() override;
 
+		//SwapChain
 		virtual bool createSwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain, const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
 		virtual void destroySwapChain(VT::ManagedGraphicDevice::ManagedSwapChainBase* swapChain) override;
 
+		//Buffer
+		virtual bool createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc) override;
+		virtual void destroyBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer) override;
+
+		//Textures
 		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
 
 		virtual bool createTexture2DView(VT::ManagedGraphicDevice::ManagedTexture2DViewBase* view, VT::ITexture2D* texture, const VT::TextureViewDesc& desc) override;
 		virtual void destroyTexture2DView(VT::ManagedGraphicDevice::ManagedTexture2DViewBase* view) override;
 
+		//Shaders
 		virtual bool createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader, const void* code, size_t codeSize) override;
 		virtual void destroyVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader) override;
 
 		virtual bool createPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader, const void* code, size_t codeSize) override;
 		virtual void destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader) override;
 
-		virtual bool createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state, const VT::PipelineStateInfo& info) override;
+		//Pipeline
+		virtual bool createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
+			const VT::PipelineStateInfo& info, const VT::InputLayoutDesc* inputLayoutDesc) override;
 		virtual void destroyPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state) override;
 
+		//Commands
 		virtual bool createCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
 		virtual void destroyCommandPool(VT::ManagedGraphicDevice::ManagedCommandPoolBase* commandPool) override;
 
@@ -76,6 +90,7 @@ namespace VT_VK
 
 		virtual void submitCommandList(VT::ICommandList* list, const VT::CommandListSubmitInfo& info) override;
 
+		//Sync
 		virtual bool createFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence, bool signaled) override;
 		virtual void destroyFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence) override;
 
@@ -86,6 +101,8 @@ namespace VT_VK
 		virtual void destroySemaphore(VT::ManagedGraphicDevice::ManagedSemaphoreBase* semaphore) override;
 
 		virtual SwapChainStorage* createSwapChainStorage() const override;
+
+		virtual BufferStorage* createBufferStorage() const override;
 
 		virtual Texture2DStorage* createTexture2DStorage() const override;
 		virtual Texture2DViewStorage* createTexture2DViewStorage() const override;

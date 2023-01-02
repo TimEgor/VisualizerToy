@@ -10,10 +10,14 @@ vt_add_common_module(RenderSystem)
 
 target_link_libraries(RenderSystem
 	PUBLIC
-		RenderSystem_COMMON
+		Core
 		Engine_COMMON
+		RenderSystem_COMMON
 		GraphicDevice
 		GraphicPipeline
 		GraphicPlatform
-		Core
+		Textures
+		GPUBuffer
+		InputLayout
+		Math
 )

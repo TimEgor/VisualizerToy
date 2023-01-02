@@ -4,6 +4,8 @@
 
 namespace VT
 {
+	MANAGED_GRAPHIC_RESOURCE_DESTROY_RELEASE_IMPL(GPUBufferResourceHandle, deleteGPUBufferInternal, deleteGPUBufferReference)
+
 	MANAGED_GRAPHIC_RESOURCE_DESTROY_RELEASE_IMPL(Texture2DResourceHandle, deleteTexture2DInternal, deleteTexture2DReference)
 	MANAGED_GRAPHIC_RESOURCE_VIEW_DESTROY_RELEASE_IMPL(Texture2DViewResourceHandle, deleteTexture2DViewInternal, deleteTexture2DViewReference)
 

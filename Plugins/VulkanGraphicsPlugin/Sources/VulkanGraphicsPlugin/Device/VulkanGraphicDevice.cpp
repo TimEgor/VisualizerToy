@@ -11,6 +11,7 @@
 #include "WindowSystem/IWindow.h"
 
 #include "VulkanGraphicsPlugin/SwapChain/VulkanSwapChain.h"
+#include "VulkanGraphicsPlugin/Buffer/VulkanGPUBuffer.h"
 #include "VulkanGraphicsPlugin/Commands/VulkanCommandPool.h"
 #include "VulkanGraphicsPlugin/Shaders/VulkanShaders.h"
 #include "VulkanGraphicsPlugin/PipelineState/VulkanPipelineState.h"
@@ -19,10 +20,16 @@
 
 #include "VulkanGraphicsPlugin/Utilities/FormatConverter.h"
 #include "VulkanGraphicsPlugin/Utilities/PresentModeConverter.h"
+#include "VulkanGraphicsPlugin/Utilities/ImageAspectConverter.h"
+#include "VulkanGraphicsPlugin/Utilities/BufferUsageConverter.h"
+#include "VulkanGraphicsPlugin/Utilities/InputLayoutConverter.h"
 
 #include "VulkanGraphicsPlugin/Utilities/VulkanEnvironmentGraphicPlatform.h"
 
 #include <algorithm>
+#include <unordered_set>
+
+#include "InputLayout/IInputLayout.h"
 
 
 namespace VT_VK
@@ -119,6 +126,8 @@ bool VT_VK::VulkanGraphicDevice::initVkDevice(VkInstance vkInstance, bool isSwap
 
 
 	VT_CHECK_RETURN_FALSE(chooseVkPhysDevice(vkInstance, extensionNames));
+
+	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDevice, &m_physMemoryProps);
 
 	findQueueFamiliesIndices();
 
@@ -266,6 +275,18 @@ void VT_VK::VulkanGraphicDevice::findQueueFamiliesIndices()
 			&& !(queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT))
 		{
 			m_computeQueueFamilyIndex = queueFamilyIndex;
+		}
+	}
+}
+
+uint32_t VT_VK::VulkanGraphicDevice::chooseMemoryType(uint32_t filterBits, VkMemoryPropertyFlags properties)
+{
+	for (uint32_t typeIndex = 0; typeIndex < m_physMemoryProps.memoryTypeCount; ++typeIndex)
+	{
+		if ((filterBits & (1 << typeIndex)) &&
+			(properties & m_physMemoryProps.memoryTypes[typeIndex].propertyFlags) == properties)
+		{
+			return typeIndex;
 		}
 	}
 }
@@ -541,6 +562,60 @@ void VT_VK::VulkanGraphicDevice::destroySwapChain(VT::ManagedGraphicDevice::Mana
 	}
 }
 
+bool VT_VK::VulkanGraphicDevice::createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc)
+{
+	VkBufferCreateInfo bufferCreateInfo{};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.size = desc.m_byteSize;
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	bufferCreateInfo.usage = converteBufferUsageVTtoVK(desc.m_usage);
+
+	VkBuffer vkBuffer = 0;
+	if (!checkVkResult(vkCreateBuffer(m_vkDevice, &bufferCreateInfo, nullptr, &vkBuffer)))
+	{
+		return false;
+	}
+
+	VkMemoryRequirements memoryRequirements;
+	vkGetBufferMemoryRequirements(m_vkDevice, vkBuffer, &memoryRequirements);
+
+	VkMemoryAllocateInfo allocateInfo{};
+	allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocateInfo.allocationSize = memoryRequirements.size;
+	allocateInfo.memoryTypeIndex = chooseMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	VkDeviceMemory vkMemory = 0;
+	if (!checkVkResult(vkAllocateMemory(m_vkDevice, &allocateInfo, nullptr, &vkMemory)))
+	{
+		m_destroyingResources.m_buffers.addToContainer(vkBuffer);
+
+		return false;
+	}
+
+	vkBindBufferMemory(m_vkDevice, vkBuffer, vkMemory, 0);
+
+	new (buffer) VulkanGPUBuffer(desc, m_vkDevice, vkBuffer, vkMemory);
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer)
+{
+	assert(buffer);
+
+	VulkanGPUBuffer* vulkanGpuBuffer = reinterpret_cast<VulkanGPUBuffer*>(buffer);
+
+	if (vulkanGpuBuffer->m_vkMemory)
+	{
+		vkFreeMemory(m_vkDevice, vulkanGpuBuffer->m_vkMemory, nullptr);
+	}
+
+	if (vulkanGpuBuffer->m_vkBuffer)
+	{
+		m_destroyingResources.m_buffers.addToContainer(vulkanGpuBuffer->m_vkBuffer);
+	}
+}
+
 void VT_VK::VulkanGraphicDevice::destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture)
 {
 	assert(texture);
@@ -631,14 +706,39 @@ void VT_VK::VulkanGraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::Ma
 }
 
 bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
-	const VT::PipelineStateInfo& info)
+	const VT::PipelineStateInfo& info, const VT::InputLayoutDesc* inputLayoutDesc)
 {
 	VkPipelineVertexInputStateCreateInfo vertInputCreateInfo{};
 	vertInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertInputCreateInfo.vertexBindingDescriptionCount = 0;
-	vertInputCreateInfo.pVertexBindingDescriptions = nullptr;
-	vertInputCreateInfo.vertexAttributeDescriptionCount = 0;
-	vertInputCreateInfo.pVertexAttributeDescriptions = nullptr;
+
+	std::vector<VkVertexInputBindingDescription> vkBindings;
+	std::vector<VkVertexInputAttributeDescription> vkAttribs;
+	if (inputLayoutDesc)
+	{
+		vkBindings.reserve(inputLayoutDesc->m_bindings.size());
+		for (auto& binding : inputLayoutDesc->m_bindings)
+		{
+			VkVertexInputBindingDescription& vkBinding = vkBindings.emplace_back();
+			vkBinding.binding = binding.m_index;
+			vkBinding.stride = binding.m_stride;
+			vkBinding.inputRate = converteInputLayoutBindingVTtoVK(binding.m_type);
+		}
+
+		vkAttribs.reserve(inputLayoutDesc->m_elements.size());
+		for (auto& element : inputLayoutDesc->m_elements)
+		{
+			VkVertexInputAttributeDescription& vkAttrib = vkAttribs.emplace_back();
+			vkAttrib.binding = element.m_slot;
+			vkAttrib.location = element.m_index;
+			vkAttrib.offset = element.m_offset;
+			vkAttrib.format = convertInputLayoutFormatVTtoVK(element.m_type, element.m_componentNum);
+		}
+
+		vertInputCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(vkBindings.size());
+		vertInputCreateInfo.pVertexBindingDescriptions = vkBindings.data();
+		vertInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vkAttribs.size());
+		vertInputCreateInfo.pVertexAttributeDescriptions = vkAttribs.data();
+	}
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
 	inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -946,6 +1046,11 @@ void VT_VK::VulkanGraphicDevice::destroySemaphore(VT::ManagedGraphicDevice::Mana
 VT::ManagedGraphicDevice::ManagedGraphicDevice::SwapChainStorage* VT_VK::VulkanGraphicDevice::createSwapChainStorage() const
 {
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedSwapChainStorageInfo<VulkanSwapChain>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::BufferStorage* VT_VK::VulkanGraphicDevice::createBufferStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedGPUBufferStorageInfo<VulkanGPUBuffer>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* VT_VK::VulkanGraphicDevice::createTexture2DStorage() const

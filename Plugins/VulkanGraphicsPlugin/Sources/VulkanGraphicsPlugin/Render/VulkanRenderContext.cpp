@@ -5,6 +5,7 @@
 #include "VulkanGraphicsPlugin/Commands/VulkanCommandPool.h"
 #include "VulkanGraphicsPlugin/PipelineState/VulkanPipelineState.h"
 #include "VulkanGraphicsPlugin/Textures/VulkanTexture2D.h"
+#include "VulkanGraphicsPlugin/Buffer/VulkanGPUBuffer.h"
 
 bool VT_VK::VulkanRenderContext::init(VT::ICommandList* commandList)
 {
@@ -145,6 +146,35 @@ void VT_VK::VulkanRenderContext::setPipelineState(VT::IPipelineState* pipelineSt
 {
 	VulkanPipelineState* vulkanPipelineState = reinterpret_cast<VulkanPipelineState*>(pipelineState);
 	vkCmdBindPipeline(m_commandList->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipelineState->getVkPipeline());
+}
+
+void VT_VK::VulkanRenderContext::setVertexBuffer(VT::IGPUBuffer* buffer)
+{
+	VulkanGPUBuffer* vulkanBuffer = reinterpret_cast<VulkanGPUBuffer*>(buffer);
+
+	VkDeviceSize offset = 0;
+	VkBuffer vkBuffer = vulkanBuffer->getVkBuffer();
+
+	vkCmdBindVertexBuffers(m_commandList->getVkCommandBuffer(), 0, 1, &vkBuffer, &offset);
+}
+
+void VT_VK::VulkanRenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer* buffers)
+{
+	std::vector<VkBuffer> vkBuffers;
+	std::vector<VkDeviceSize> vkOffsets;
+
+	vkBuffers.reserve(buffersCount);
+	vkOffsets.reserve(buffersCount);
+
+	for (uint32_t i = 0; i < buffersCount; ++i)
+	{
+		VulkanGPUBuffer* vulkanBuffer = reinterpret_cast<VulkanGPUBuffer*>(&buffers[i]);
+
+		vkBuffers.push_back(vulkanBuffer->getVkBuffer());
+		vkOffsets.push_back(0);
+	}
+
+	vkCmdBindVertexBuffers(m_commandList->getVkCommandBuffer(), 0, buffersCount, vkBuffers.data(), vkOffsets.data());
 }
 
 void VT_VK::VulkanRenderContext::draw()

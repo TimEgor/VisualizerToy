@@ -32,7 +32,7 @@ namespace VT
 		HashCotainer m_layoutIDs;
 		mutable SharedMutex m_lockMutex;
 
-		void addInputLayoutInternal(const InputLayoutDesc& desc);
+		InputLayoutReference addInputLayoutInternal(const InputLayoutDesc& desc);
 		InputLayoutReference getInputLayoutInternal(InputLayoutHash hash);
 		InputLayoutConstReference getInputLayoutInternal(InputLayoutHash hash) const;
 
@@ -50,7 +50,7 @@ namespace VT
 		InputLayoutReference getInputLayout(InputLayoutHash hash);
 		InputLayoutConstReference getInputLayout(InputLayoutHash hash) const;
 
-		void addInputLayout(const InputLayoutDesc& desc);
+		InputLayoutReference addInputLayout(const InputLayoutDesc& desc);
 
 		void removeInputLayout(InputLayoutHash hash);
 	};

@@ -2,6 +2,11 @@
 
 #include "RenderSystem/IRenderContext.h"
 
+namespace VT
+{
+	class IGPUBuffer;
+}
+
 namespace VT_VK
 {
 	class VulkanCommandList;
@@ -30,6 +35,8 @@ namespace VT_VK
 		virtual void prepareTextureForPresenting(VT::ITexture2D* texture) override;
 
 		virtual void setPipelineState(VT::IPipelineState* pipelineState) override;
+		virtual void setVertexBuffer(VT::IGPUBuffer* buffer) override;
+		virtual void setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer* buffers) override;
 
 		virtual void draw() override;
 	};

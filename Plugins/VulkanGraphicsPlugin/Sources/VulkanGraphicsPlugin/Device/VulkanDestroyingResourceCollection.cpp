@@ -36,6 +36,18 @@ void VT_VK::VulkanDestroyingResourceCollection::destroyResources(VkInstance vkIn
 
 	//
 
+	m_buffers.getLocker().lock();
+	for (VkBuffer vkBuffer : m_buffers.getContainer())
+	{
+		vkDestroyBuffer(vkDevice, vkBuffer, nullptr);
+	}
+	m_buffers.getContainer().clear();
+
+	m_buffers.getLocker().unlock();
+
+
+	//
+
 	m_images.getLocker().lock();
 	for (VkImage vkImage : m_images.getContainer())
 	{

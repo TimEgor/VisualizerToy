@@ -8,6 +8,7 @@ namespace VT
 	class IPipelineState;
 	class ITexture2D;
 	class ITexture2DView;
+	class IGPUBuffer;
 
 	struct RenderContextTarget final
 	{
@@ -41,6 +42,8 @@ namespace VT
 		virtual void prepareTextureForPresenting(ITexture2D* texture) = 0;
 
 		virtual void setPipelineState(IPipelineState* pipelineState) = 0;
+		virtual void setVertexBuffer(IGPUBuffer* buffer) = 0;
+		virtual void setVertexBuffers(uint32_t buffersCount, IGPUBuffer* buffers) = 0;
 
 		virtual void draw() = 0;
 	};

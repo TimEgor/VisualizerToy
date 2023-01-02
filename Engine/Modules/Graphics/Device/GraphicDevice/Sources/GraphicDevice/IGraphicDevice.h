@@ -7,6 +7,8 @@ namespace VT
 	class IWindow;
 	class ISwapChain;
 
+	class IGPUBuffer;
+
 	class ITexture2D;
 	class ITexture2DView;
 
@@ -24,9 +26,12 @@ namespace VT
 
 	struct SwapChainDesc;
 
+	struct GPUBufferDesc;
+
 	struct TextureViewDesc;
 
 	struct PipelineStateInfo;
+	struct InputLayoutDesc;
 	struct RenderPassInfo;
 
 	struct CommandListSubmitInfo final
@@ -52,23 +57,33 @@ namespace VT
 
 		virtual void wait() = 0;
 
+		//SwapChain
 		virtual ISwapChain* createSwapChain(const SwapChainDesc& desc, const IWindow* window) = 0;
 		virtual void destroySwapChain(ISwapChain* swapChain) = 0;
 
+		//Buffers
+		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc) = 0;
+		virtual void destroyBuffer(IGPUBuffer* buffer) = 0;
+
+		//Texture
 		virtual void destroyTexture2D(ITexture2D* texture) = 0;
 
 		virtual ITexture2DView* createTexture2DView(ITexture2D* texture, const TextureViewDesc& desc) = 0;
 		virtual void destroyTexture2DView(ITexture2DView* view) = 0;
 
+		//Shaders
 		virtual IVertexShader* createVertexShader(const void* code, size_t codeSize) = 0;
 		virtual void destroyVertexShader(IVertexShader* shader) = 0;
 
 		virtual IPixelShader* createPixelShader(const void* code, size_t codeSize) = 0;
 		virtual void destroyPixelShader(IPixelShader* shader) = 0;
 
-		virtual IPipelineState* createPipelineState(const PipelineStateInfo& info) = 0;
+		//Pipeline
+		virtual IPipelineState* createPipelineState(const PipelineStateInfo& info, const InputLayoutDesc* inputLayoutDesc) = 0;
 		virtual void destroyPipelineState(IPipelineState* state) = 0;
 
+
+		//Commands
 		virtual ICommandPool* createCommandPool() = 0;
 		virtual void destroyCommandPool(ICommandPool* commandPool) = 0;
 

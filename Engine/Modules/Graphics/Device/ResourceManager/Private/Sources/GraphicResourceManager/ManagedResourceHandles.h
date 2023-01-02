@@ -5,6 +5,8 @@
 
 namespace VT
 {
+	MANAGED_GRAPHIC_RESOURCE(GPUBufferResourceHandle)
+
 	MANAGED_GRAPHIC_RESOURCE(Texture2DResourceHandle)
 	MANAGED_GRAPHIC_RESOURCE_VIEW(Texture2DViewResourceHandle)
 

@@ -1,14 +1,31 @@
 #include "RenderSystem.h"
 
-#include "../../../../../Device/Textures/Sources/Textures/ITexture2D.h"
-#include "GraphicDevice/IGraphicDevice.h"
-#include "GraphicPlatform/IGraphicPlatform.h"
-#include "GraphicPipeline/IPipelineState.h"
-#include "RenderSystem/IRenderContext.h"
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
+
+#include "GraphicDevice/IGraphicDevice.h"
+#include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicResourceManager/IGraphicResourceManager.h"
+#include "RenderSystem/IRenderContext.h"
+
+#include "GraphicPipeline/IPipelineState.h"
+#include "Textures/ITexture2D.h"
+#include "GPUBuffer/IGPUBuffer.h"
+#include "InputLayout/IInputLayout.h"
+
+#include "Math/Vector.h"
+
+namespace VT
+{
+	// tmp vertex struct
+	struct Vertex final
+	{
+		Vector2 m_pos;
+		Vector3 m_color;
+	};
+}
+
 
 bool VT::RenderSystem::init()
 {
@@ -30,10 +47,56 @@ bool VT::RenderSystem::init()
 	VT_CHECK_INITIALIZATION(m_renderingCompleteSemaphore);
 
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
-	m_drawingData.vertShader = resManager->loadVertexShader("TestVertexShader.hlsl");
-	m_drawingData.pixelShader = resManager->loadPixelShader("TestPixelShader.hlsl");
+	m_drawingData.m_vertShader = resManager->loadVertexShader("TestInputLayoutVertexShader.hlsl");
+	m_drawingData.m_pixelShader = resManager->loadPixelShader("TestInputLayoutPixelShader.hlsl");
 
-	VT_CHECK_INITIALIZATION(m_drawingData.vertShader && m_drawingData.pixelShader);
+	VT_CHECK_INITIALIZATION(m_drawingData.m_vertShader && m_drawingData.m_pixelShader);
+
+	GPUBufferDesc vertexBufferDesc{};
+	vertexBufferDesc.m_byteSize = sizeof(Vertex) * 3;
+	vertexBufferDesc.m_usage = GPUBufferUsageType::VERTEX_BUFFER;
+
+	m_drawingData.m_vertexBuffer = resManager->createGPUBuffer(vertexBufferDesc);
+
+	VT_CHECK_INITIALIZATION(m_drawingData.m_vertexBuffer);
+
+
+
+	Vertex* vertexMapping = nullptr;
+	m_drawingData.m_vertexBuffer->getResource()->mapData(reinterpret_cast<void**>(&vertexMapping));
+
+	vertexMapping[0].m_pos = { 0.0f, -0.5f };
+	vertexMapping[0].m_color = { 1.0f, 0.0f, 0.0f };
+	vertexMapping[1].m_pos = { 0.5f, 0.5f };
+	vertexMapping[1].m_color = { 0.0f, 1.0f, 0.0f };
+	vertexMapping[2].m_pos = { -0.5f, 0.5f };
+	vertexMapping[2].m_color = { 0.0f, 0.0f, 1.0f };
+
+	m_drawingData.m_vertexBuffer->getResource()->unmapData();
+
+	InputLayoutDesc inputLayoutDesc{};
+	InputLayoutBindingDesc& binding = inputLayoutDesc.m_bindings.emplace_back();
+	binding.m_index = 0;
+	binding.m_stride = sizeof(Vertex);
+	binding.m_type = InputLayoutBindingType::VERTEX_BINDING;
+
+	InputLayoutElementDesc& posAttrib = inputLayoutDesc.m_elements.emplace_back();
+	posAttrib.m_index = 0;
+	posAttrib.m_slot = 0;
+	posAttrib.m_offset = 0;
+	posAttrib.m_componentNum = 2;
+	posAttrib.m_type = InputLayoutElementType::FLOAT32;
+
+	InputLayoutElementDesc& colorAttrib = inputLayoutDesc.m_elements.emplace_back();
+	colorAttrib.m_index = 1;
+	colorAttrib.m_slot = 0;
+	colorAttrib.m_offset = offsetof(Vertex, m_color);
+	colorAttrib.m_componentNum = 3;
+	colorAttrib.m_type = InputLayoutElementType::FLOAT32;
+
+	m_drawingData.m_inputLayout = resManager->addInputLayout(inputLayoutDesc);
+
+	VT_CHECK_INITIALIZATION(m_drawingData.m_inputLayout);
 
 	return true;
 }
@@ -71,12 +134,12 @@ void VT::RenderSystem::render(ITexture2D* target, ITexture2DView* targetView,
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
 	PipelineStateInfo pipelineStateInfo{};
-	pipelineStateInfo.m_vertexShader = m_drawingData.vertShader->getResource();
-	pipelineStateInfo.m_pixelShader = m_drawingData.pixelShader->getResource();
+	pipelineStateInfo.m_vertexShader = m_drawingData.m_vertShader->getResource();
+	pipelineStateInfo.m_pixelShader = m_drawingData.m_pixelShader->getResource();
 
 	pipelineStateInfo.m_formats.push_back(target->getDesc().m_format);
 
-	PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(pipelineStateInfo);
+	PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(pipelineStateInfo, m_drawingData.m_inputLayout);
 
 	RenderContextBeginInfo contextInfo{};
 	contextInfo.m_targets.push_back({ target, targetView });
@@ -86,6 +149,7 @@ void VT::RenderSystem::render(ITexture2D* target, ITexture2DView* targetView,
 	m_context->beginRendering(contextInfo);
 
 	m_context->setPipelineState(pipelineState->getResource());
+	m_context->setVertexBuffer(m_drawingData.m_vertexBuffer->getResource());
 	m_context->draw();
 
 	m_context->endRendering();

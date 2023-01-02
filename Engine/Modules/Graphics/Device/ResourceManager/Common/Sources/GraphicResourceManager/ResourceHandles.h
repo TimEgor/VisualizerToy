@@ -68,6 +68,8 @@ namespace VT
 	using NAME##ResourceHandle = GraphicResourceViewHandle<INTERFACE_VIEW_TYPE, INTERFACE_TYPE, NAME##HandleID>;	\
 	COUNTABLE_REFERENCES_DECLARATION_BY_NAME(NAME##ResourceHandle, NAME)
 
+	GRAPHIC_RESOURCE(GPUBuffer, IGPUBuffer, uint32_t);
+
 	GRAPHIC_RESOURCE(Texture2D, ITexture2D, uint32_t);
 	GRAPHIC_RESOURCE_VIEW(Texture2DView, ITexture2DView, Texture2DHandleID, uint32_t);
 

@@ -71,6 +71,7 @@ void VT_SHADER_RC::ShaderConverterHLSL::compileShader(void* inData, size_t inDat
 	if (m_ilType == OutputILType::SPIR_V)
 	{
 		dxcArguments.push_back(L"-spirv");
+		dxcArguments.push_back(L"-D"); dxcArguments.push_back(L"SPIRV");
 	}
 
 	compilationResult = m_dxcShaderCompiler->Compile(&source, const_cast<LPCWSTR*>(dxcArguments.data()), static_cast<uint32_t>(dxcArguments.size()),

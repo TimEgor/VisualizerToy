@@ -4,14 +4,14 @@
 
 #include <cassert>
 
-void VT::InputLayoutCollection::addInputLayoutInternal(const InputLayoutDesc& desc)
+VT::InputLayoutReference VT::InputLayoutCollection::addInputLayoutInternal(const InputLayoutDesc& desc)
 {
 	InputLayoutHash hash = desc.getHash();
 
 	auto findStateIDIter = m_layoutIDs.find(hash);
 	if (findStateIDIter != m_layoutIDs.end())
 	{
-		return;
+		return findStateIDIter->second;
 	}
 
 	InputLayoutHandleInfo layoutInfo = m_layouts.addElementRaw();
@@ -20,6 +20,8 @@ void VT::InputLayoutCollection::addInputLayoutInternal(const InputLayoutDesc& de
 		= new (layoutInfo.m_elementPtr) ManagedInputLayoutHandle(desc, layoutInfo.m_elementHandle.getKey());
 
 	m_layoutIDs[hash] = handle;
+
+	return handle;
 }
 
 VT::InputLayoutReference VT::InputLayoutCollection::getInputLayoutInternal(InputLayoutHash hash)
@@ -85,7 +87,7 @@ VT::InputLayoutReference VT::InputLayoutCollection::getInputLayout(InputLayoutHa
 	return getInputLayoutInternal(hash);
 }
 
-void VT::InputLayoutCollection::addInputLayout(const InputLayoutDesc& desc)
+VT::InputLayoutReference VT::InputLayoutCollection::addInputLayout(const InputLayoutDesc& desc)
 {
 	UniqueLockGuard locker(m_lockMutex);
 	return addInputLayoutInternal(desc);

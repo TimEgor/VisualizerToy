@@ -14,6 +14,7 @@ namespace VT
 	class IRenderPass;
 
 	struct SwapChainDesc;
+	struct GPUBufferDesc;
 	struct Texture2DDesc;
 	struct PipelineStateInfo;
 
@@ -29,6 +30,11 @@ namespace VT
 
 		virtual bool init() = 0;
 		virtual void release() = 0;
+
+		//Buffers
+		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc) = 0;
+		virtual GPUBufferReference getGPUBuffer(GPUBufferHandleID handle) = 0;
+		virtual bool isValidGPUBuffer(GPUBufferHandleID handle) = 0;
 
 		//Texture2D
 		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) = 0;
@@ -64,10 +70,10 @@ namespace VT
 			OnLoadedPixelShaderCallback callback = nullptr) = 0;
 
 		//PipelineState
-		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc) = 0;
+		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc, InputLayoutConstReference inputlayout) = 0;
 
 		//InputLayout
-		virtual void addInputLayout(const InputLayoutDesc& desc) = 0;
+		virtual InputLayoutReference addInputLayout(const InputLayoutDesc& desc) = 0;
 		virtual InputLayoutReference getInputLayout(InputLayoutHash hash) = 0;
 	};
 }

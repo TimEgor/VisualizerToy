@@ -36,6 +36,8 @@ namespace VT_VK
 		VulkanDestroyingResourceContainer<VkSwapchainKHR> m_swapChains;
 		VulkanDestroyingResourceContainer<VkSurfaceKHR> m_surfaces;
 
+		VulkanDestroyingResourceContainer<VkBuffer> m_buffers;
+
 		VulkanDestroyingResourceContainer<VkImage> m_images;
 		VulkanDestroyingResourceContainer<VkImageView> m_imageViews;
 

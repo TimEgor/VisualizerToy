@@ -10,7 +10,7 @@ namespace VT
 	using InputLayoutElementNameHash = uint32_t;
 	using InputLayoutElementHash = uint32_t;
 
-	enum InputLayoutElementType
+	enum class InputLayoutElementType
 	{
 		INT8,
 		INT16,
@@ -41,25 +41,48 @@ namespace VT
 
 	struct InputLayoutElementDesc final
 	{
-		InputLayoutElementNameHash m_nameHash = 0;
 		uint32_t m_index = 0;
 		uint32_t m_slot = 0;
-		InputLayoutElementType m_type;
-		uint32_t m_componentsNum = 0;
 		uint32_t m_offset = 0;
-		uint32_t m_stride = 0;
+		uint32_t m_componentNum = 0;
+		InputLayoutElementType m_type = InputLayoutElementType::UNKNOWN;
 
 		InputLayoutElementHash getHash() const
 		{
 			InputLayoutElementHash result = 0;
 
-			hashCombine(result, m_nameHash);
 			hashCombine(result, m_index);
 			hashCombine(result, m_slot);
-			hashCombine(result, m_type);
-			hashCombine(result, m_componentsNum);
 			hashCombine(result, m_offset);
+			hashCombine(result, m_componentNum);
+			hashCombine(result, m_type);
+
+			return result;
+		}
+	};
+
+	enum class InputLayoutBindingType
+	{
+		VERTEX_BINDING,
+		INSTANCE_BINDING
+	};
+
+	using InputLayoutBindingHash = uint32_t;
+
+	struct InputLayoutBindingDesc final
+	{
+		uint32_t m_index = 0;
+		uint32_t m_stride = 0;
+		InputLayoutBindingType m_type = InputLayoutBindingType::VERTEX_BINDING;
+
+
+		InputLayoutBindingHash getHash() const
+		{
+			InputLayoutBindingHash result = 0;
+
+			hashCombine(result, m_index);
 			hashCombine(result, m_stride);
+			hashCombine(result, m_type);
 
 			return result;
 		}
@@ -70,8 +93,10 @@ namespace VT
 	struct InputLayoutDesc final
 	{
 		using ElementDescContainer = std::vector<InputLayoutElementDesc>;
+		using BindingDescContainer = std::vector<InputLayoutBindingDesc>;
 
 		ElementDescContainer m_elements;
+		BindingDescContainer m_bindings;
 
 		InputLayoutHash getHash() const
 		{
@@ -80,6 +105,11 @@ namespace VT
 			for (const auto& element : m_elements)
 			{
 				hashCombine(result, element.getHash());
+			}
+
+			for (const auto& binding : m_bindings)
+			{
+				hashCombine(result, binding.getHash());
 			}
 
 			return result;

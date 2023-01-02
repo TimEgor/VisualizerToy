@@ -5,14 +5,20 @@ void VT::GraphicResourceManager::deletePipelineStateInternal(IPipelineState* sta
 	getGraphicDevice()->destroyPipelineState(state);
 }
 
-VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const PipelineStateInfo& desc)
+VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const PipelineStateInfo& desc, InputLayoutConstReference inputLayout)
 {
 	PipelineStateHash id = desc.getHash();
+
+	if (inputLayout)
+	{
+		hashCombine(id, inputLayout->getDesc().getHash());
+	}
 
 	const PipelineStateCollection::PipelineStateAccessInfo accessInfo = m_pipelineStateCollection.getOrAddPipelineState(id);
 	if (accessInfo.m_isNew)
 	{
-		IPipelineState* state = getGraphicDevice()->createPipelineState(desc);
+		const InputLayoutDesc* inputlayoutDesc = inputLayout ? &inputLayout->getDesc() : nullptr;
+		IPipelineState* state = getGraphicDevice()->createPipelineState(desc, inputlayoutDesc);
 		accessInfo.m_state.getObjectCast<ManagedPipelineStateResourceHandle>()->setResource(state);
 	}
 
@@ -24,9 +30,9 @@ void VT::GraphicResourceManager::deleteInputLayoutReference(InputLayoutHandleID 
 	m_inputLayoutCollection.removeInputLayoutHandle(handleID);
 }
 
-void VT::GraphicResourceManager::addInputLayout(const InputLayoutDesc& desc)
+VT::InputLayoutReference VT::GraphicResourceManager::addInputLayout(const InputLayoutDesc& desc)
 {
-	m_inputLayoutCollection.addInputLayout(desc);
+	return m_inputLayoutCollection.addInputLayout(desc);
 }
 
 VT::InputLayoutReference VT::GraphicResourceManager::getInputLayout(InputLayoutHash hash)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderSystem/IRenderSystem.h"
+#include "GraphicResourceManager/InputLayoutHandle.h"
 #include "GraphicResourceManager/ResourceHandles.h"
 
 namespace VT
@@ -11,8 +12,10 @@ namespace VT
 
 	struct TestDrawingData final
 	{
-		VertexShaderReference vertShader;
-		PixelShaderReference pixelShader;
+		VertexShaderReference m_vertShader;
+		PixelShaderReference m_pixelShader;
+		InputLayoutReference m_inputLayout;
+		GPUBufferReference m_vertexBuffer;
 	};
 
 	class RenderSystem final : public IRenderSystem
