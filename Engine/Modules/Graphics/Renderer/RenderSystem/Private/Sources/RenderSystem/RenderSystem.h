@@ -16,6 +16,7 @@ namespace VT
 		PixelShaderReference m_pixelShader;
 		InputLayoutReference m_inputLayout;
 		GPUBufferReference m_vertexBuffer;
+		GPUBufferReference m_indexBuffer;
 	};
 
 	class RenderSystem final : public IRenderSystem

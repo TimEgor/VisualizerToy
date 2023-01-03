@@ -177,7 +177,22 @@ void VT_VK::VulkanRenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGP
 	vkCmdBindVertexBuffers(m_commandList->getVkCommandBuffer(), 0, buffersCount, vkBuffers.data(), vkOffsets.data());
 }
 
-void VT_VK::VulkanRenderContext::draw()
+void VT_VK::VulkanRenderContext::setIndexBuffer(VT::IGPUBuffer* buffer)
 {
-	vkCmdDraw(m_commandList->getVkCommandBuffer(), 3, 1, 0, 0);
+	VulkanGPUBuffer* vulkanBuffer = reinterpret_cast<VulkanGPUBuffer*>(buffer);
+
+	VkDeviceSize offset = 0;
+	VkBuffer vkBuffer = vulkanBuffer->getVkBuffer();
+
+	vkCmdBindIndexBuffer(m_commandList->getVkCommandBuffer(), vkBuffer, offset, VkIndexType::VK_INDEX_TYPE_UINT16);
+}
+
+void VT_VK::VulkanRenderContext::draw(uint32_t vertCount)
+{
+	vkCmdDraw(m_commandList->getVkCommandBuffer(), vertCount, 1, 0, 0);
+}
+
+void VT_VK::VulkanRenderContext::drawIndexed(uint32_t indexCount)
+{
+	vkCmdDrawIndexed(m_commandList->getVkCommandBuffer(), indexCount, 1, 0, 0, 0);
 }

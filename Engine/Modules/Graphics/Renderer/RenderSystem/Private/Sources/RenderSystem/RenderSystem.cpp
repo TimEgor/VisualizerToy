@@ -24,6 +24,8 @@ namespace VT
 		Vector2 m_pos;
 		Vector3 m_color;
 	};
+
+	using VertexIndex = uint16_t;
 }
 
 
@@ -53,26 +55,42 @@ bool VT::RenderSystem::init()
 	VT_CHECK_INITIALIZATION(m_drawingData.m_vertShader && m_drawingData.m_pixelShader);
 
 	GPUBufferDesc vertexBufferDesc{};
-	vertexBufferDesc.m_byteSize = sizeof(Vertex) * 3;
+	vertexBufferDesc.m_byteSize = sizeof(Vertex) * 4;
 	vertexBufferDesc.m_usage = GPUBufferUsageType::VERTEX_BUFFER;
 
 	m_drawingData.m_vertexBuffer = resManager->createGPUBuffer(vertexBufferDesc);
 
 	VT_CHECK_INITIALIZATION(m_drawingData.m_vertexBuffer);
 
-
-
 	Vertex* vertexMapping = nullptr;
 	m_drawingData.m_vertexBuffer->getResource()->mapData(reinterpret_cast<void**>(&vertexMapping));
 
-	vertexMapping[0].m_pos = { 0.0f, -0.5f };
+	vertexMapping[0].m_pos = { -0.5f, -0.5f };
 	vertexMapping[0].m_color = { 1.0f, 0.0f, 0.0f };
-	vertexMapping[1].m_pos = { 0.5f, 0.5f };
+	vertexMapping[1].m_pos = { -0.5f, 0.5f };
 	vertexMapping[1].m_color = { 0.0f, 1.0f, 0.0f };
-	vertexMapping[2].m_pos = { -0.5f, 0.5f };
+	vertexMapping[2].m_pos = { 0.5f, -0.5f };
 	vertexMapping[2].m_color = { 0.0f, 0.0f, 1.0f };
+	vertexMapping[3].m_pos = { 0.5f, 0.5f };
+	vertexMapping[3].m_color = { 1.0f, 0.0f, 1.0f };
 
 	m_drawingData.m_vertexBuffer->getResource()->unmapData();
+
+	GPUBufferDesc indexBufferDesc{};
+	indexBufferDesc.m_byteSize = sizeof(VertexIndex) * 6;
+	indexBufferDesc.m_usage = GPUBufferUsageType::INDEX_BUFFER;
+
+	m_drawingData.m_indexBuffer = resManager->createGPUBuffer(indexBufferDesc);
+
+	VT_CHECK_INITIALIZATION(m_drawingData.m_indexBuffer);
+
+	Vertex* indexMapping = nullptr;
+	m_drawingData.m_indexBuffer->getResource()->mapData(reinterpret_cast<void**>(&indexMapping));
+
+	uint16_t indices[] = { 0, 2, 1, 2, 3, 1 };
+	memcpy(indexMapping, indices, sizeof(VertexIndex) * 6);
+
+	m_drawingData.m_indexBuffer->getResource()->unmapData();
 
 	InputLayoutDesc inputLayoutDesc{};
 	InputLayoutBindingDesc& binding = inputLayoutDesc.m_bindings.emplace_back();
@@ -150,13 +168,14 @@ void VT::RenderSystem::render(ITexture2D* target, ITexture2DView* targetView,
 
 	m_context->setPipelineState(pipelineState->getResource());
 	m_context->setVertexBuffer(m_drawingData.m_vertexBuffer->getResource());
-	m_context->draw();
+	m_context->setIndexBuffer(m_drawingData.m_indexBuffer->getResource());
+	m_context->drawIndexed(6);
 
 	m_context->endRendering();
 	m_context->prepareTextureForPresenting(target);
 	m_context->end();
 
-	CommandListSubmitInfo submitInfo{};
+	CommandListSubmitInfo submitInfo;
 	submitInfo.m_fence = m_frameFence;
 	submitInfo.m_waitSemaphore = textureAvailableSemaphore;
 	submitInfo.m_completeSemaphore = m_renderingCompleteSemaphore;
