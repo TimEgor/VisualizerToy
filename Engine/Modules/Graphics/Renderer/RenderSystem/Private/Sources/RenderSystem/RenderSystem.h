@@ -1,8 +1,8 @@
 #pragma once
 
 #include "RenderSystem/IRenderSystem.h"
-#include "GraphicResourceManager/InputLayoutHandle.h"
 #include "GraphicResourceManager/ResourceHandles.h"
+#include "MeshSystem/MeshHandle.h"
 
 namespace VT
 {
@@ -14,9 +14,7 @@ namespace VT
 	{
 		VertexShaderReference m_vertShader;
 		PixelShaderReference m_pixelShader;
-		InputLayoutReference m_inputLayout;
-		GPUBufferReference m_vertexBuffer;
-		GPUBufferReference m_indexBuffer;
+		MeshReference m_mesh;
 	};
 
 	class RenderSystem final : public IRenderSystem

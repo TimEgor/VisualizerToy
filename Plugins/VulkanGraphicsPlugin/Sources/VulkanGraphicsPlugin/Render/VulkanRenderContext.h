@@ -1,5 +1,6 @@
 #pragma once
 
+#include "InputLayout/InputLayout.h"
 #include "RenderSystem/IRenderContext.h"
 
 namespace VT
@@ -36,8 +37,8 @@ namespace VT_VK
 
 		virtual void setPipelineState(VT::IPipelineState* pipelineState) override;
 		virtual void setVertexBuffer(VT::IGPUBuffer* buffer) override;
-		virtual void setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer* buffers) override;
-		virtual void setIndexBuffer(VT::IGPUBuffer* buffer) override;
+		virtual void setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers) override;
+		virtual void setIndexBuffer(VT::IGPUBuffer* buffer, VT::InputLayoutElementType indexType) override;
 
 		virtual void draw(uint32_t vertCount) override;
 		virtual void drawIndexed(uint32_t indexCount) override;

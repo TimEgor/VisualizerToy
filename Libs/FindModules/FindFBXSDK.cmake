@@ -33,16 +33,16 @@ message("FBX SDK compiler: ${FBX_COMPILER_NAME}")
 message("FBX SDK platform: ${FBX_PLATFORM_NAME}")
 
 set(FBXSDK_LIBRARY_RELEASE_PATH
-	${FBX_SDK_DIR}lib/${FBX_COMPILER_NAME}/${FBX_PLATFORM_NAME}/release/
+	${FBX_SDK_DIR}/lib/${FBX_COMPILER_NAME}/${FBX_PLATFORM_NAME}/release/
 )
 set(FBXSDK_LIBRARY_DEBUG_PATH
-	${FBX_SDK_DIR}lib/${FBX_COMPILER_NAME}/${FBX_PLATFORM_NAME}/debug/
+	${FBX_SDK_DIR}/lib/${FBX_COMPILER_NAME}/${FBX_PLATFORM_NAME}/debug/
 )
 
 include(SelectLibraryConfigurations)
 select_library_configurations(FBXSDK)
 
-set(FBXSDK_INCLUDE_DIR ${FBX_SDK_DIR}include)
+set(FBXSDK_INCLUDE_DIR ${FBX_SDK_DIR}/include)
 set(FBXSDK_LIBRARY ${FBXSDK_LIBRARY_RELEASE_PATH}/libfbxsdk-md.lib)
 
 include(FindPackageHandleStandardArgs)

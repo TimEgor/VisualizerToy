@@ -12,13 +12,13 @@ namespace VT
 	class NamedObjectPool final
 	{
 		using ObjectPoolType  = ObjectPool<ElementHandle, ElementPoolHandle>;
-		using ResourceInfo = typename ObjectPoolType::NewElementInfo;
+		using ElementInfo = typename ObjectPoolType::NewElementInfo;
 		using NamesContainer = std::unordered_map<FileNameID, typename ElementPoolHandle::KeyType>;
 
 	public:
-		using ResourcePoolHandle = ElementPoolHandle;
+		using ElementPoolHandleType = ElementPoolHandle;
 
-		struct ResourceAccessInfo final
+		struct ElementAccessInfo final
 		{
 			ElementHandleReference m_element = nullptr;
 			bool m_isNew = false;
@@ -29,9 +29,9 @@ namespace VT
 		NamesContainer m_names;
 		mutable SharedMutex m_lockMutex;
 
-		ElementHandle* addResourceInternal(FileNameID nameID);
-		ElementHandle* getResourceInternal(FileNameID nameID);
-		ElementHandle* getResourceInternal(ElementPoolHandle handle);
+		ElementHandle* addElementInternal(FileNameID nameID);
+		ElementHandle* getElementInternal(FileNameID nameID);
+		ElementHandle* getElementInternal(ElementPoolHandleType handle);
 
 	public:
 		NamedObjectPool() = default;
@@ -41,23 +41,23 @@ namespace VT
 
 		void clear();
 
-		bool isValid(ElementPoolHandle handle) const;
+		bool isValid(ElementPoolHandleType handle) const;
 
-		ElementHandleReference getResource(ElementPoolHandle handle) const;
-		ElementHandleReference getResource(ElementPoolHandle handle);
+		ElementHandleReference getElement(ElementPoolHandleType handle) const;
+		ElementHandleReference getElement(ElementPoolHandleType handle);
 
-		ElementHandleReference getResource(const FileName& name) const;
-		ElementHandleReference getResource(FileNameID nameID) const;
-		ElementHandleReference getResource(const FileName& name);
-		ElementHandleReference getResource(FileNameID nameID);
+		ElementHandleReference getElement(const FileName& name) const;
+		ElementHandleReference getElement(FileNameID nameID) const;
+		ElementHandleReference getElement(const FileName& name);
+		ElementHandleReference getElement(FileNameID nameID);
 
-		ElementHandleReference addResource(const FileName& name);
-		ElementHandleReference addResource(FileNameID nameID);
+		ElementHandleReference addElement(const FileName& name);
+		ElementHandleReference addElement(FileNameID nameID);
 
-		ResourceAccessInfo getOrAddResource(const FileName& name);
-		ResourceAccessInfo getOrAddResource(FileNameID nameID);
+		ElementAccessInfo getOrAddElement(const FileName& name);
+		ElementAccessInfo getOrAddElement(FileNameID nameID);
 
-		void removeResource(FileNameID nameID);
+		void removeElement(FileNameID nameID);
 	};
 }
 

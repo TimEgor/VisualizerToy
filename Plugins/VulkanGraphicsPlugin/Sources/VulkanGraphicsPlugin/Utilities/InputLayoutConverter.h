@@ -1,6 +1,6 @@
 #pragma once
 
-#include "InputLayout/IInputLayout.h"
+#include "InputLayout/InputLayout.h"
 #include "VulkanGraphicsPlugin/VulkanCore.h"
 
 namespace VT_VK

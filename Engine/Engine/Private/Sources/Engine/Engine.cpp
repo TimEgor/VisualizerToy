@@ -11,9 +11,12 @@
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicResourceManager/NamedGraphicResourceSystem.h"
+
+#include "MeshSystem/MeshSystem.h"
 #include "RenderSystem/RenderSystem.h"
 
 #include <cassert>
+
 
 
 bool VT::Engine::init(const EngineInitParam& initParam)
@@ -46,12 +49,18 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice
 		&& m_engineEnvironment->m_graphicDevice->init(initParam.m_swapChainEnabled));
 
-	assert(initParam.m_shaderConverterPath);
-	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_shaderConverterPath);
+	for (uint32_t converterIndex = 0; converterIndex < initParam.m_converterPathsCount; ++converterIndex)
+	{
+		m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_converterPaths[converterIndex]);
+	}
 
 	m_engineEnvironment->m_graphicResourceManager = new NamedGraphicResourceSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicResourceManager
 		&& m_engineEnvironment->m_graphicResourceManager->init());
+
+	m_engineEnvironment->m_meshSystem = new MeshSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_meshSystem
+		&& m_engineEnvironment->m_meshSystem->init());
 
 	m_engineEnvironment->m_renderSystem = new RenderSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_renderSystem
@@ -65,6 +74,8 @@ void VT::Engine::release()
 	if (m_engineEnvironment)
 	{
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_renderSystem);
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_meshSystem);
+
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_graphicResourceManager);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_graphicDevice);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_windowSystem);

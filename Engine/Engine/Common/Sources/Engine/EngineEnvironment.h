@@ -2,6 +2,7 @@
 
 namespace VT
 {
+	class IMeshSystem;
 	class IPlatform;
 	class IPluginSystem;
 	class IWindowSystem;
@@ -27,6 +28,7 @@ namespace VT
 
 		IRenderSystem* m_renderSystem = nullptr;
 		IMaterialSystem* m_materialSystem = nullptr;
+		IMeshSystem* m_meshSystem = nullptr;
 
 		IResourceSystem* m_resourceSystem = nullptr;
 	};

@@ -12,30 +12,42 @@
 
 #include "ReturningCodes.h"
 
-// tmp
-#include "GraphicResourceManager/IGraphicResourceManager.h"
-#include "Platform/IPlatform.h"
 #include "RenderSystem/IRenderSystem.h"
+#include "ResourceSystem/IResourceSystem.h"
+
+#include <vector>
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	VT::EngineInstance& engineInst = VT::EngineInstance::getInstance();
 
-	VT::EngineInitParam initParams;
-	VT_Launcher::getPlatformPluginPath(initParams.m_platformPluginPath);
-	VT_Launcher::getGraphicsPluginPath(initParams.m_graphicDevicePluginPath);
-	VT_Launcher::getResourceSystemPluginPath(initParams.m_resourceSystenPluginPath);
-
-	VT_Launcher::prepareConverterPath("ShaderConverterHLSL",
-		"HLSL/" + VT::FileName(VT_PLATFORM_NAME), initParams.m_shaderConverterPath);
-
 	VT::IEngine* engine = new VT::Engine();
 	VT::WindowGraphicPresenter* graphicPresenter = new VT::WindowGraphicPresenter();
 
-	engineInst.setEngine(engine);
-	if (!engineInst->init(initParams))
 	{
-		return VT_LAUNCHER_ENGINE_INIT_ERROR;
+		VT::EngineInitParam initParams;
+		VT_Launcher::getPlatformPluginPath(initParams.m_platformPluginPath);
+		VT_Launcher::getGraphicsPluginPath(initParams.m_graphicDevicePluginPath);
+		VT_Launcher::getResourceSystemPluginPath(initParams.m_resourceSystenPluginPath);
+
+		std::vector<VT::FileName> converters;
+
+		VT::FileName& shaderConverter = converters.emplace_back();
+		VT_Launcher::prepareConverterPath("ShaderConverterHLSL",
+			"HLSL/" + VT::FileName(VT_PLATFORM_NAME), shaderConverter);
+
+		VT::FileName& modelConverter = converters.emplace_back();
+		VT_Launcher::prepareConverterPath("ModelConverterFBX",
+			"", modelConverter);
+
+		initParams.m_converterPaths = converters.data();
+		initParams.m_converterPathsCount = static_cast<uint32_t>(converters.size());
+
+		engineInst.setEngine(engine);
+		if (!engineInst->init(initParams))
+		{
+			return VT_LAUNCHER_ENGINE_INIT_ERROR;
+		}
 	}
 
 	const VT::WindowSize defaultWindowSize(500, 500);
@@ -47,6 +59,11 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	if (!graphicPresenter->init("VT LAUNCHER", defaultWindowSize, swapChainDesc))
 	{
 		return VT_LAUNCHER_WINDOW_PRESENTER_INIT_ERROR;
+	}
+
+	{
+		//TMP
+		VT::ResourceDataReference testModelData = engineInst->getEnvironment()->m_resourceSystem->getResource("TestCube.fbx");
 	}
 
 	{

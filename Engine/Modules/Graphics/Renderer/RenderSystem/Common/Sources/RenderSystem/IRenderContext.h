@@ -43,8 +43,8 @@ namespace VT
 
 		virtual void setPipelineState(IPipelineState* pipelineState) = 0;
 		virtual void setVertexBuffer(IGPUBuffer* buffer) = 0;
-		virtual void setVertexBuffers(uint32_t buffersCount, IGPUBuffer* buffers) = 0;
-		virtual void setIndexBuffer(IGPUBuffer* buffer) = 0;
+		virtual void setVertexBuffers(uint32_t buffersCount, IGPUBuffer** buffers) = 0;
+		virtual void setIndexBuffer(IGPUBuffer* buffer, InputLayoutElementType indexType) = 0;
 
 		virtual void draw(uint32_t vertCount) = 0;
 		virtual void drawIndexed(uint32_t indexCount) = 0;

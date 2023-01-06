@@ -21,7 +21,7 @@ namespace VT
 		FLOAT16,
 		FLOAT32,
 
-		UNKNOWN
+		UNDEFINED
 	};
 
 	using InputLayoutElementSizeType = uint32_t;
@@ -45,7 +45,7 @@ namespace VT
 		uint32_t m_slot = 0;
 		uint32_t m_offset = 0;
 		uint32_t m_componentNum = 0;
-		InputLayoutElementType m_type = InputLayoutElementType::UNKNOWN;
+		InputLayoutElementType m_type = InputLayoutElementType::UNDEFINED;
 
 		InputLayoutElementHash getHash() const
 		{
@@ -114,5 +114,8 @@ namespace VT
 
 			return result;
 		}
+
+		static void serialize(const InputLayoutDesc& desc, void** data, size_t& dataSize);
+		static void deserialize(InputLayoutDesc& desc, const void* data, size_t dataSize);
 	};
 }

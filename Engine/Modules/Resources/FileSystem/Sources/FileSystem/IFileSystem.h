@@ -17,6 +17,48 @@ namespace VT
 	public:
 		using FileTime = long long;
 
+		class IStream
+		{
+		public:
+			enum class SeekDir
+			{
+				BEGIN,
+				CURRENT,
+				END
+			};
+
+		public:
+			IStream() = default;
+			virtual ~IStream() = default;
+
+			virtual bool isOpen() const = 0;
+			virtual size_t getPos() = 0;
+			virtual void seek(size_t pos, SeekDir seekPos) = 0;
+			virtual int getError() const = 0;
+		};
+
+		class IWriteStream : virtual public IStream
+		{
+		public:
+			IWriteStream() = default;
+
+			virtual size_t write(const void* data, size_t dataSize) = 0;
+		};
+
+		class IReadStream : virtual public IStream
+		{
+		public:
+			IReadStream() = default;
+
+			virtual size_t read(void* data, size_t dataSize) = 0;
+		};
+
+		class IReadWriteStream : public IWriteStream, public IReadStream
+		{
+		public:
+			IReadWriteStream() = default;
+		};
+
 	public:
 		IFileSystem() {}
 		virtual ~IFileSystem() {}
@@ -31,6 +73,18 @@ namespace VT
 		virtual void* readResourceBinaryData(const FileName& resourceName, size_t& resourceSize) const = 0;
 
 		virtual bool writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag) = 0;
+
+		virtual IWriteStream* openWriteStream(const FileName& resourceName) const = 0;
+		virtual IWriteStream* openBinaryWriteStream(const FileName& resourceName) const = 0;
+		virtual void closeWriteStream(IWriteStream* stream) const = 0;
+
+		virtual IReadStream* openReadStream(const FileName& resourceName) const = 0;
+		virtual IReadStream* openBinaryReadStream(const FileName& resourceName) const = 0;
+		virtual void closeReadStream(IReadStream* stream) const = 0;
+
+		virtual IReadWriteStream* openReadWriteStream(const FileName& resourceName) const = 0;
+		virtual IReadWriteStream* openBinaryReadWriteStream(const FileName& resourceName) const = 0;
+		virtual void closeReadWriteStream(IReadWriteStream* stream) const = 0;
 
 		virtual void createDirectory(const FileName& resourceName) = 0;
 

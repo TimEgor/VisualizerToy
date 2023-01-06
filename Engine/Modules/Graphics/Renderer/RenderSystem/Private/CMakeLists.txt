@@ -13,11 +13,11 @@ target_link_libraries(RenderSystem
 		Core
 		Engine_COMMON
 		RenderSystem_COMMON
+		MeshSystem_COMMON
 		GraphicDevice
 		GraphicPipeline
 		GraphicPlatform
 		Textures
 		GPUBuffer
-		InputLayout
 		Math
 )

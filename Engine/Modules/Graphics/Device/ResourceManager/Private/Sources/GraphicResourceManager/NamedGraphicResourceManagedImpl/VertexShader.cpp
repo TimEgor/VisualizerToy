@@ -5,13 +5,13 @@
 
 void VT::NamedGraphicResourceSystem::deleteVertexShaderReference(FileNameID nameID)
 {
-	m_namedVertexShaderPool.removeResource(nameID);
+	m_namedVertexShaderPool.removeElement(nameID);
 }
 
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::getVertexShader(VertexShaderHandleID handle)
 {
-	NamedVertexShaderPool::ResourcePoolHandle poolHandle = handle;
-	if (poolHandle.m_handle.getResourceType() == NAMELESS_RESOURCE_TYPE)
+	NamedVertexShaderPool::ElementPoolHandleType poolHandle = handle;
+	if (poolHandle.m_handle.getElementType() == NAMELESS_ELEMENT_TYPE)
 	{
 		return GraphicResourceManager::getVertexShader(handle);
 	}
@@ -21,8 +21,8 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::getVertexShader(Vertex
 
 bool VT::NamedGraphicResourceSystem::isValidVertexShader(VertexShaderHandleID handle) const
 {
-	NamedVertexShaderPool::ResourcePoolHandle poolHandle = handle;
-	if (poolHandle.m_handle.getResourceType() == NAMELESS_RESOURCE_TYPE)
+	NamedVertexShaderPool::ElementPoolHandleType poolHandle = handle;
+	if (poolHandle.m_handle.getElementType() == NAMELESS_ELEMENT_TYPE)
 	{
 		return GraphicResourceManager::isValidVertexShader(handle);
 	}
@@ -37,7 +37,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::getNamedVertexShader(c
 
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::getNamedVertexShader(FileNameID handle)
 {
-	return m_namedVertexShaderPool.getResource(handle);
+	return m_namedVertexShaderPool.getElement(handle);
 }
 
 bool VT::NamedGraphicResourceSystem::isValidNamedVertexShader(FileNameID handle) const
@@ -48,7 +48,7 @@ bool VT::NamedGraphicResourceSystem::isValidNamedVertexShader(FileNameID handle)
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const FileName& shaderPath)
 {
 	FileNameID nameID = shaderPath.hash();
-	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexShaderPool.getOrAddResource(nameID);
+	NamedVertexShaderPool::ElementAccessInfo shaderAccessor = m_namedVertexShaderPool.getOrAddElement(nameID);
 	if (shaderAccessor.m_isNew)
 	{
 		IResourceSystem* resourceSystem = getResourceSystem();
@@ -67,7 +67,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 				IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
 				if (!shader)
 				{
-					m_namedVertexShaderPool.removeResource(nameID);
+					m_namedVertexShaderPool.removeElement(nameID);
 					return nullptr;
 				}
 
@@ -82,7 +82,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShaderAsync(
 	const FileName& shaderPath, OnLoadedVertexShaderCallback callback)
 {
-	NamedVertexShaderPool::ResourceAccessInfo shaderAccessor = m_namedVertexShaderPool.getOrAddResource(shaderPath);
+	NamedVertexShaderPool::ElementAccessInfo shaderAccessor = m_namedVertexShaderPool.getOrAddElement(shaderPath);
 	if (!shaderAccessor.m_isNew)
 	{
 		if (callback)

@@ -34,6 +34,18 @@ namespace VT
 
 		virtual bool writeResource(const FileName& resourceName, void* data, size_t resourceSize, WriteResourceFileFlag flag) override;
 
+		virtual IWriteStream* openWriteStream(const FileName& resourceName) const override;
+		virtual IWriteStream* openBinaryWriteStream(const FileName& resourceName) const override;
+		virtual void closeWriteStream(IWriteStream* stream) const override;
+
+		virtual IReadStream* openReadStream(const FileName& resourceName) const override;
+		virtual IReadStream* openBinaryReadStream(const FileName& resourceName) const override;
+		virtual void closeReadStream(IReadStream* stream) const override;
+
+		virtual IReadWriteStream* openReadWriteStream(const FileName& resourceName) const override;
+		virtual IReadWriteStream* openBinaryReadWriteStream(const FileName& resourceName) const override;
+		virtual void closeReadWriteStream(IReadWriteStream* stream) const override;
+
 		virtual void createDirectory(const FileName& path) override;
 
 		virtual bool isDirectory(const FileName& path) const override;

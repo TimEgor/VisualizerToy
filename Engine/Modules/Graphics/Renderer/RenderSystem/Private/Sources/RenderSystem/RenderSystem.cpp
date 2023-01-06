@@ -12,9 +12,9 @@
 #include "GraphicPipeline/IPipelineState.h"
 #include "Textures/ITexture2D.h"
 #include "GPUBuffer/IGPUBuffer.h"
-#include "InputLayout/IInputLayout.h"
 
 #include "Math/Vector.h"
+#include "MeshSystem/IMeshSystem.h"
 
 namespace VT
 {
@@ -54,67 +54,9 @@ bool VT::RenderSystem::init()
 
 	VT_CHECK_INITIALIZATION(m_drawingData.m_vertShader && m_drawingData.m_pixelShader);
 
-	GPUBufferDesc vertexBufferDesc{};
-	vertexBufferDesc.m_byteSize = sizeof(Vertex) * 4;
-	vertexBufferDesc.m_usage = GPUBufferUsageType::VERTEX_BUFFER;
+	m_drawingData.m_mesh = environment->m_meshSystem->loadMesh("Cube.mesh");
 
-	m_drawingData.m_vertexBuffer = resManager->createGPUBuffer(vertexBufferDesc);
-
-	VT_CHECK_INITIALIZATION(m_drawingData.m_vertexBuffer);
-
-	Vertex* vertexMapping = nullptr;
-	m_drawingData.m_vertexBuffer->getResource()->mapData(reinterpret_cast<void**>(&vertexMapping));
-
-	vertexMapping[0].m_pos = { -0.5f, -0.5f };
-	vertexMapping[0].m_color = { 1.0f, 0.0f, 0.0f };
-	vertexMapping[1].m_pos = { -0.5f, 0.5f };
-	vertexMapping[1].m_color = { 0.0f, 1.0f, 0.0f };
-	vertexMapping[2].m_pos = { 0.5f, -0.5f };
-	vertexMapping[2].m_color = { 0.0f, 0.0f, 1.0f };
-	vertexMapping[3].m_pos = { 0.5f, 0.5f };
-	vertexMapping[3].m_color = { 1.0f, 0.0f, 1.0f };
-
-	m_drawingData.m_vertexBuffer->getResource()->unmapData();
-
-	GPUBufferDesc indexBufferDesc{};
-	indexBufferDesc.m_byteSize = sizeof(VertexIndex) * 6;
-	indexBufferDesc.m_usage = GPUBufferUsageType::INDEX_BUFFER;
-
-	m_drawingData.m_indexBuffer = resManager->createGPUBuffer(indexBufferDesc);
-
-	VT_CHECK_INITIALIZATION(m_drawingData.m_indexBuffer);
-
-	Vertex* indexMapping = nullptr;
-	m_drawingData.m_indexBuffer->getResource()->mapData(reinterpret_cast<void**>(&indexMapping));
-
-	uint16_t indices[] = { 0, 2, 1, 2, 3, 1 };
-	memcpy(indexMapping, indices, sizeof(VertexIndex) * 6);
-
-	m_drawingData.m_indexBuffer->getResource()->unmapData();
-
-	InputLayoutDesc inputLayoutDesc{};
-	InputLayoutBindingDesc& binding = inputLayoutDesc.m_bindings.emplace_back();
-	binding.m_index = 0;
-	binding.m_stride = sizeof(Vertex);
-	binding.m_type = InputLayoutBindingType::VERTEX_BINDING;
-
-	InputLayoutElementDesc& posAttrib = inputLayoutDesc.m_elements.emplace_back();
-	posAttrib.m_index = 0;
-	posAttrib.m_slot = 0;
-	posAttrib.m_offset = 0;
-	posAttrib.m_componentNum = 2;
-	posAttrib.m_type = InputLayoutElementType::FLOAT32;
-
-	InputLayoutElementDesc& colorAttrib = inputLayoutDesc.m_elements.emplace_back();
-	colorAttrib.m_index = 1;
-	colorAttrib.m_slot = 0;
-	colorAttrib.m_offset = offsetof(Vertex, m_color);
-	colorAttrib.m_componentNum = 3;
-	colorAttrib.m_type = InputLayoutElementType::FLOAT32;
-
-	m_drawingData.m_inputLayout = resManager->addInputLayout(inputLayoutDesc);
-
-	VT_CHECK_INITIALIZATION(m_drawingData.m_inputLayout);
+	VT_CHECK_INITIALIZATION(m_drawingData.m_mesh);
 
 	return true;
 }
@@ -155,9 +97,27 @@ void VT::RenderSystem::render(ITexture2D* target, ITexture2DView* targetView,
 	pipelineStateInfo.m_vertexShader = m_drawingData.m_vertShader->getResource();
 	pipelineStateInfo.m_pixelShader = m_drawingData.m_pixelShader->getResource();
 
+	IMesh* mesh = m_drawingData.m_mesh->getMesh();
+	if (!mesh)
+	{
+		return;
+	}
+
+	const MeshVertexData& vertexData = mesh->getVertexData();
+	const MeshIndexData& indexData = mesh->getIndexData();
+
 	pipelineStateInfo.m_formats.push_back(target->getDesc().m_format);
 
-	PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(pipelineStateInfo, m_drawingData.m_inputLayout);
+	PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(pipelineStateInfo, vertexData.m_inputLayout);
+
+	const uint32_t vertBuffersCount = static_cast<uint32_t>(vertexData.m_bindings.size());
+	std::vector<IGPUBuffer*> vertBuffers;
+	vertBuffers.reserve(vertBuffersCount);
+
+	for (uint32_t i = 0; i < vertBuffersCount; ++i)
+	{
+		vertBuffers.push_back(vertexData.m_bindings[i]->getResource());
+	}
 
 	RenderContextBeginInfo contextInfo{};
 	contextInfo.m_targets.push_back({ target, targetView });
@@ -167,9 +127,9 @@ void VT::RenderSystem::render(ITexture2D* target, ITexture2DView* targetView,
 	m_context->beginRendering(contextInfo);
 
 	m_context->setPipelineState(pipelineState->getResource());
-	m_context->setVertexBuffer(m_drawingData.m_vertexBuffer->getResource());
-	m_context->setIndexBuffer(m_drawingData.m_indexBuffer->getResource());
-	m_context->drawIndexed(6);
+	m_context->setVertexBuffers(vertBuffers.size(), vertBuffers.data());
+	m_context->setIndexBuffer(indexData.m_indexBuffer->getResource(), indexData.m_indexFormat);
+	m_context->drawIndexed(indexData.m_indexCount);
 
 	m_context->endRendering();
 	m_context->prepareTextureForPresenting(target);

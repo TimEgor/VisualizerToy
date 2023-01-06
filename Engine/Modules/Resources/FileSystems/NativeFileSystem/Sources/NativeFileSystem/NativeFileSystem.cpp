@@ -1,6 +1,7 @@
 #include "NativeFileSystem.h"
 
 #include "Core/FileName/FileNameUtils.h"
+#include "NativeFileSystemStreams.h"
 
 #include <filesystem>
 #include <fstream>
@@ -30,7 +31,10 @@ namespace VT
 
 	void NativeFileSystem::createDirectoryInternal(const FileName& path)
 	{
-		std::filesystem::create_directories(path.c_str());
+		if (!existInternal(path))
+		{
+			std::filesystem::create_directories(path.c_str());
+		}
 	}
 
 	bool NativeFileSystem::isDirectoryInternal(const FileName& path) const
@@ -117,6 +121,54 @@ namespace VT
 		fileStream.close();
 
 		return true;
+	}
+
+	IFileSystem::IWriteStream* NativeFileSystem::openWriteStream(const FileName& resourceName) const
+	{
+		return new NativeFileSystemWriteStream(resourceName, std::ios_base::out | std::ios_base::trunc);
+	}
+
+	void NativeFileSystem::closeWriteStream(IWriteStream* stream) const
+	{
+		assert(stream);
+		delete stream;
+	}
+
+	IFileSystem::IWriteStream* NativeFileSystem::openBinaryWriteStream(const FileName& resourceName) const
+	{
+		return new NativeFileSystemWriteStream(resourceName, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+	}
+
+	IFileSystem::IReadStream* NativeFileSystem::openReadStream(const FileName& resourceName) const
+	{
+		return new NativeFileSystemReadStream(resourceName, std::ios_base::in);
+	}
+
+	IFileSystem::IReadStream* NativeFileSystem::openBinaryReadStream(const FileName& resourceName) const
+	{
+		return new NativeFileSystemReadStream(resourceName, std::ios_base::in | std::ios_base::binary);
+	}
+
+	void NativeFileSystem::closeReadStream(IReadStream* stream) const
+	{
+		assert(stream);
+		delete stream;
+	}
+
+	IFileSystem::IReadWriteStream* NativeFileSystem::openReadWriteStream(const FileName& resourceName) const
+	{
+		return new NativeFileSystemReadWriteStream(resourceName, std::ios_base::out | std::ios_base::in | std::ios_base::trunc);
+	}
+
+	IFileSystem::IReadWriteStream* NativeFileSystem::openBinaryReadWriteStream(const FileName& resourceName) const
+	{
+		return new NativeFileSystemReadWriteStream(resourceName, std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::binary);
+	}
+
+	void NativeFileSystem::closeReadWriteStream(IReadWriteStream* stream) const
+	{
+		assert(stream);
+		delete stream;
 	}
 
 	void NativeFileSystem::createDirectory(const FileName& path)

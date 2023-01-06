@@ -4,8 +4,8 @@
 
 namespace VT
 {
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	Resource* NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::addResourceInternal(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	Element* NamedObjectPool<Element, ElementReference, ElementPoolHandle>::addElementInternal(
 		FileNameID nameID)
 	{
 		auto findNameIter = m_names.find(nameID);
@@ -14,19 +14,19 @@ namespace VT
 			return nullptr;
 		}
 
-		ResourceInfo info = m_pool.addElementRaw();
-		info.m_elementHandle.m_handle.setResourceType(NAMED_RESOURCE_TYPE);
+		ElementInfo info = m_pool.addElementRaw();
+		info.m_elementHandle.m_handle.setElementType(NAMED_ELEMENT_TYPE);
 
 		m_names[nameID] = info.m_elementHandle.getKey();
 
-		Resource* handle
-			= new (info.m_elementPtr) Resource(nullptr, info.m_elementHandle.getKey(), nameID);
+		Element* handle
+			= new (info.m_elementPtr) Element(nullptr, info.m_elementHandle.getKey(), nameID);
 
 		return handle;
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	Resource* NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResourceInternal(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	Element* NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElementInternal(
 		FileNameID nameID)
 	{
 		auto findNameIter = m_names.find(nameID);
@@ -38,15 +38,15 @@ namespace VT
 		return m_pool.getElement(findNameIter->second);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	Resource* NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResourceInternal(
-		ResourcePoolHandle handle)
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	Element* NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElementInternal(
+		ElementPoolHandleType handle)
 	{
 		return m_pool.getElement(handle);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	bool NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::init(size_t pageSize,
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	bool NamedObjectPool<Element, ElementReference, ElementPoolHandle>::init(size_t pageSize,
 		size_t maxFreePageCount, size_t minFreeIndexCount)
 	{
 		UniqueLockGuard locker(m_lockMutex);
@@ -55,8 +55,8 @@ namespace VT
 		return true;
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	void NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::release()
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	void NamedObjectPool<Element, ElementReference, ElementPoolHandle>::release()
 	{
 		UniqueLockGuard locker(m_lockMutex);
 
@@ -64,8 +64,8 @@ namespace VT
 		m_names = NamesContainer();
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	void NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::clear()
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	void NamedObjectPool<Element, ElementReference, ElementPoolHandle>::clear()
 	{
 		UniqueLockGuard locker(m_lockMutex);
 
@@ -73,100 +73,100 @@ namespace VT
 		m_names.clear();
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	bool NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::isValid(
-		ResourcePoolHandle handle) const
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	bool NamedObjectPool<Element, ElementReference, ElementPoolHandle>::isValid(
+		ElementPoolHandleType handle) const
 	{
 		SharedLockGuard locker(m_lockMutex);
 
 		return m_pool.isValid(handle);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResource(
-		ResourcePoolHandle handle) const
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElement(
+		ElementPoolHandleType handle) const
 	{
 		SharedLockGuard locker(m_lockMutex);
-		return getResourceInternal(handle);
+		return getElementInternal(handle);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResource(
-		ResourcePoolHandle handle)
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElement(
+		ElementPoolHandleType handle)
 	{
 		SharedLockGuard locker(m_lockMutex);
-		return getResourceInternal(handle);
+		return getElementInternal(handle);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResource(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElement(
 		const FileName& name) const
 	{
-		return getResource(name.hash());
+		return getElement(name.hash());
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResource(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElement(
 		FileNameID nameID) const
 	{
 		SharedLockGuard locker(m_lockMutex);
-		return getResourceInternal(nameID);
+		return getElementInternal(nameID);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResource(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElement(
 		const FileName& name)
 	{
-		return getResource(name.hash());
+		return getElement(name.hash());
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getResource(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getElement(
 		FileNameID nameID)
 	{
 		SharedLockGuard locker(m_lockMutex);
-		return getResourceInternal(nameID);
+		return getElementInternal(nameID);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::addResource(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::addElement(
 		const FileName& name)
 	{
-		return addResource(name.hash());
+		return addElement(name.hash());
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	ResourceReference NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::addResource(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	ElementReference NamedObjectPool<Element, ElementReference, ElementPoolHandle>::addElement(
 		FileNameID nameID)
 	{
 		UniqueLockGuard locker(m_lockMutex);
-		return addResourceInternal(nameID);
+		return addElementInternal(nameID);
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	typename NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::ResourceAccessInfo
-		NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getOrAddResource(const FileName& name)
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	typename NamedObjectPool<Element, ElementReference, ElementPoolHandle>::ElementAccessInfo
+		NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getOrAddElement(const FileName& name)
 	{
-		return getOrAddResource(name.hash());
+		return getOrAddElement(name.hash());
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	typename NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::ResourceAccessInfo
-		NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::getOrAddResource(FileNameID nameID)
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	typename NamedObjectPool<Element, ElementReference, ElementPoolHandle>::ElementAccessInfo
+		NamedObjectPool<Element, ElementReference, ElementPoolHandle>::getOrAddElement(FileNameID nameID)
 	{
 		UniqueLockGuard locker(m_lockMutex);
 
-		Resource* resource = getResourceInternal(nameID);
+		Element* resource = getElementInternal(nameID);
 		if (resource)
 		{
-			return ResourceAccessInfo{ resource, false };
+			return ElementAccessInfo{ resource, false };
 		}
 
-		return ResourceAccessInfo{ addResourceInternal(nameID), true };
+		return ElementAccessInfo{ addElementInternal(nameID), true };
 	}
 
-	template <typename Resource, typename ResourceReference, typename ResourcePoolHandle>
-	void NamedObjectPool<Resource, ResourceReference, ResourcePoolHandle>::removeResource(
+	template <typename Element, typename ElementReference, typename ElementPoolHandle>
+	void NamedObjectPool<Element, ElementReference, ElementPoolHandle>::removeElement(
 		FileNameID nameID)
 	{
 		UniqueLockGuard locker(m_lockMutex);

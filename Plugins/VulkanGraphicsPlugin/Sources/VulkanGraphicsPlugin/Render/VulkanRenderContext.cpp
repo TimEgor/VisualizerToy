@@ -158,7 +158,7 @@ void VT_VK::VulkanRenderContext::setVertexBuffer(VT::IGPUBuffer* buffer)
 	vkCmdBindVertexBuffers(m_commandList->getVkCommandBuffer(), 0, 1, &vkBuffer, &offset);
 }
 
-void VT_VK::VulkanRenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer* buffers)
+void VT_VK::VulkanRenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers)
 {
 	std::vector<VkBuffer> vkBuffers;
 	std::vector<VkDeviceSize> vkOffsets;
@@ -168,7 +168,7 @@ void VT_VK::VulkanRenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGP
 
 	for (uint32_t i = 0; i < buffersCount; ++i)
 	{
-		VulkanGPUBuffer* vulkanBuffer = reinterpret_cast<VulkanGPUBuffer*>(&buffers[i]);
+		VulkanGPUBuffer* vulkanBuffer = reinterpret_cast<VulkanGPUBuffer*>(buffers[i]);
 
 		vkBuffers.push_back(vulkanBuffer->getVkBuffer());
 		vkOffsets.push_back(0);
@@ -177,14 +177,28 @@ void VT_VK::VulkanRenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGP
 	vkCmdBindVertexBuffers(m_commandList->getVkCommandBuffer(), 0, buffersCount, vkBuffers.data(), vkOffsets.data());
 }
 
-void VT_VK::VulkanRenderContext::setIndexBuffer(VT::IGPUBuffer* buffer)
+void VT_VK::VulkanRenderContext::setIndexBuffer(VT::IGPUBuffer* buffer, VT::InputLayoutElementType indexType)
 {
 	VulkanGPUBuffer* vulkanBuffer = reinterpret_cast<VulkanGPUBuffer*>(buffer);
 
 	VkDeviceSize offset = 0;
 	VkBuffer vkBuffer = vulkanBuffer->getVkBuffer();
 
-	vkCmdBindIndexBuffer(m_commandList->getVkCommandBuffer(), vkBuffer, offset, VkIndexType::VK_INDEX_TYPE_UINT16);
+	VkIndexType vkIndexType;
+	switch (indexType)
+	{
+	case VT::InputLayoutElementType::UINT16:
+		vkIndexType = VkIndexType::VK_INDEX_TYPE_UINT16;
+		break;
+	case VT::InputLayoutElementType::UINT32:
+		vkIndexType = VkIndexType::VK_INDEX_TYPE_UINT32;
+		break;
+	default:
+		vkIndexType = VkIndexType::VK_INDEX_TYPE_MAX_ENUM;
+		break;
+	}
+
+	vkCmdBindIndexBuffer(m_commandList->getVkCommandBuffer(), vkBuffer, offset, vkIndexType);
 }
 
 void VT_VK::VulkanRenderContext::draw(uint32_t vertCount)

@@ -75,7 +75,7 @@ void VT_DUMMY_RS::ResourceLoader::loadResource(const VT::FileName& name, Request
 			|| (m_fileSystem->getModificationTime(name) > m_fileSystem->getModificationTime(convertedName)))
 		{
 			converter->convert(*m_fileSystem, name, &data, dataSize,
-				*m_fileSystem, convertedName, request.m_args->getArgs());
+				*m_fileSystem, convertedName, request.m_args ? request.m_args->getArgs() : nullptr);
 
 			ManagedResourceData* managedResData = request.m_data.getObjectCast<ManagedResourceData>();
 			managedResData->setData(data, dataSize);
