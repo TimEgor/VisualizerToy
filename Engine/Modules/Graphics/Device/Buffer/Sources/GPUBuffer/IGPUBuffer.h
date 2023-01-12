@@ -1,6 +1,8 @@
 #pragma once
 
-#include <cstdint>
+#include "GraphicResourceCommon/IGraphicResource.h"
+
+#define VT_GRAPHIC_RESOURCE_TYPE_BUFFER
 
 namespace VT
 {
@@ -18,7 +20,7 @@ namespace VT
 		GPUBufferUsageType m_usage = GPUBufferUsageType::UNDEFINED;
 	};
 
-	class IGPUBuffer
+	class IGPUBuffer : public IGraphicResource
 	{
 	public:
 		IGPUBuffer() = default;
@@ -27,5 +29,7 @@ namespace VT
 		virtual void unmapData() = 0;
 
 		virtual const GPUBufferDesc& getDesc() const = 0;
+
+		VT_GRAPHIC_RESOURCE_TYPE(VT_GRAPHIC_RESOURCE_TYPE_BUFFER);
 	};
 }

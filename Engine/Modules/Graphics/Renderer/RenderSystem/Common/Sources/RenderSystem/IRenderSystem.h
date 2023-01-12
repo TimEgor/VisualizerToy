@@ -2,9 +2,8 @@
 
 namespace VT
 {
-	class ISemaphore;
+	class IGraphicResourceDescriptor;
 	class ITexture2D;
-	class ITexture2DView;
 
 	class IRenderSystem
 	{
@@ -15,11 +14,8 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
-		virtual void render(ITexture2D* target, ITexture2DView* targetView,
-			ISemaphore* textureAvailableSemaphore) = 0;
+		virtual void render(ITexture2D* target, IGraphicResourceDescriptor* targetView) = 0;
 
 		virtual void waitFrame() = 0;
-
-		virtual ISemaphore* getRenderCompletedSemaphore() = 0;
 	};
 }

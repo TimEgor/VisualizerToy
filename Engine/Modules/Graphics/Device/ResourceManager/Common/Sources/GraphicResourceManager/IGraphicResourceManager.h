@@ -11,7 +11,8 @@ namespace VT
 {
 	struct TextureViewDesc;
 	class IWindow;
-	class IRenderPass;
+
+	class IPipelineBindingLayout;
 
 	struct SwapChainDesc;
 	struct GPUBufferDesc;
@@ -41,10 +42,6 @@ namespace VT
 		virtual Texture2DReference getTexture2D(Texture2DHandleID handle) = 0;
 		virtual bool isValidTexture2D(Texture2DHandleID handle) const = 0;
 
-		virtual Texture2DViewReference createTexture2DView(Texture2DReference texture, const TextureViewDesc& desc) = 0;
-		virtual Texture2DViewReference getTexture2DView(Texture2DViewHandleID handle) = 0;
-		virtual bool isValidTexture2DView(Texture2DViewHandleID handle) = 0;
-
 		//Vertex shader
 		virtual VertexShaderReference createVertexShader(const void* data, size_t dataSize) = 0;
 		virtual VertexShaderReference getVertexShader(VertexShaderHandleID handle) = 0;
@@ -70,7 +67,8 @@ namespace VT
 			OnLoadedPixelShaderCallback callback = nullptr) = 0;
 
 		//PipelineState
-		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc, InputLayoutConstReference inputlayout) = 0;
+		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc,
+			const IPipelineBindingLayout* bindingLayout, InputLayoutConstReference inputlayout) = 0;
 
 		//InputLayout
 		virtual InputLayoutReference addInputLayout(const InputLayoutDesc& desc) = 0;

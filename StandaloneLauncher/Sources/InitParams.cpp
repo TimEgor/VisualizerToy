@@ -33,7 +33,7 @@ void VT_Launcher::getPlatformPluginPath(VT::FileName& outPath)
 
 void VT_Launcher::getGraphicsPluginPath(VT::FileName& outPath)
 {
-	preparePluginPath("VulkanGraphicsPlugin", outPath);
+	preparePluginPath("D3D12GraphicsPlugin", outPath);
 }
 
 void VT_Launcher::getResourceSystemPluginPath(VT::FileName& outPath)

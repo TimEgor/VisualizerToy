@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VulkanGraphicsPlugin/VulkanCore.h"
-#include "ManagedGraphicDevice/ManagedObjects/ManagedPipelineStateObject.h"
+#include "ManagedGraphicDevice/ManagedObjects/ManagedPipelineObjects.h"
 
 namespace VT_VK
 {
@@ -11,16 +11,14 @@ namespace VT_VK
 
 	private:
 		VkPipeline m_vkPipeline = 0;
-		VkPipelineLayout m_vkPipelineLayout = 0;
 
 		VT::PipelineStateHash m_hash = 0;
 
 	public:
-		VulkanPipelineState(VkPipeline vkPipeline, VkPipelineLayout vkPipelineLayout, VT::PipelineStateHash hash)
-			: m_vkPipeline(vkPipeline), m_vkPipelineLayout(vkPipelineLayout), m_hash(hash) {}
+		VulkanPipelineState(VkPipeline vkPipeline, VT::PipelineStateHash hash)
+			: m_vkPipeline(vkPipeline), m_hash(hash) {}
 
 		VkPipeline getVkPipeline() const { return m_vkPipeline; }
-		VkPipelineLayout getVkPipelineLayout() const { return m_vkPipelineLayout; }
 
 		virtual VT::PipelineStateHash getHash() const override { return m_hash; }
 	};

@@ -14,7 +14,8 @@
 #include "VulkanGraphicsPlugin/Buffer/VulkanGPUBuffer.h"
 #include "VulkanGraphicsPlugin/Commands/VulkanCommandPool.h"
 #include "VulkanGraphicsPlugin/Shaders/VulkanShaders.h"
-#include "VulkanGraphicsPlugin/PipelineState/VulkanPipelineState.h"
+#include "VulkanGraphicsPlugin/Pipeline/VulkanPipelineState.h"
+#include "VulkanGraphicsPlugin/Pipeline/VulkanPipelineBindingLayout.h"
 #include "VulkanGraphicsPlugin/Synchronization/VulkanFence.h"
 #include "VulkanGraphicsPlugin/Synchronization/VulkanSemaphore.h"
 
@@ -706,8 +707,10 @@ void VT_VK::VulkanGraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::Ma
 }
 
 bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
-	const VT::PipelineStateInfo& info, const VT::InputLayoutDesc* inputLayoutDesc)
+	const VT::PipelineStateInfo& info, const VT::IPipelineBindingLayout* bindingLayout, const VT::InputLayoutDesc* inputLayoutDesc)
 {
+	assert(bindingLayout);
+
 	VkPipelineVertexInputStateCreateInfo vertInputCreateInfo{};
 	vertInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -790,16 +793,6 @@ bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::M
 	blendCreateInfo.attachmentCount = 1;
 	blendCreateInfo.pAttachments = &colorBlendAttachment;
 
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
-	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-
-	VkPipelineLayout vkPipelineLayout;
-	if (!checkVkResult(
-		vkCreatePipelineLayout(m_vkDevice, &pipelineLayoutCreateInfo, nullptr, &vkPipelineLayout)))
-	{
-		return false;
-	}
-
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	if (info.m_vertexShader)
 	{
@@ -837,6 +830,8 @@ bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::M
 	pipelineRenderingCreateInfo.colorAttachmentCount = vkFormats.size();
 	pipelineRenderingCreateInfo.pColorAttachmentFormats = vkFormats.data();
 
+	const VulkanPipelineBindingLayout* vulkanBindingLayout = reinterpret_cast<const VulkanPipelineBindingLayout*>(bindingLayout);
+
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
 	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineCreateInfo.pNext = &pipelineRenderingCreateInfo;
@@ -848,17 +843,16 @@ bool VT_VK::VulkanGraphicDevice::createPipelineState(VT::ManagedGraphicDevice::M
 	pipelineCreateInfo.pRasterizationState = &rasterizationCreateInfo;
 	pipelineCreateInfo.pMultisampleState = &multisampleCreateInfo;
 	pipelineCreateInfo.pColorBlendState = &blendCreateInfo;
-	pipelineCreateInfo.layout = vkPipelineLayout;
+	pipelineCreateInfo.layout = vulkanBindingLayout->getVkPipelineLayout();
 	pipelineCreateInfo.renderPass = VK_NULL_HANDLE;
 
 	VkPipeline vkPipeline;
 	if (!checkVkResult(vkCreateGraphicsPipelines(m_vkDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &vkPipeline)))
 	{
-		m_destroyingResources.m_pipelineLayouts.addToContainer(vkPipelineLayout);
 		return false;
 	}
 
-	new (state) VulkanPipelineState(vkPipeline, vkPipelineLayout, info.getHash());
+	new (state) VulkanPipelineState(vkPipeline, info.getHash());
 
 	return true;
 }
@@ -872,10 +866,43 @@ void VT_VK::VulkanGraphicDevice::destroyPipelineState(VT::ManagedGraphicDevice::
 	{
 		m_destroyingResources.m_pipelines.addToContainer(vulkanState->m_vkPipeline);
 	}
+}
 
-	if (vulkanState->m_vkPipelineLayout)
+bool VT_VK::VulkanGraphicDevice::createPipelineBindingLayout(
+	VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutBase* layout, const VT::PipelineBindingLayoutDesc& desc)
+{
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
+	std::vector<VkPushConstantRange> constantRanges;
+
+	for (const auto& constBinding : desc.m_constDescriptorBindings)
 	{
-		m_destroyingResources.m_pipelineLayouts.addToContainer(vulkanState->m_vkPipelineLayout);
+		VkPushConstantRange& constRange = constantRanges.emplace_back();
+		constRange.size = constBinding.m_valuesCount;
+	}
+
+	VkPipelineLayout vkPipelineLayout;
+	if (!checkVkResult(
+		vkCreatePipelineLayout(m_vkDevice, &pipelineLayoutCreateInfo, nullptr, &vkPipelineLayout)))
+	{
+		return false;
+	}
+
+	VT::PipelineBindingLayoutHash hash = desc.getHash();
+
+	new (layout) VulkanPipelineBindingLayout(vkPipelineLayout, hash);
+
+	return true;
+}
+
+void VT_VK::VulkanGraphicDevice::destroyPipelineBindingLayout(VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutBase* layout)
+{
+	VulkanPipelineBindingLayout* vulkanPipeline = reinterpret_cast<VulkanPipelineBindingLayout*>(layout);
+
+	if (vulkanPipeline->m_vkPipelineLayout)
+	{
+		m_destroyingResources.m_pipelineLayouts.addToContainer(vulkanPipeline->m_vkPipelineLayout);
 	}
 }
 
@@ -1076,6 +1103,11 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::PixelShaderStorage* VT_VK::Vulka
 VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineStateStorage* VT_VK::VulkanGraphicDevice::createPipelineStateStorage() const
 {
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineStateStorageInfo<VulkanPipelineState>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineBindingLayoutStorage* VT_VK::VulkanGraphicDevice::createPipelineBindingLayoutStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutStorageInfo<VulkanPipelineBindingLayout>>;
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::CommandPoolStorage* VT_VK::VulkanGraphicDevice::createCommandPoolStorage() const

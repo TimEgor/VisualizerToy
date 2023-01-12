@@ -4,16 +4,16 @@
 
 namespace VT
 {
+	class IGraphicResourceDescriptor;
 	class ICommandList;
 	class IPipelineState;
 	class ITexture2D;
-	class ITexture2DView;
 	class IGPUBuffer;
 
 	struct RenderContextTarget final
 	{
 		ITexture2D* m_texture = nullptr;
-		ITexture2DView* m_view = nullptr;
+		IGraphicResourceDescriptor* m_view = nullptr;
 	};
 
 	struct RenderContextBeginInfo final

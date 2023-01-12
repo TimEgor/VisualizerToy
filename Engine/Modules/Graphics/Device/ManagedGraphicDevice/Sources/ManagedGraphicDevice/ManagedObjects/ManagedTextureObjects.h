@@ -2,7 +2,6 @@
 
 #include "ManagedGraphicDevice/ManagedGraphicObject.h"
 #include "Textures/Texture2DBase.h"
-#include "Textures/TextureViewsBase.h"
 
 namespace VT::ManagedGraphicDevice
 {
@@ -13,14 +12,5 @@ namespace VT::ManagedGraphicDevice
 	{
 	public:
 		ManagedTexture2DBase(const Texture2DDesc& desc) : Texture2DBase(desc) {}
-	};
-
-	using ManagedTexture2DViewHandle = ObjectPoolHandle32;
-	using ManagedTexture2DViewObject = ManagedGraphicObject<ManagedTexture2DViewHandle>;
-
-	class ManagedTexture2DViewBase : public Texture2DViewBase, public ManagedTexture2DViewObject
-	{
-	public:
-		ManagedTexture2DViewBase(const TextureViewDesc& desc) : Texture2DViewBase(desc) {}
 	};
 }

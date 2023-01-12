@@ -53,8 +53,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	const VT::WindowSize defaultWindowSize(500, 500);
 
 	VT::SwapChainDesc swapChainDesc{};
-	swapChainDesc.m_format = VT::Format::B8G8R8A8_UNORM;
-	swapChainDesc.m_presentMode = VT::SwapChainPresentMode::FIFO;
+	swapChainDesc.m_format = VT::Format::R8G8B8A8_UNORM;
 	swapChainDesc.m_imageCount = 2;
 	if (!graphicPresenter->init("VT LAUNCHER", defaultWindowSize, swapChainDesc))
 	{
@@ -82,14 +81,13 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 			renderSystem->render(
 				graphicPresenter->getTargetTexture(frameIndex),
-				graphicPresenter->getTargetTextureView(frameIndex),
-				graphicPresenter->getTargetTextureAvailable()
+				graphicPresenter->getTargetTextureView(frameIndex)
 			);
 
-			graphicPresenter->present(renderSystem->getRenderCompletedSemaphore());
+			graphicPresenter->present();
 		}
 
-		renderSystem->waitFrame();
+		//renderSystem->waitFrame();
 	}
 
 	VT_SAFE_DESTROY(graphicPresenter);

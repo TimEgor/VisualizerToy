@@ -9,6 +9,7 @@
 VT_PLUGIN(VT_SHADER_RC::ShaderConverterHLSLPlugin)
 
 #define VT_GRAPHIC_PLARFORM_VULKAN_TYPE "VT_GRAPHIC_PLARFORM_VULKAN_TYPE"
+#define VT_GRAPHIC_PLARFORM_D3D12_TYPE "VT_GRAPHIC_PLARFORM_D3D12_TYPE"
 
 VT::IFileResourceConverter* VT_SHADER_RC::ShaderConverterHLSLPlugin::createConverter()
 {
@@ -33,6 +34,10 @@ VT::IFileResourceConverter* VT_SHADER_RC::ShaderConverterHLSLPlugin::createConve
 	if (platformType == VT::IGraphicPlatform::calcType(VT_GRAPHIC_PLARFORM_VULKAN_TYPE))
 	{
 		ilType = ShaderConverterHLSL::OutputILType::SPIR_V;
+	}
+	else if (platformType == VT::IGraphicPlatform::calcType(VT_GRAPHIC_PLARFORM_D3D12_TYPE))
+	{
+		ilType = ShaderConverterHLSL::OutputILType::DXIL;
 	}
 	else
 	{

@@ -1,13 +1,19 @@
 #include "Common.h"
+#include "GraphicPipeline/IPipelineBindingLayout.h"
 
 void VT::GraphicResourceManager::deletePipelineStateInternal(IPipelineState* state)
 {
 	getGraphicDevice()->destroyPipelineState(state);
 }
 
-VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const PipelineStateInfo& desc, InputLayoutConstReference inputLayout)
+VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const PipelineStateInfo& desc,
+	const IPipelineBindingLayout* bindingLayout, InputLayoutConstReference inputLayout)
 {
+	assert(bindingLayout);
+
 	PipelineStateHash id = desc.getHash();
+
+	hashCombine(id, bindingLayout->getHash());
 
 	if (inputLayout)
 	{
@@ -18,7 +24,7 @@ VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const Pi
 	if (accessInfo.m_isNew)
 	{
 		const InputLayoutDesc* inputlayoutDesc = inputLayout ? &inputLayout->getDesc() : nullptr;
-		IPipelineState* state = getGraphicDevice()->createPipelineState(desc, inputlayoutDesc);
+		IPipelineState* state = getGraphicDevice()->createPipelineState(desc, bindingLayout, inputlayoutDesc);
 		accessInfo.m_state.getObjectCast<ManagedPipelineStateResourceHandle>()->setResource(state);
 	}
 

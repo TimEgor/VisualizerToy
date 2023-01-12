@@ -1,14 +1,15 @@
 #pragma once
 
 #include "RenderSystem/IRenderSystem.h"
+#include "GraphicSynchronization/IFence.h"
 #include "GraphicResourceManager/ResourceHandles.h"
 #include "MeshSystem/MeshHandle.h"
 
 namespace VT
 {
 	class IFence;
-	class ICommandPool;
 	class IRenderContext;
+	class IPipelineBindingLayout;
 
 	struct TestDrawingData final
 	{
@@ -17,16 +18,22 @@ namespace VT
 		MeshReference m_mesh;
 	};
 
+	struct DrawingPassData final
+	{
+		GPUBufferReference m_dynamicTransformData; // Global camera and per object transforms
+		IPipelineBindingLayout* m_bindingLayout = nullptr;
+	};
+
 	class RenderSystem final : public IRenderSystem
 	{
 	private:
 		IRenderContext* m_context = nullptr;
-		ICommandPool* m_commandPool = nullptr;
 
 		IFence* m_frameFence = nullptr;
-		ISemaphore* m_renderingCompleteSemaphore = nullptr;
+		FenceValueType m_lastSubmittedFenceValue = 0;
 
 		TestDrawingData m_drawingData;
+		DrawingPassData m_drawingPassData;
 
 	public:
 		RenderSystem() = default;
@@ -35,11 +42,8 @@ namespace VT
 		virtual bool init() override;
 		virtual void release() override;
 
-		virtual void render(ITexture2D* target, ITexture2DView* targetView,
-			ISemaphore* textureAvailableSemaphore) override;
+		virtual void render(ITexture2D* target, IGraphicResourceDescriptor* targetView) override;
 
 		virtual void waitFrame() override;
-
-		virtual ISemaphore* getRenderCompletedSemaphore() override;
 	};
 }

@@ -19,5 +19,6 @@ target_link_libraries(RenderSystem
 		GraphicPlatform
 		Textures
 		GPUBuffer
+		GraphicSynchronization
 		Math
 )

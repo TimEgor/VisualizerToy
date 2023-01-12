@@ -12,11 +12,13 @@ namespace VT
 		Format m_format = Format::UNDEFINED;
 	};
 
-	class ITexture2D
+	class ITexture2D : public ITexture
 	{
 	public:
 		ITexture2D() = default;
 		virtual ~ITexture2D() {}
+
+		virtual TextureDimensionType getDimension() const { return TextureDimensionType::DIMENSION_2D; }
 
 		virtual const Texture2DDesc& getDesc() const = 0;
 	};
