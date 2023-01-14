@@ -5,7 +5,7 @@
 #include "ManagedResourceHandles.h"
 #include "NamedReferencePool/NamedObjectPoolHandle.h"
 #include "InputLayoutCollection.h"
-#include "PipelineStateCollection.h"
+#include "NativeHandleHashPoolCollection.h"
 
 namespace VT
 {
@@ -21,6 +21,7 @@ namespace VT
 		friend ManagedPixelShaderResourceHandle;
 
 		friend ManagedPipelineStateResourceHandle;
+		friend ManagedPipelineBindingLayoutResourceHandle;
 
 		friend class ManagedInputLayoutHandle;
 
@@ -31,6 +32,11 @@ namespace VT
 		using VertexShaderPool = ThreadSafeObjectPool<ManagedVertexShaderResourceHandle, NamedObjectPoolHandle32>;
 		using PixelShaderPool = ThreadSafeObjectPool<ManagedPixelShaderResourceHandle, NamedObjectPoolHandle32>;
 
+		using PipelineStateCollection = NativeHandleHashPoolCollection<ManagedPipelineStateResourceHandle,
+			PipelineStateReference, PipelineStateConstReference, PipelineStateHash, ObjectPoolHandle16>;
+		using PipelineBindingLayoutCollection = NativeHandleHashPoolCollection<ManagedPipelineBindingLayoutResourceHandle,
+			PipelineBindingLayoutReference, PipelineBindingLayoutConstReference, PipelineBindingLayoutHash, ObjectPoolHandle16>;
+
 	private:
 		GPUBufferPool m_buffers;
 
@@ -40,6 +46,7 @@ namespace VT
 		PixelShaderPool m_pixelShaders;
 
 		PipelineStateCollection m_pipelineStateCollection;
+		PipelineBindingLayoutCollection m_pipelineBindingLayoutCollection;
 		InputLayoutCollection m_inputLayoutCollection;
 
 		//Resource deleting
@@ -51,6 +58,7 @@ namespace VT
 		void deletePixelShaderInternal(IPixelShader* shader);
 
 		void deletePipelineStateInternal(IPipelineState* state);
+		void deletePipelineBindingLayoutInternal(IPipelineBindingLayout* bindingLayout);
 
 		//Reference deleting
 		void deleteGPUBufferReference(GPUBufferHandleID handleID);
@@ -91,7 +99,9 @@ namespace VT
 
 		//PipelineState
 		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc,
-			const IPipelineBindingLayout* bindingLayout, InputLayoutConstReference inputlayout) override;
+			PipelineBindingLayoutConstReference bindingLayout, InputLayoutConstReference inputlayout) override;
+
+		virtual PipelineBindingLayoutReference getPipelineBindingLayout(const PipelineBindingLayoutDesc& desc) override;
 
 		//InputLayout
 		virtual InputLayoutReference addInputLayout(const InputLayoutDesc& desc) override;

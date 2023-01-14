@@ -2,6 +2,7 @@
 
 #include "ShaderConverter/ShaderConverterArgs.h"
 #include "Core/FileName/FileNameUtils.h"
+#include "Core/Output.h"
 
 #include <vector>
 
@@ -84,9 +85,7 @@ void VT_SHADER_RC::ShaderConverterHLSL::compileShader(void* inData, size_t inDat
 	{
 		if (errorBlob)
 		{
-#ifdef _MSC_VER 
-			OutputDebugStringA(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-#endif // _MSC_VER
+			VT_ENV_CONSOLE_OUTPUT(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
 		}
 
 		*outData = nullptr;

@@ -74,6 +74,12 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 				shaderAccessor.m_element.getObjectCast<ManagedVertexShaderResourceHandle>()->setResource(shader);
 			}
 		}
+
+		if (!shaderAccessor.m_element->getResource())
+		{
+			deleteVertexShaderReference(nameID);
+			return nullptr;
+		}
 	}
 
 	return shaderAccessor.m_element;

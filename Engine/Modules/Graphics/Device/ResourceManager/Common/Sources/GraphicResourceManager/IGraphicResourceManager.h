@@ -12,12 +12,11 @@ namespace VT
 	struct TextureViewDesc;
 	class IWindow;
 
-	class IPipelineBindingLayout;
-
 	struct SwapChainDesc;
 	struct GPUBufferDesc;
 	struct Texture2DDesc;
 	struct PipelineStateInfo;
+	struct PipelineBindingLayoutDesc;
 
 	class IGraphicResourceManager
 	{
@@ -66,9 +65,11 @@ namespace VT
 		virtual PixelShaderReference loadPixelShaderAsync(const FileName& shaderPath,
 			OnLoadedPixelShaderCallback callback = nullptr) = 0;
 
-		//PipelineState
+		//Pipeline
 		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc,
-			const IPipelineBindingLayout* bindingLayout, InputLayoutConstReference inputlayout) = 0;
+			PipelineBindingLayoutConstReference bindingLayout, InputLayoutConstReference inputlayout) = 0;
+
+		virtual PipelineBindingLayoutReference getPipelineBindingLayout(const PipelineBindingLayoutDesc& desc) = 0;
 
 		//InputLayout
 		virtual InputLayoutReference addInputLayout(const InputLayoutDesc& desc) = 0;

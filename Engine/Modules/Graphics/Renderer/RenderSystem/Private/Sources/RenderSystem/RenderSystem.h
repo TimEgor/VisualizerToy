@@ -21,7 +21,7 @@ namespace VT
 	struct DrawingPassData final
 	{
 		GPUBufferReference m_dynamicTransformData; // Global camera and per object transforms
-		IPipelineBindingLayout* m_bindingLayout = nullptr;
+		PipelineBindingLayoutReference m_bindingLayout = nullptr;
 	};
 
 	class RenderSystem final : public IRenderSystem

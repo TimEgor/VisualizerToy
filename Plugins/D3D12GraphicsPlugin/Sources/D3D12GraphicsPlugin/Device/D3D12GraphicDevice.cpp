@@ -2,24 +2,24 @@
 
 #include "Core/UtilitiesMacros.h"
 #include "Core/String/Format.h"
+#include "Core/Output.h"
 
 #include "WindowSystem/IWindow.h"
+#include "InputLayout/InputLayout.h"
 
 #include "D3D12GraphicsPlugin/SwapChain/D3D12SwapChain.h"
 #include "D3D12GraphicsPlugin/Buffer/D3D12GPUBuffer.h"
 #include "D3D12GraphicsPlugin/Commands/D3D12GraphicsCommandList.h"
 #include "D3D12GraphicsPlugin/Resource/D3D12ResourceDescriptorHeap.h"
-//#include "VulkanGraphicsPlugin/Shaders/VulkanShaders.h"
-//#include "VulkanGraphicsPlugin/Pipeline/VulkanPipelineState.h"
-//#include "VulkanGraphicsPlugin/Pipeline/VulkanPipelineBindingLayout.h"
+#include "D3D12GraphicsPlugin/Shaders/D3D12Shaders.h"
+#include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineState.h"
+#include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineBindingLayout.h"
 #include "D3D12GraphicsPlugin/Synchronization/D3D12Fence.h"
 //
 #include "D3D12GraphicsPlugin/Utilities/FormatConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/DescriptorTypeConverter.h"
-//#include "VulkanGraphicsPlugin/Utilities/BufferUsageConverter.h"
-//#include "VulkanGraphicsPlugin/Utilities/InputLayoutConverter.h"
+#include "D3D12GraphicsPlugin/Utilities/ShaderStageConverter.h"
 
-#include "InputLayout/InputLayout.h"
 
 bool VT_D3D12::D3D12GraphicDevice::initD3D12Device(bool isSwapChainEnabled)
 {
@@ -102,11 +102,6 @@ bool VT_D3D12::D3D12GraphicDevice::chooseD3D12PhysDevice()
 bool VT_D3D12::D3D12GraphicDevice::initDevice(bool isSwapChainEnabled)
 {
 	VT_CHECK_RETURN_FALSE(initD3D12Device(isSwapChainEnabled));
-
-	//
-
-	//DxcCreateInstance(CLSID_DxcCompiler, IID_COM(m_dxcShaderCompiler), PPV_COM(m_dxcShaderCompiler));
-	//DxcCreateInstance(CLSID_DxcUtils, IID_COM(m_dxcUtils), PPV_COM(m_dxcUtils));
 
 	//
 	m_commandQueue = createCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT); // TODO: move to separated abstract class (D3D12CommandQueue : ICommandQueue)
@@ -214,10 +209,10 @@ void VT_D3D12::D3D12GraphicDevice::destroySwapChain(VT::ISwapChain* swapChain)
 {
 	assert(swapChain);
 
-	D3D12Texture2D* textures = reinterpret_cast<D3D12Texture2D*>(swapChain->getTargetTexture(0));
+	void* textures = swapChain->getTargetTexture(0);
 	VT_SAFE_DESTROY_ARRAY(textures);
 
-	D3D12ResourceDescriptor* views = reinterpret_cast<D3D12ResourceDescriptor*>(swapChain->getTargetTextureView(0));
+	void* views = swapChain->getTargetTextureView(0);
 	VT_SAFE_DESTROY_ARRAY(views);
 
 	VT_SAFE_DESTROY(swapChain);
@@ -262,31 +257,146 @@ void VT_D3D12::D3D12GraphicDevice::destroyRenderTargetDescriptor(
 	m_rtvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
 }
 
-bool VT_D3D12::D3D12GraphicDevice::createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader, 
+bool VT_D3D12::D3D12GraphicDevice::createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader,
 	const void* code, size_t codeSize)
 {
-	return false;
+	assert(shader);
+
+	ID3DBlob* codeBlob = nullptr;
+	HRESULT creationResult = D3DCreateBlob(codeSize, &codeBlob);
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	memcpy(codeBlob->GetBufferPointer(), code, codeSize);
+
+	new (shader) D3D12VertexShader(codeBlob);
+
+	return true;
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader)
 {
+	assert(shader);
 }
 
 bool VT_D3D12::D3D12GraphicDevice::createPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader,
 	const void* code, size_t codeSize)
 {
-	return false;
+	assert(shader);
+
+	ID3DBlob* codeBlob = nullptr;
+	HRESULT creationResult = D3DCreateBlob(codeSize, &codeBlob);
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	memcpy(codeBlob->GetBufferPointer(), code, codeSize);
+
+	new (shader) D3D12PixelShader(codeBlob);
+
+	return true;
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader)
 {
+	assert(shader);
 }
 
 bool VT_D3D12::D3D12GraphicDevice::createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
 	const VT::PipelineStateInfo& info, const VT::IPipelineBindingLayout* bindingLayout, const VT::InputLayoutDesc* inputLayoutDesc)
 {
-	assert(bindingLayout);
-	return false;
+	if (!bindingLayout)
+	{
+		assert(false && "D3D12GraphicDevice::createPipelineState(): bindingLayout is null.");
+		return false;
+	}
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3d12PipelineDesc{};
+
+	//
+
+	D3D12VertexShader* vertexShader = reinterpret_cast<D3D12VertexShader*>(info.m_vertexShader);
+	if (vertexShader)
+	{
+		ID3DBlob* d3d12VertexShaderCode = vertexShader->getDXCShaderCodeBlob().Get();
+		d3d12PipelineDesc.VS.BytecodeLength = d3d12VertexShaderCode->GetBufferSize();
+		d3d12PipelineDesc.VS.pShaderBytecode = d3d12VertexShaderCode->GetBufferPointer();
+	}
+
+	//
+
+	D3D12PixelShader* pixelShader = reinterpret_cast<D3D12PixelShader*>(info.m_pixelShader);
+	if (pixelShader)
+	{
+		ID3DBlob* d3d12PixelShaderCode = pixelShader->getDXCShaderCodeBlob().Get();
+		d3d12PipelineDesc.PS.BytecodeLength = d3d12PixelShaderCode->GetBufferSize();
+		d3d12PipelineDesc.PS.pShaderBytecode = d3d12PixelShaderCode->GetBufferPointer();
+	}
+
+	//
+
+	const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTargetBlendDesc =
+	{
+		FALSE, FALSE,
+		D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
+		D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
+		D3D12_LOGIC_OP_NOOP,
+		D3D12_COLOR_WRITE_ENABLE_ALL,
+	};
+
+	D3D12_BLEND_DESC blendDesc{};
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	for (size_t i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+	{
+		blendDesc.RenderTarget[i] = defaultRenderTargetBlendDesc;
+	}
+
+	d3d12PipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+	d3d12PipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	d3d12PipelineDesc.RasterizerState.DepthClipEnable = false;
+	d3d12PipelineDesc.RasterizerState.FrontCounterClockwise = false;
+	d3d12PipelineDesc.RasterizerState.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+	d3d12PipelineDesc.RasterizerState.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+	d3d12PipelineDesc.RasterizerState.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	d3d12PipelineDesc.RasterizerState.MultisampleEnable = false;
+	d3d12PipelineDesc.RasterizerState.AntialiasedLineEnable = false;
+	d3d12PipelineDesc.RasterizerState.ForcedSampleCount = 0;
+	d3d12PipelineDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+	d3d12PipelineDesc.RasterizerState.DepthClipEnable = true;
+	d3d12PipelineDesc.BlendState = blendDesc;
+	d3d12PipelineDesc.DepthStencilState.DepthEnable = false;
+	d3d12PipelineDesc.DepthStencilState.StencilEnable = false;
+	d3d12PipelineDesc.SampleMask = UINT_MAX;
+	d3d12PipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	d3d12PipelineDesc.NumRenderTargets = info.m_formats.size();
+
+	const D3D12PipelineBindingLayout* d3d12PipelineBindingLayout = reinterpret_cast<const D3D12PipelineBindingLayout*>(bindingLayout);
+	d3d12PipelineDesc.pRootSignature = d3d12PipelineBindingLayout->getD3D12RootSignature().Get();
+
+	for (uint32_t i = 0; i < d3d12PipelineDesc.NumRenderTargets; ++i)
+	{
+		d3d12PipelineDesc.RTVFormats[i] = convertFormatVTtoD3D12(info.m_formats[i]);
+	}
+
+	d3d12PipelineDesc.SampleDesc.Count = 1;
+	d3d12PipelineDesc.SampleDesc.Quality = 0;
+
+	//
+	ID3D12PipelineState* d3d12PipelineState = nullptr;
+
+	HRESULT creationResult = m_d3d12Device->CreateGraphicsPipelineState(&d3d12PipelineDesc, VT_IID(d3d12PipelineState), VT_PPV(d3d12PipelineState));
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	new (state) D3D12PipelineState(d3d12PipelineState, info.getHash(), bindingLayout->getHash());
+
+	return true;
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state)
@@ -297,7 +407,79 @@ void VT_D3D12::D3D12GraphicDevice::destroyPipelineState(VT::ManagedGraphicDevice
 bool VT_D3D12::D3D12GraphicDevice::createPipelineBindingLayout(
 	VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutBase* layout, const VT::PipelineBindingLayoutDesc& desc)
 {
-	return false;
+	std::vector<D3D12_ROOT_PARAMETER> d3d12RootParameters;
+	d3d12RootParameters.reserve(64);
+
+	for (const auto& constBindingInfo : desc.m_descriptorBindings)
+	{
+		D3D12_ROOT_PARAMETER d3d12Param{};
+		d3d12Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+		d3d12Param.Constants.Num32BitValues = constBindingInfo.m_valuesCount;
+		d3d12Param.Constants.ShaderRegister = constBindingInfo.m_shaderRegister;
+		d3d12Param.Constants.RegisterSpace = constBindingInfo.m_shaderRegisterSpace;
+		d3d12Param.ShaderVisibility = convertShaderStageVisibilityVTtoD3D12(constBindingInfo.m_shaderStageVisibility);
+
+		d3d12RootParameters.push_back(d3d12Param);
+	}
+
+	//
+
+	D3D12_STATIC_SAMPLER_DESC d3d12SamplerDesc = {};
+	d3d12SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+	d3d12SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	d3d12SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	d3d12SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	d3d12SamplerDesc.MipLODBias = 0;
+	d3d12SamplerDesc.MaxAnisotropy = 0;
+	d3d12SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	d3d12SamplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	d3d12SamplerDesc.MinLOD = 0.0f;
+	d3d12SamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+	d3d12SamplerDesc.ShaderRegister = 0;
+	d3d12SamplerDesc.RegisterSpace = 0;
+	d3d12SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	D3D12_ROOT_SIGNATURE_DESC d3d12RootSignatureDesc{};
+	d3d12RootSignatureDesc.NumStaticSamplers = 1;
+	d3d12RootSignatureDesc.pStaticSamplers = &d3d12SamplerDesc;
+	d3d12RootSignatureDesc.NumParameters = d3d12RootParameters.size();
+	d3d12RootSignatureDesc.pParameters = d3d12RootParameters.data();
+	d3d12RootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
+
+	D3D12BlobComPtr signature;
+
+	HRESULT serializationResult;
+
+#ifdef _DEBUG
+	D3D12BlobComPtr errorBlob = nullptr;
+	serializationResult = D3D12SerializeRootSignature(&d3d12RootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, signature.GetAddressOf(), errorBlob.GetAddressOf());
+#else
+	serializationResult = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, signature.GetAddressOf(), nullptr);
+#endif // _DEBUG
+
+	if (FAILED(serializationResult))
+	{
+#ifdef _DEBUG
+		VT_ENV_CONSOLE_OUTPUT(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
+#endif // _DEBUG
+
+		assert(false && "Root signature hasn't been serialized !!!");
+		return false;
+	}
+
+	ID3D12RootSignature* d3d12RootSignature = nullptr;
+
+	HRESULT creationResult;
+	creationResult = m_d3d12Device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(),
+		VT_IID(d3d12RootSignature), VT_PPV(d3d12RootSignature));
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	new (layout) D3D12PipelineBindingLayout(d3d12RootSignature, desc.getHash());
+
+	return true;
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyPipelineBindingLayout(VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutBase* layout)
@@ -402,26 +584,22 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* VT_D3D12::D3D1
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::VertexShaderStorage* VT_D3D12::D3D12GraphicDevice::createVertexShaderStorage() const
 {
-	//return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedVertexShaderStorageInfo<VulkanVertexShader>>();
-	return nullptr;
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedVertexShaderStorageInfo<D3D12VertexShader>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::PixelShaderStorage* VT_D3D12::D3D12GraphicDevice::createPixelShaderStorage() const
 {
-	//return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPixelShaderStorageInfo<VulkanPixelShader>>();
-	return nullptr;
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPixelShaderStorageInfo<D3D12PixelShader>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineStateStorage* VT_D3D12::D3D12GraphicDevice::createPipelineStateStorage() const
 {
-	//return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineStateStorageInfo<VulkanPipelineState>>();
-	return nullptr;
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineStateStorageInfo<D3D12PipelineState>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineBindingLayoutStorage* VT_D3D12::D3D12GraphicDevice::createPipelineBindingLayoutStorage() const
 {
-	//return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutStorageInfo<VulkanPipelineBindingLayout>>;
-	return nullptr;
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutStorageInfo<D3D12PipelineBindingLayout>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::CommandListStorage* VT_D3D12::D3D12GraphicDevice::createCommandListStorage() const
@@ -435,7 +613,7 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::FenceStorage* VT_D3D12::D3D12Gra
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::GraphicResourceDescriptorStorage*
-	VT_D3D12::D3D12GraphicDevice::createGraphicResourceDescriptorStorage() const
+VT_D3D12::D3D12GraphicDevice::createGraphicResourceDescriptorStorage() const
 {
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorStorageInfo<D3D12ResourceDescriptor>>();
 }

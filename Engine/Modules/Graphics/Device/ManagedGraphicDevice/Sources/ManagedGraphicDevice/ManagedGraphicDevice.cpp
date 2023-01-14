@@ -12,17 +12,17 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 	m_texture2DStorage = createTexture2DStorage();
 	VT_CHECK_INITIALIZATION(m_texture2DStorage && m_texture2DStorage->init(256, 1, 64));
 
-	//m_vertexShaderStorage = createVertexShaderStorage();
-	//VT_CHECK_INITIALIZATION(m_vertexShaderStorage && m_vertexShaderStorage->init(64, 1, 16));
+	m_vertexShaderStorage = createVertexShaderStorage();
+	VT_CHECK_INITIALIZATION(m_vertexShaderStorage && m_vertexShaderStorage->init(64, 1, 16));
 
-	//m_pixelShaderStorage = createPixelShaderStorage();
-	//VT_CHECK_INITIALIZATION(m_pixelShaderStorage && m_pixelShaderStorage->init(128, 1, 16));
+	m_pixelShaderStorage = createPixelShaderStorage();
+	VT_CHECK_INITIALIZATION(m_pixelShaderStorage && m_pixelShaderStorage->init(128, 1, 16));
 
-	//m_pipelineStateStorage = createPipelineStateStorage();
-	//VT_CHECK_INITIALIZATION(m_pipelineStateStorage && m_pipelineStateStorage->init(256, 1, 64));
+	m_pipelineStateStorage = createPipelineStateStorage();
+	VT_CHECK_INITIALIZATION(m_pipelineStateStorage && m_pipelineStateStorage->init(256, 1, 64));
 
-	//m_pipelineBindingLayoutStorage = createPipelineBindingLayoutStorage();
-	//VT_CHECK_INITIALIZATION(m_pipelineBindingLayoutStorage && m_pipelineBindingLayoutStorage->init(64, 0, 32));
+	m_pipelineBindingLayoutStorage = createPipelineBindingLayoutStorage();
+	VT_CHECK_INITIALIZATION(m_pipelineBindingLayoutStorage && m_pipelineBindingLayoutStorage->init(64, 0, 32));
 
 	m_commandListStorage = createCommandListStorage();
 	VT_CHECK_INITIALIZATION(m_commandListStorage && m_commandListStorage->init(32, 0, 16));

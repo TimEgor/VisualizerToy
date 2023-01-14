@@ -23,4 +23,5 @@ target_link_libraries(D3D12GraphicsPlugin
 		d3d12
 		dxgi
 		dxguid
+		D3DCompiler
 )

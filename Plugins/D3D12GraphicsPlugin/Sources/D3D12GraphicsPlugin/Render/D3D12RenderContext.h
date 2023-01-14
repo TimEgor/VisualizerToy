@@ -35,7 +35,7 @@ namespace VT_D3D12
 		virtual void prepareTextureForRendering(VT::ITexture2D* texture) override;
 		virtual void prepareTextureForPresenting(VT::ITexture2D* texture) override;
 
-		virtual void setPipelineState(VT::IPipelineState* pipelineState) override;
+		virtual void setPipelineState(const VT::IPipelineState* pipelineState, const VT::IPipelineBindingLayout* bindingLayout) override;
 		virtual void setVertexBuffer(VT::IGPUBuffer* buffer) override;
 		virtual void setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers) override;
 		virtual void setIndexBuffer(VT::IGPUBuffer* buffer, VT::InputLayoutElementType indexType) override;

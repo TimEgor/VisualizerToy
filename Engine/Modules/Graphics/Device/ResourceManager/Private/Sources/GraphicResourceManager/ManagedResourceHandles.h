@@ -8,12 +8,13 @@ namespace VT
 	MANAGED_GRAPHIC_RESOURCE(GPUBufferResourceHandle)
 
 	MANAGED_GRAPHIC_RESOURCE(Texture2DResourceHandle)
-	//MANAGED_GRAPHIC_RESOURCE_VIEW(Texture2DViewResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE_VIEW(Texture2DViewResourceHandle)
 
 	MANAGED_GRAPHIC_RESOURCE(VertexShaderResourceHandle)
 	MANAGED_GRAPHIC_RESOURCE(PixelShaderResourceHandle)
 
 	MANAGED_GRAPHIC_RESOURCE(PipelineStateResourceHandle)
+	MANAGED_GRAPHIC_RESOURCE(PipelineBindingLayoutResourceHandle)
 
 	NAMED_MANAGED_GRAPHIC_RESOURCE(VertexShaderResourceHandle)
 	NAMED_MANAGED_GRAPHIC_RESOURCE(PixelShaderResourceHandle)

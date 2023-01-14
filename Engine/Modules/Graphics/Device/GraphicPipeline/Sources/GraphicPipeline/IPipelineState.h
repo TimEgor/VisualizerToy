@@ -2,6 +2,7 @@
 
 #include "Core/HashFunctions/StdHashCombine.h"
 #include "GraphicResourceCommon/Format.h"
+#include "IPipelineBindingLayout.h"
 
 namespace VT
 {
@@ -41,5 +42,6 @@ namespace VT
 		virtual ~IPipelineState() = default;
 
 		virtual PipelineStateHash getHash() const = 0;
+		virtual PipelineBindingLayoutHash getBindingLayoutHash() const = 0;
 	};
 }

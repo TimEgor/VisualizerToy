@@ -1,6 +1,5 @@
 #include "RenderSystem.h"
 
-#include "../../../../../Device/GraphicSynchronization/Sources/GraphicSynchronization/IFence.h"
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
@@ -34,11 +33,11 @@ bool VT::RenderSystem::init()
 
 	////
 
-	//IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
-	//m_drawingData.m_vertShader = resManager->loadVertexShader("TestInputLayoutVertexShader.hlsl");
-	//m_drawingData.m_pixelShader = resManager->loadPixelShader("TestInputLayoutPixelShader.hlsl");
+	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
+	m_drawingData.m_vertShader = resManager->loadVertexShader("TestVertexShader.hlsl");
+	m_drawingData.m_pixelShader = resManager->loadPixelShader("TestPixelShader.hlsl");
 
-	//VT_CHECK_INITIALIZATION(m_drawingData.m_vertShader && m_drawingData.m_pixelShader);
+	VT_CHECK_INITIALIZATION(m_drawingData.m_vertShader && m_drawingData.m_pixelShader);
 
 	//m_drawingData.m_mesh = environment->m_meshSystem->loadMesh("Cube.mesh");
 
@@ -46,11 +45,11 @@ bool VT::RenderSystem::init()
 
 	////
 
-	//PipelineBindingLayoutDesc bindingDesc{};
+	PipelineBindingLayoutDesc bindingDesc{};
 	//bindingDesc.m_constDescriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES);
 	//bindingDesc.m_constDescriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::VERTEX_STAGE);
 
-	//m_drawingPassData.m_bindingLayout = environment->m_graphicDevice->createPipelineBindingLayout(bindingDesc);
+	m_drawingPassData.m_bindingLayout = resManager->getPipelineBindingLayout(bindingDesc);
 
 	return true;
 }
@@ -74,9 +73,9 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
-	//PipelineStateInfo pipelineStateInfo{};
-	//pipelineStateInfo.m_vertexShader = m_drawingData.m_vertShader->getResource();
-	//pipelineStateInfo.m_pixelShader = m_drawingData.m_pixelShader->getResource();
+	PipelineStateInfo pipelineStateInfo{};
+	pipelineStateInfo.m_vertexShader = m_drawingData.m_vertShader->getResource();
+	pipelineStateInfo.m_pixelShader = m_drawingData.m_pixelShader->getResource();
 
 	//IMesh* mesh = m_drawingData.m_mesh->getMesh();
 	//if (!mesh)
@@ -87,10 +86,12 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 	//const MeshVertexData& vertexData = mesh->getVertexData();
 	//const MeshIndexData& indexData = mesh->getIndexData();
 
-	//pipelineStateInfo.m_formats.push_back(target->getDesc().m_format);
+	const Texture2DDesc& targetDesc = target->getDesc();
 
-	//PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(
-	//	pipelineStateInfo, m_drawingPassData.m_bindingLayout, vertexData.m_inputLayout);
+	pipelineStateInfo.m_formats.push_back(targetDesc.m_format);
+
+	PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(
+		pipelineStateInfo, m_drawingPassData.m_bindingLayout, nullptr);
 
 	//const uint32_t vertBuffersCount = static_cast<uint32_t>(vertexData.m_bindings.size());
 	//std::vector<IGPUBuffer*> vertBuffers;
@@ -102,16 +103,20 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 	//}
 
 	RenderContextBeginInfo contextInfo{};
-	contextInfo.m_targets.push_back({ target, targetView });
+	contextInfo.m_targets.push_back({ target, targetView,
+		Viewport(targetDesc.m_width, targetDesc.m_height),
+		Scissors(targetDesc.m_width, targetDesc.m_height)
+	});
 
 	m_context->begin();
 	m_context->prepareTextureForRendering(target);
 	m_context->beginRendering(contextInfo);
 
-	//m_context->setPipelineState(pipelineState->getResource());
+	m_context->setPipelineState(pipelineState->getResource(), m_drawingPassData.m_bindingLayout->getResource());
 	//m_context->setVertexBuffers(vertBuffers.size(), vertBuffers.data());
 	//m_context->setIndexBuffer(indexData.m_indexBuffer->getResource(), indexData.m_indexFormat);
 	//m_context->drawIndexed(indexData.m_indexCount);
+	m_context->draw(3);
 
 	m_context->endRendering();
 	m_context->prepareTextureForPresenting(target);

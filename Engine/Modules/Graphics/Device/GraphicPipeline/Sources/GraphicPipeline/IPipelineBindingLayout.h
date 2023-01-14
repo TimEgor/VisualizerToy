@@ -44,15 +44,17 @@ namespace VT
 		}
 	};
 
+	using ResourceDesriptorBinding = ConstDescriptorBinding;
+
 	struct PipelineBindingLayoutDesc final
 	{
-		std::vector<ConstDescriptorBinding> m_constDescriptorBindings;
+		std::vector<ResourceDesriptorBinding> m_descriptorBindings;
 
 		PipelineBindingLayoutHash getHash() const
 		{
 			PipelineBindingLayoutHash result = 0;
 
-			for (const auto& binding : m_constDescriptorBindings)
+			for (const auto& binding : m_descriptorBindings)
 			{
 				hashCombine(result, binding.getHash());
 			}

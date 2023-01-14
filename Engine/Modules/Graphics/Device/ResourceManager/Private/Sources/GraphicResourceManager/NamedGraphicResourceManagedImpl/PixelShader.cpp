@@ -74,6 +74,13 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const F
 				shaderAccessor.m_element.getObjectCast<ManagedPixelShaderResourceHandle>()->setResource(shader);
 			}
 		}
+
+
+		if (!shaderAccessor.m_element->getResource())
+		{
+			deletePixelShaderReference(nameID);
+			return nullptr;
+		}
 	}
 
 	return shaderAccessor.m_element;

@@ -13,8 +13,8 @@ namespace VT
 	class InputLayoutHandle : public CountableObjectBase
 	{
 	protected:
-		InputLayoutDesc m_desc;
-		InputLayoutHandleID m_id = 0;
+		const InputLayoutDesc m_desc;
+		const InputLayoutHandleID m_id = 0;
 
 	public:
 		InputLayoutHandle(const InputLayoutDesc& desc, InputLayoutHandleID id)

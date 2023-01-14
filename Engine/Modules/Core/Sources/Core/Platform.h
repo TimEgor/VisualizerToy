@@ -4,6 +4,8 @@
 	|| defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
 
+#define VT_WIN_PLATFORM
+
 #define VT_DLL_EXPORT __declspec(dllexport)
 #define VT_DLL_IMPORT __declspec(dllimport)
 

@@ -19,6 +19,8 @@ namespace VT_D3D12
 
 	using D3D12FenceComPtr = ComPtr<ID3D12Fence>;
 
+	using D3D12BlobComPtr = ComPtr<ID3DBlob>;
+
 	using DXGIFactoryComPtr = ComPtr<IDXGIFactory2>;
 	using DXGIAdapterComPtr = ComPtr<IDXGIAdapter1>;
 	using DXGISwapChainComPtr = ComPtr<IDXGISwapChain>;
