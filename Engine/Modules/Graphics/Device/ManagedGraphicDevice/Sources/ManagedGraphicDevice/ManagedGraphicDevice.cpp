@@ -6,8 +6,8 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 {
 	VT_CHECK_INITIALIZATION(initDevice(isSwapChainEnabled));
 
-	//m_bufferStorage = createBufferStorage();
-	//VT_CHECK_INITIALIZATION(m_bufferStorage && m_bufferStorage->init(256, 1, 128));
+	m_bufferStorage = createBufferStorage();
+	VT_CHECK_INITIALIZATION(m_bufferStorage && m_bufferStorage->init(256, 1, 128));
 
 	m_texture2DStorage = createTexture2DStorage();
 	VT_CHECK_INITIALIZATION(m_texture2DStorage && m_texture2DStorage->init(256, 1, 64));

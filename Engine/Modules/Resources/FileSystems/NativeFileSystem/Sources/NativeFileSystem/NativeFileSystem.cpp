@@ -63,6 +63,11 @@ namespace VT
 		FileName targetResourceName;
 		prepareTargetName(resourceName, targetResourceName);
 
+		if (!existInternal(targetResourceName))
+		{
+			return false;
+		}
+
 		resourceSize = static_cast<size_t>(std::filesystem::file_size(targetResourceName.c_str()));
 		return true;
 	}
@@ -91,7 +96,7 @@ namespace VT
 
 	void* NativeFileSystem::readResourceBinaryData(const FileName& resourceName, size_t& resourceSize) const
 	{
-		if (!getResourceSize(resourceName, resourceSize) && resourceSize > 0)
+		if (!getResourceSize(resourceName, resourceSize) || resourceSize == 0)
 		{
 			return nullptr;
 		}

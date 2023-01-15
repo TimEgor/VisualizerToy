@@ -3,6 +3,7 @@
 #include "Core/HashFunctions/StdHashCombine.h"
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace VT
@@ -38,23 +39,26 @@ namespace VT
 	InputLayoutElementSizeType getInputLayoutElementTypeSize(InputLayoutElementType type);
 
 	using InputLayoutElementHash = uint32_t;
+	using InputLayoutElementSemanticNameType = std::string;
 
 	struct InputLayoutElementDesc final
 	{
+		InputLayoutElementSemanticNameType m_semanticName;
 		uint32_t m_index = 0;
 		uint32_t m_slot = 0;
 		uint32_t m_offset = 0;
-		uint32_t m_componentNum = 0;
+		uint32_t m_componentsCount = 0;
 		InputLayoutElementType m_type = InputLayoutElementType::UNDEFINED;
 
 		InputLayoutElementHash getHash() const
 		{
 			InputLayoutElementHash result = 0;
 
+			hashCombine(result, m_semanticName);
 			hashCombine(result, m_index);
 			hashCombine(result, m_slot);
 			hashCombine(result, m_offset);
-			hashCombine(result, m_componentNum);
+			hashCombine(result, m_componentsCount);
 			hashCombine(result, m_type);
 
 			return result;

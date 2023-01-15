@@ -44,9 +44,9 @@ namespace VT_MODEL_RC
 
 			const VT::InputLayoutDesc m_desc = {
 				{
-					{ 0, 0, 0, 3, VT::InputLayoutElementType::FLOAT32 },
-					{ 1, 1, 0, 3, VT::InputLayoutElementType::FLOAT32 },
-					{ 2, 2, 0, 2, VT::InputLayoutElementType::FLOAT32 }
+					{ "POSITION", 0, 0, 0, 3, VT::InputLayoutElementType::FLOAT32 },
+					{ "NORMAL", 0, 1, 0, 3, VT::InputLayoutElementType::FLOAT32 },
+					{ "TEXTURE", 0, 2, 0, 2, VT::InputLayoutElementType::FLOAT32 }
 				},
 				{
 					{ 0, 3 * VT::getInputLayoutElementTypeSize(VT::InputLayoutElementType::FLOAT32), VT::InputLayoutBindingType::VERTEX_BINDING },

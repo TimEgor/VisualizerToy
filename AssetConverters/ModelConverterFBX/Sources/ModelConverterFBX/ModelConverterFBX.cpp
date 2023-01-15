@@ -155,5 +155,5 @@ void VT_MODEL_RC::ModelConverterFBX::convert(const VT::IFileSystem& inFileSystem
 
 VT::ResourceConverterVersion VT_MODEL_RC::ModelConverterFBX::getVersion() const
 {
-	return 2022'01'04;
+	return 2022'01'15;
 }

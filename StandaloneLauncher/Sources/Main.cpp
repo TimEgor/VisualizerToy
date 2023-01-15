@@ -17,6 +17,8 @@
 
 #include <vector>
 
+#include "GraphicDevice/IGraphicDevice.h"
+
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	VT::EngineInstance& engineInst = VT::EngineInstance::getInstance();
@@ -87,7 +89,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 			graphicPresenter->present();
 		}
 
-		//renderSystem->waitFrame();
+		engine->getEnvironment()->m_graphicDevice->waitIdle();
 	}
 
 	VT_SAFE_DESTROY(graphicPresenter);

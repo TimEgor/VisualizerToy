@@ -34,14 +34,14 @@ bool VT::RenderSystem::init()
 	////
 
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
-	m_drawingData.m_vertShader = resManager->loadVertexShader("TestVertexShader.hlsl");
-	m_drawingData.m_pixelShader = resManager->loadPixelShader("TestPixelShader.hlsl");
+	m_drawingData.m_vertShader = resManager->loadVertexShader("TestInputLayoutVertexShader.hlsl");
+	m_drawingData.m_pixelShader = resManager->loadPixelShader("TestInputLayoutPixelShader.hlsl");
 
 	VT_CHECK_INITIALIZATION(m_drawingData.m_vertShader && m_drawingData.m_pixelShader);
 
-	//m_drawingData.m_mesh = environment->m_meshSystem->loadMesh("Cube.mesh");
+	m_drawingData.m_mesh = environment->m_meshSystem->loadMesh("Cube.mesh");
 
-	//VT_CHECK_INITIALIZATION(m_drawingData.m_mesh);
+	VT_CHECK_INITIALIZATION(m_drawingData.m_mesh);
 
 	////
 
@@ -77,30 +77,30 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 	pipelineStateInfo.m_vertexShader = m_drawingData.m_vertShader->getResource();
 	pipelineStateInfo.m_pixelShader = m_drawingData.m_pixelShader->getResource();
 
-	//IMesh* mesh = m_drawingData.m_mesh->getMesh();
-	//if (!mesh)
-	//{
-	//	return;
-	//}
+	IMesh* mesh = m_drawingData.m_mesh->getMesh();
+	if (!mesh)
+	{
+		return;
+	}
 
-	//const MeshVertexData& vertexData = mesh->getVertexData();
-	//const MeshIndexData& indexData = mesh->getIndexData();
+	const MeshVertexData& vertexData = mesh->getVertexData();
+	const MeshIndexData& indexData = mesh->getIndexData();
 
 	const Texture2DDesc& targetDesc = target->getDesc();
 
 	pipelineStateInfo.m_formats.push_back(targetDesc.m_format);
 
 	PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(
-		pipelineStateInfo, m_drawingPassData.m_bindingLayout, nullptr);
+		pipelineStateInfo, m_drawingPassData.m_bindingLayout, vertexData.m_inputLayout);
 
-	//const uint32_t vertBuffersCount = static_cast<uint32_t>(vertexData.m_bindings.size());
-	//std::vector<IGPUBuffer*> vertBuffers;
-	//vertBuffers.reserve(vertBuffersCount);
+	const uint32_t vertBuffersCount = static_cast<uint32_t>(vertexData.m_bindings.size());
+	std::vector<IGPUBuffer*> vertBuffers;
+	vertBuffers.reserve(vertBuffersCount);
 
-	//for (uint32_t i = 0; i < vertBuffersCount; ++i)
-	//{
-	//	vertBuffers.push_back(vertexData.m_bindings[i]->getResource());
-	//}
+	for (uint32_t i = 0; i < vertBuffersCount; ++i)
+	{
+		vertBuffers.push_back(vertexData.m_bindings[i]->getResource());
+	}
 
 	RenderContextBeginInfo contextInfo{};
 	contextInfo.m_targets.push_back({ target, targetView,
@@ -113,10 +113,10 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 	m_context->beginRendering(contextInfo);
 
 	m_context->setPipelineState(pipelineState->getResource(), m_drawingPassData.m_bindingLayout->getResource());
-	//m_context->setVertexBuffers(vertBuffers.size(), vertBuffers.data());
-	//m_context->setIndexBuffer(indexData.m_indexBuffer->getResource(), indexData.m_indexFormat);
-	//m_context->drawIndexed(indexData.m_indexCount);
-	m_context->draw(3);
+	m_context->setVertexBuffers(vertBuffers.size(), vertBuffers.data(), vertexData.m_inputLayout->getDesc());
+	m_context->setIndexBuffer(indexData.m_indexBuffer->getResource(), indexData.m_indexFormat);
+	m_context->drawIndexed(indexData.m_indexCount);
+	//m_context->draw(3);
 
 	m_context->endRendering();
 	m_context->prepareTextureForPresenting(target);

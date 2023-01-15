@@ -6,7 +6,7 @@ namespace VT_D3D12
 {
 	class D3D12ResourceBase
 	{
-	private:
+	protected:
 		D3D12ResourceComPtr m_d3d12Resource = nullptr;
 
 	public:

@@ -18,6 +18,7 @@
 //
 #include "D3D12GraphicsPlugin/Utilities/FormatConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/DescriptorTypeConverter.h"
+#include "D3D12GraphicsPlugin/Utilities/InputLayoutConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/ShaderStageConverter.h"
 
 
@@ -220,7 +221,33 @@ void VT_D3D12::D3D12GraphicDevice::destroySwapChain(VT::ISwapChain* swapChain)
 
 bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc)
 {
-	return false;
+	D3D12_RESOURCE_DESC d3d12ResourceDesc{};
+	d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	d3d12ResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+	d3d12ResourceDesc.Width = desc.m_byteSize;
+	d3d12ResourceDesc.Height = 1;
+	d3d12ResourceDesc.DepthOrArraySize = 1;
+	d3d12ResourceDesc.MipLevels = 1;
+	d3d12ResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+	d3d12ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	d3d12ResourceDesc.SampleDesc.Count = 1;
+
+	D3D12_HEAP_PROPERTIES d3d12HeapProp{};
+	d3d12HeapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+	ID3D12Resource* d3d12Resource = nullptr;
+
+	HRESULT creationResult = m_d3d12Device->CreateCommittedResource(&d3d12HeapProp, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, VT_IID(d3d12Resource), VT_PPV(d3d12Resource));
+
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	new (buffer) D3D12GPUBuffer(desc, m_d3d12Device, d3d12Resource);
+
+	return true;
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer)
@@ -334,6 +361,17 @@ bool VT_D3D12::D3D12GraphicDevice::createPipelineState(VT::ManagedGraphicDevice:
 		ID3DBlob* d3d12PixelShaderCode = pixelShader->getDXCShaderCodeBlob().Get();
 		d3d12PipelineDesc.PS.BytecodeLength = d3d12PixelShaderCode->GetBufferSize();
 		d3d12PipelineDesc.PS.pShaderBytecode = d3d12PixelShaderCode->GetBufferPointer();
+	}
+
+	//
+
+	std::vector<D3D12_INPUT_ELEMENT_DESC> d3d12InputLayoutDesc;
+	if (inputLayoutDesc)
+	{
+		convertInputLayoutVTtoD3D12(*inputLayoutDesc, d3d12InputLayoutDesc);
+
+		d3d12PipelineDesc.InputLayout.NumElements = static_cast<uint32_t>(d3d12InputLayoutDesc.size());
+		d3d12PipelineDesc.InputLayout.pInputElementDescs = d3d12InputLayoutDesc.data();
 	}
 
 	//
@@ -562,7 +600,7 @@ void VT_D3D12::D3D12GraphicDevice::destroyFence(VT::ManagedGraphicDevice::Manage
 VT::IGraphicResourceDescriptorHeap* VT_D3D12::D3D12GraphicDevice::createGraphicResourceDescriptionHeap(
 	const VT::GraphicResourceDescriptorHeapDesc& desc)
 {
-	return createGraphicResourceDescriptionHeap(desc);
+	return createResourceDescriptorHeapInternal(desc);
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyGraphicResourceDescriptionHeap(VT::IGraphicResourceDescriptorHeap* heap)
@@ -573,8 +611,7 @@ void VT_D3D12::D3D12GraphicDevice::destroyGraphicResourceDescriptionHeap(VT::IGr
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::BufferStorage* VT_D3D12::D3D12GraphicDevice::createBufferStorage() const
 {
-	//return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedGPUBufferStorageInfo<VulkanGPUBuffer>>();
-	return nullptr;
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedGPUBufferStorageInfo<D3D12GPUBuffer>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::Texture2DStorage* VT_D3D12::D3D12GraphicDevice::createTexture2DStorage() const

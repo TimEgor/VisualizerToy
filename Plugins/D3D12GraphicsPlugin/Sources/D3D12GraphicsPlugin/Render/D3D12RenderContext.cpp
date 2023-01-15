@@ -8,6 +8,7 @@
 #include "D3D12GraphicsPlugin/Textures/D3D12Texture2D.h"
 #include "D3D12GraphicsPlugin/Buffer/D3D12GPUBuffer.h"
 #include "D3D12GraphicsPlugin/Resource/D3D12ResourceDescriptor.h"
+#include "D3D12GraphicsPlugin/Utilities/InputLayoutConverter.h"
 
 bool VT_D3D12::D3D12RenderContext::init(VT::ICommandList* commandList)
 {
@@ -126,16 +127,37 @@ void VT_D3D12::D3D12RenderContext::setPipelineState(const VT::IPipelineState* pi
 	d3d12CommandList->SetGraphicsRootSignature(d3d12PipelineBindingLayout->getD3D12RootSignature().Get());
 }
 
-void VT_D3D12::D3D12RenderContext::setVertexBuffer(VT::IGPUBuffer* buffer)
+void VT_D3D12::D3D12RenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers,
+	const VT::InputLayoutDesc& inputLayoutDesc)
 {
-}
+	std::vector<D3D12_VERTEX_BUFFER_VIEW> d3d12VertexViews(buffersCount);
 
-void VT_D3D12::D3D12RenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers)
-{
+	for (uint32_t bufferIndex = 0; bufferIndex < buffersCount; ++bufferIndex)
+	{
+		D3D12GPUBuffer* d3d12GPUBuffer = reinterpret_cast<D3D12GPUBuffer*>(buffers[bufferIndex]);
+
+		const uint32_t bindingSlot = inputLayoutDesc.m_elements[bufferIndex].m_slot;
+		const VT::InputLayoutBindingDesc& bindingDesc = inputLayoutDesc.m_bindings[bindingSlot];
+
+		D3D12_VERTEX_BUFFER_VIEW& d3d12VertexView = d3d12VertexViews[bufferIndex];
+		d3d12VertexView.BufferLocation = d3d12GPUBuffer->getD3D12Resource()->GetGPUVirtualAddress();
+		d3d12VertexView.SizeInBytes = d3d12GPUBuffer->getDesc().m_byteSize;
+		d3d12VertexView.StrideInBytes = bindingDesc.m_stride;
+	}
+
+	m_commandList->getD3D12CommandList()->IASetVertexBuffers(0, buffersCount, d3d12VertexViews.data());
 }
 
 void VT_D3D12::D3D12RenderContext::setIndexBuffer(VT::IGPUBuffer* buffer, VT::InputLayoutElementType indexType)
 {
+	D3D12GPUBuffer* d3d12GPUBuffer = reinterpret_cast<D3D12GPUBuffer*>(buffer);
+
+	D3D12_INDEX_BUFFER_VIEW d3d12IndexView{};
+	d3d12IndexView.Format = convertInputLayoutFormatVTtoDXGI(indexType, 1);
+	d3d12IndexView.BufferLocation = d3d12GPUBuffer->getD3D12Resource()->GetGPUVirtualAddress();
+	d3d12IndexView.SizeInBytes = d3d12GPUBuffer->getDesc().m_byteSize;
+
+	m_commandList->getD3D12CommandList()->IASetIndexBuffer(&d3d12IndexView);
 }
 
 void VT_D3D12::D3D12RenderContext::draw(uint32_t vertCount)
@@ -145,4 +167,5 @@ void VT_D3D12::D3D12RenderContext::draw(uint32_t vertCount)
 
 void VT_D3D12::D3D12RenderContext::drawIndexed(uint32_t indexCount)
 {
+	m_commandList->getD3D12CommandList()->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
 }
