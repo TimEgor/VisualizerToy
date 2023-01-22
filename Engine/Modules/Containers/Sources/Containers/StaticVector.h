@@ -43,6 +43,7 @@ namespace VT
 		void emplaceBack(Args... args);
 
 		size_t getSize() const;
+		bool empty() const;
 
 		T* getData();
 		const T* getData() const;
@@ -174,6 +175,12 @@ namespace VT
 	inline size_t StaticVector<T, InlineSize>::getSize() const
 	{
 		return m_dataSize;
+	}
+
+	template <typename T, size_t InlineSize>
+	inline bool StaticVector<T, InlineSize>::empty() const
+	{
+		return getSize() == 0;
 	}
 
 	template<typename T, size_t InlineSize>

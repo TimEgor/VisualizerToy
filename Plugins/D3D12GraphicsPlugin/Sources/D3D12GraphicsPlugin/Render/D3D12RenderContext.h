@@ -3,11 +3,6 @@
 #include "InputLayout/InputLayout.h"
 #include "RenderSystem/IRenderContext.h"
 
-namespace VT
-{
-	class IGPUBuffer;
-}
-
 namespace VT_D3D12
 {
 	class D3D12GraphicsCommandList;
@@ -35,7 +30,13 @@ namespace VT_D3D12
 		virtual void prepareTextureForRendering(VT::ITexture2D* texture) override;
 		virtual void prepareTextureForPresenting(VT::ITexture2D* texture) override;
 
-		virtual void setPipelineState(const VT::IPipelineState* pipelineState, const VT::IPipelineBindingLayout* bindingLayout) override;
+		virtual void setDescriptorHeap(VT::IGraphicResourceDescriptorHeap* heap) override;
+
+		virtual void setBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) override;
+		virtual void setBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) override;
+		virtual void setBindingLayout(const VT::IPipelineBindingLayout* bindingLayout) override;
+
+		virtual void setPipelineState(const VT::IPipelineState* pipelineState) override;
 		virtual void setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers, const VT::InputLayoutDesc& inputLayoutDesc) override;
 		virtual void setIndexBuffer(VT::IGPUBuffer* buffer, VT::InputLayoutElementType indexType) override;
 

@@ -126,6 +126,16 @@ namespace VT
 	using Vector3 = Vector3Base<float>;
 	using Vector4 = Vector4Base<float>;
 
+	const Vector3 Vector3Zero = Vector3(0.0f, 0.0f, 0.0f);
+	const Vector3 Vector3Identity = Vector3(1.0f, 1.0f, 1.0f);
+	const Vector3 Vector3NegativeIdentity = Vector3(-1.0f, -1.0f, -1.0f);
+	const Vector3 Vector3UnitX = Vector3(1.0f, 0.0f, 0.0f);
+	const Vector3 Vector3UnitY = Vector3(0.0f, 1.0f, 0.0f);
+	const Vector3 Vector3UnitZ = Vector3(0.0f, 0.0f, 1.0f);
+	const Vector3 Vector3NegativeUnitX = Vector3(-1.0f, 0.0f, 0.0f);
+	const Vector3 Vector3NegativeUnitY = Vector3(0.0f, -1.0f, 0.0f);
+	const Vector3 Vector3NegativeUnitZ = Vector3(0.0f, 0.0f, -1.0f);
+
 	using Vector2UInt16 = Vector2Base<uint16_t>;
 	using Vector3UInt16 = Vector3Base<uint16_t>;
 	using Vector4UInt16 = Vector4Base<uint16_t>;

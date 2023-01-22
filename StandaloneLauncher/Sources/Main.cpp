@@ -1,3 +1,5 @@
+#include "LevelSystem/ILevelSystem.h"
+
 #include "Core/Platform.h"
 
 #include "InitParams.h"
@@ -18,6 +20,11 @@
 #include <vector>
 
 #include "GraphicDevice/IGraphicDevice.h"
+#include "MeshSystem/MeshSystem.h"
+#include "MeshSystem/MeshComponent.h"
+#include "Scene/IScene.h"
+#include "Scene/Node.h"
+#include "Scene/SceneNodeIDComponent.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -63,12 +70,18 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	{
-		//TMP
-		VT::ResourceDataReference testModelData = engineInst->getEnvironment()->m_resourceSystem->getResource("TestCube.fbx");
-	}
-
-	{
 		VT::IRenderSystem* renderSystem = engineInst->getEnvironment()->m_renderSystem;
+
+		VT::ILevel* level = engineInst->getEnvironment()->m_levelSystem->createLevel();
+		level->init();
+		VT::VT_Entity testEntity = level->createEntity();
+		level->getEntityComponentSystem()->addComponent<VT::MeshComponent>(testEntity,
+			engineInst->getEnvironment()->m_meshSystem->loadMesh("Cube.mesh"));
+		VT::NodeID testNodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(testEntity).getNodeID();
+		VT::NodeTransforms* transforms = level->getScene()->getNodeTransforms(testNodeID);
+		transforms->m_globalTransform.m_41 = 2.0f;
+
+		renderSystem->collectRenderingData(*level);
 
 		engine->startTimer();
 

@@ -6,7 +6,7 @@
 
 namespace VT
 {
-	namespace computeMath
+	namespace COMPUTE_MATH
 	{
 		//Loading
 		ComputeMatrix loadComputeMatrixFromMatrix2x2(const Matrix22& matrix);

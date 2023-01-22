@@ -4,6 +4,7 @@
 #include "GraphicSynchronization/IFence.h"
 #include "GraphicResourceManager/ResourceHandles.h"
 #include "MeshSystem/MeshHandle.h"
+#include "RenderingData.h"
 
 namespace VT
 {
@@ -11,16 +12,24 @@ namespace VT
 	class IRenderContext;
 	class IPipelineBindingLayout;
 
-	struct TestDrawingData final
+	struct TestMaterialDrawingData final
 	{
 		VertexShaderReference m_vertShader;
 		PixelShaderReference m_pixelShader;
-		MeshReference m_mesh;
+	};
+
+	struct alignas(16) CameraTransforms final
+	{
+		Matrix44 m_viewTransform = Matrix44Identity;
+		Matrix44 m_projectionTransform = Matrix44Identity;
 	};
 
 	struct DrawingPassData final
 	{
-		GPUBufferReference m_dynamicTransformData; // Global camera and per object transforms
+		GPUBufferReference m_cameraTransformBuffer; // Global camera transforms
+		GPUBufferReference m_perObjectTransformBuffer;
+		IGraphicResourceDescriptor* m_cameraTransformCBV = nullptr;
+		IGraphicResourceDescriptor* m_perObjectTransformCBV = nullptr;
 		PipelineBindingLayoutReference m_bindingLayout = nullptr;
 	};
 
@@ -32,8 +41,9 @@ namespace VT
 		IFence* m_frameFence = nullptr;
 		FenceValueType m_lastSubmittedFenceValue = 0;
 
-		TestDrawingData m_drawingData;
+		TestMaterialDrawingData m_materialDrawingData;
 		DrawingPassData m_drawingPassData;
+		RenderingData m_renderingData;
 
 	public:
 		RenderSystem() = default;
@@ -42,6 +52,7 @@ namespace VT
 		virtual bool init() override;
 		virtual void release() override;
 
+		virtual void collectRenderingData(const ILevel& level) override;
 		virtual void render(ITexture2D* target, IGraphicResourceDescriptor* targetView) override;
 
 		virtual void waitFrame() override;

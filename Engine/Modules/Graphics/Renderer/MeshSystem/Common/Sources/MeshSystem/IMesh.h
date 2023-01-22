@@ -2,7 +2,6 @@
 
 #include "GraphicResourceManager/ResourceHandles.h"
 #include "GraphicResourceManager/InputLayoutHandle.h"
-#include "GraphicResourceCommon/Format.h"
 
 #include <cstdint>
 #include <vector>

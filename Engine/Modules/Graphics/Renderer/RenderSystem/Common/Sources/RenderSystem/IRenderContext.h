@@ -7,6 +7,7 @@
 namespace VT
 {
 	class IGraphicResourceDescriptor;
+	class IGraphicResourceDescriptorHeap;
 	class ICommandList;
 	class IPipelineState;
 	class IPipelineBindingLayout;
@@ -71,7 +72,13 @@ namespace VT
 		virtual void prepareTextureForRendering(ITexture2D* texture) = 0;
 		virtual void prepareTextureForPresenting(ITexture2D* texture) = 0;
 
-		virtual void setPipelineState(const IPipelineState* pipelineState, const IPipelineBindingLayout* bindingLayout) = 0;
+		virtual void setDescriptorHeap(IGraphicResourceDescriptorHeap* heap) = 0;
+
+		virtual void setBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) = 0;
+		virtual void setBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) = 0;
+		virtual void setBindingLayout(const IPipelineBindingLayout* bindingLayout) = 0;
+
+		virtual void setPipelineState(const IPipelineState* pipelineState) = 0;
 		virtual void setVertexBuffers(uint32_t buffersCount, IGPUBuffer** buffers, const InputLayoutDesc& inputLayoutDesc) = 0;
 		virtual void setIndexBuffer(IGPUBuffer* buffer, InputLayoutElementType indexType) = 0;
 

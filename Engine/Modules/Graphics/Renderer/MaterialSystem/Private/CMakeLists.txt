@@ -10,8 +10,6 @@ vt_add_common_module(MaterialSystem)
 
 target_link_libraries(MaterialSystem
 	PUBLIC
-		MaterialSystem_COMMON
-
 		Core
 		Engine_COMMON
 		NamedReferencePool

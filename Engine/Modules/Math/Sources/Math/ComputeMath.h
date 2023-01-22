@@ -6,7 +6,7 @@
 
 namespace VT
 {
-	namespace computeMath
+	namespace COMPUTE_MATH
 	{
 #ifdef SIMD_MATH_DX
 		using ComputeVector = DirectX::XMVECTOR;

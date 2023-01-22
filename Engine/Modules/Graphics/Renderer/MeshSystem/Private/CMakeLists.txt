@@ -7,10 +7,10 @@ include(${VT_ROOT_PATH}/CMake/Module.cmake)
 
 vt_add_module_target(MeshSystem STATIC "VT_Engine/Graphics/Renderer/MeshSystem")
 vt_add_common_module(MeshSystem)
+vt_add_ecs_module(MeshSystem)
 
 target_link_libraries(MeshSystem
 	PUBLIC
-		MeshSystem_COMMON
 		Core
 		Engine
 		NamedReferencePool

@@ -16,7 +16,7 @@ namespace VT
 		virtual void* getNativeHandle() const = 0;
 
 		template<typename T>
-		T* getNativeHandleCast() const { return getNativeHandle(); }
+		T* getNativeHandleCast() const { return reinterpret_cast<T*>(getNativeHandle()); }
 
 		virtual GraphicResourceType getType() const = 0;
 	};

@@ -8,6 +8,7 @@
 #include "D3D12GraphicsPlugin/Textures/D3D12Texture2D.h"
 #include "D3D12GraphicsPlugin/Buffer/D3D12GPUBuffer.h"
 #include "D3D12GraphicsPlugin/Resource/D3D12ResourceDescriptor.h"
+#include "D3D12GraphicsPlugin/Resource/D3D12ResourceDescriptorHeap.h"
 #include "D3D12GraphicsPlugin/Utilities/InputLayoutConverter.h"
 
 bool VT_D3D12::D3D12RenderContext::init(VT::ICommandList* commandList)
@@ -114,17 +115,36 @@ void VT_D3D12::D3D12RenderContext::prepareTextureForPresenting(VT::ITexture2D* t
 	m_commandList->getD3D12CommandList()->ResourceBarrier(1, &barrier);
 }
 
-void VT_D3D12::D3D12RenderContext::setPipelineState(const VT::IPipelineState* pipelineState, const VT::IPipelineBindingLayout* bindingLayout)
+void VT_D3D12::D3D12RenderContext::setDescriptorHeap(VT::IGraphicResourceDescriptorHeap* heap)
 {
-	assert(pipelineState && bindingLayout);
-	assert(pipelineState->getBindingLayoutHash() == bindingLayout->getHash());
+	D3D12ResourceDescriptorHeap* d3d12Heap = reinterpret_cast<D3D12ResourceDescriptorHeap*>(heap);
+	m_commandList->getD3D12CommandList()->SetDescriptorHeaps(1, d3d12Heap->getD3D12DescriptorHeap().GetAddressOf());
+}
+
+void VT_D3D12::D3D12RenderContext::setBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value)
+{
+	m_commandList->getD3D12CommandList()->SetGraphicsRoot32BitConstant(index, value, offset);
+}
+
+void VT_D3D12::D3D12RenderContext::setBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values)
+{
+	m_commandList->getD3D12CommandList()->SetGraphicsRoot32BitConstants(index, valuesCount, values, offset);
+}
+
+void VT_D3D12::D3D12RenderContext::setBindingLayout(const VT::IPipelineBindingLayout* bindingLayout)
+{
+	assert(bindingLayout);
+
+	const D3D12PipelineBindingLayout* d3d12PipelineBindingLayout = reinterpret_cast<const D3D12PipelineBindingLayout*>(bindingLayout);
+	m_commandList->getD3D12CommandList()->SetGraphicsRootSignature(d3d12PipelineBindingLayout->getD3D12RootSignature().Get());
+}
+
+void VT_D3D12::D3D12RenderContext::setPipelineState(const VT::IPipelineState* pipelineState)
+{
+	assert(pipelineState);
 
 	const D3D12PipelineState* d3d12PipelineState = reinterpret_cast<const D3D12PipelineState*>(pipelineState);
-	const D3D12PipelineBindingLayout* d3d12PipelineBindingLayout = reinterpret_cast<const D3D12PipelineBindingLayout*>(bindingLayout);
-
-	D3D12GraphicsCommandListComPtr d3d12CommandList = m_commandList->getD3D12CommandList();
-	d3d12CommandList->SetPipelineState(d3d12PipelineState->getD3D12Pipeline().Get());
-	d3d12CommandList->SetGraphicsRootSignature(d3d12PipelineBindingLayout->getD3D12RootSignature().Get());
+	m_commandList->getD3D12CommandList()->SetPipelineState(d3d12PipelineState->getD3D12Pipeline().Get());
 }
 
 void VT_D3D12::D3D12RenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers,

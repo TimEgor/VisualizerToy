@@ -28,9 +28,9 @@ else()
 	set(FBX_PLATFORM_NAME "x86")
 endif()
 
-message("FBX SDK path: ${FBX_SDK_DIR}")
-message("FBX SDK compiler: ${FBX_COMPILER_NAME}")
-message("FBX SDK platform: ${FBX_PLATFORM_NAME}")
+message("\t\tFBX SDK path: ${FBX_SDK_DIR}")
+message("\t\tFBX SDK compiler: ${FBX_COMPILER_NAME}")
+message("\t\tFBX SDK platform: ${FBX_PLATFORM_NAME}")
 
 set(FBXSDK_LIBRARY_RELEASE_PATH
 	${FBX_SDK_DIR}/lib/${FBX_COMPILER_NAME}/${FBX_PLATFORM_NAME}/release/

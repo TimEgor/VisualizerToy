@@ -7,8 +7,3 @@ include(${VT_ROOT_PATH}/CMake/Module.cmake)
 
 vt_add_module_target(PluginSystem STATIC "VT_Engine/PluginSystem")
 vt_add_common_module(PluginSystem)
-
-target_link_libraries(PluginSystem
-	PUBLIC
-		PluginSystem_COMMON
-)

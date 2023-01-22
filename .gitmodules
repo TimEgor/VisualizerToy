@@ -1,3 +1,6 @@
 [submodule "Libs/volk"]
 	path = Libs/volk
 	url = git@github.com:zeux/volk.git
+[submodule "Libs/entt"]
+	path = Libs/entt
+	url = https://github.com/skypjack/entt.git

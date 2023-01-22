@@ -47,9 +47,16 @@ namespace VT::ManagedGraphicDevice
 		virtual bool initDevice(bool isSwapChainEnabled) = 0;
 		virtual void releaseDevice() = 0;
 
+		//
+		virtual bool createShaderResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, IGraphicResource* resource) = 0;
+		virtual void destroyShaderResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
+
 		//Buffer
 		virtual bool createBuffer(ManagedGPUBufferBase* buffer, const GPUBufferDesc& desc) = 0;
 		virtual void destroyBuffer(ManagedGPUBufferBase* buffer) = 0;
+
+		virtual bool createBufferResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, IGPUBuffer* buffer) = 0;
+		virtual void destroyBufferResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
 
 		//Textures
 		virtual void destroyTexture2D(ManagedTexture2DBase* texture) = 0;
@@ -103,9 +110,15 @@ namespace VT::ManagedGraphicDevice
 		virtual bool init(bool isSwapChainEnabled) override;
 		virtual void release() override;
 
+		virtual IGraphicResourceDescriptor* createShaderResourceDescriptor(IGraphicResource* resource) override;
+		virtual void destroyShaderResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
+
 		//Buffer
 		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc) override;
 		virtual void destroyBuffer(IGPUBuffer* buffer) override;
+
+		virtual IGraphicResourceDescriptor* createBufferResourceDescriptor(IGPUBuffer* buffer) override;
+		virtual void destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
 
 		//Textures
 		virtual void destroyTexture2D(ITexture2D* texture) override;

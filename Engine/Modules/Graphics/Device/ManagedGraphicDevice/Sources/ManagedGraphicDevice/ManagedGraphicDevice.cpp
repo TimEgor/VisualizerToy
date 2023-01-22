@@ -57,6 +57,35 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 	releaseDevice();
 }
 
+VT::IGraphicResourceDescriptor* VT::ManagedGraphicDevice::ManagedGraphicDevice::createShaderResourceDescriptor(
+	IGraphicResource* resource)
+{
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorStorageInfoBase::NewObjectInfo newObjectInfo = m_descriptorStorage->addNewObject();
+	if (!createShaderResourceDescriptor(newObjectInfo.m_objectPtr, resource))
+	{
+		m_descriptorStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyShaderResourceDescriptor(
+	IGraphicResourceDescriptor* descriptor)
+{
+	assert(descriptor);
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorBase* managedDescriptor = reinterpret_cast<ManagedGraphicResourceDescriptorBase*>(descriptor);
+
+	destroyRenderTargetDescriptor(managedDescriptor);
+	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
+}
+
 VT::IGPUBuffer* VT::ManagedGraphicDevice::ManagedGraphicDevice::createBuffer(const GPUBufferDesc& desc)
 {
 	assert(m_bufferStorage);
@@ -82,6 +111,33 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyBuffer(IGPUBuffer* b
 
 	destroyBuffer(managedBuffer);
 	m_bufferStorage->removeObject(managedBuffer->getHandle());
+}
+
+VT::IGraphicResourceDescriptor* VT::ManagedGraphicDevice::ManagedGraphicDevice::createBufferResourceDescriptor(IGPUBuffer* buffer)
+{
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorStorageInfoBase::NewObjectInfo newObjectInfo = m_descriptorStorage->addNewObject();
+	if (!createBufferResourceDescriptor(newObjectInfo.m_objectPtr, buffer))
+	{
+		m_descriptorStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor)
+{
+	assert(descriptor);
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorBase* managedDescriptor = reinterpret_cast<ManagedGraphicResourceDescriptorBase*>(descriptor);
+
+	destroyRenderTargetDescriptor(managedDescriptor);
+	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
 }
 
 void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture2D(ITexture2D* texture)

@@ -14,10 +14,20 @@ namespace VT
 		VERTEX_BUFFER = 2
 	};
 
+	enum class GPUBufferFlag
+	{
+		NONE,
+
+		STRUCTURED,
+		RAW
+	};
+
 	struct GPUBufferDesc final
 	{
 		uint32_t m_byteSize = 0;
+		uint32_t m_byteStride = 0;
 		GPUBufferUsageType m_usage = GPUBufferUsageType::UNDEFINED;
+		GPUBufferFlag m_flag = GPUBufferFlag::NONE;
 	};
 
 	class IGPUBuffer : public IGraphicResource

@@ -16,6 +16,8 @@ namespace VT
 
 	class IResourceSystem;
 
+	class ILevelSystem;
+
 	struct EngineEnvironment final
 	{
 		IPlatform* m_platform = nullptr;
@@ -31,5 +33,7 @@ namespace VT
 		IMeshSystem* m_meshSystem = nullptr;
 
 		IResourceSystem* m_resourceSystem = nullptr;
+
+		ILevelSystem* m_levelSystem = nullptr;
 	};
 }

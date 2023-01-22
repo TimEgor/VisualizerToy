@@ -5,7 +5,7 @@
 
 namespace VT
 {
-	namespace computeMath
+	namespace COMPUTE_MATH
 	{
 		//Loading
 		ComputeVector loadComputeVectorFromVector2(const Vector2& vec);

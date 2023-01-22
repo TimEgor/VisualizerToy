@@ -16,7 +16,6 @@ target_link_libraries(GraphicResourceManager
 		Engine_COMMON
 
 		GraphicDevice
-		GraphicResourceManager_COMMON
 
 		ShaderConverter
 		GraphicPipeline

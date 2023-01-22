@@ -4,9 +4,10 @@
 
 namespace VT
 {
-	struct GraphicResourceDescriptorHeapDesc;
 	class IWindow;
 	class ISwapChain;
+
+	class IGraphicResource;
 
 	class IGPUBuffer;
 
@@ -36,6 +37,8 @@ namespace VT
 	struct PipelineBindingLayoutDesc;
 	struct InputLayoutDesc;
 
+	struct GraphicResourceDescriptorHeapDesc;
+
 	struct CommandListSubmitInfo final
 	{
 		IFence* m_fence = nullptr;
@@ -61,9 +64,16 @@ namespace VT
 		virtual ISwapChain* createSwapChain(const SwapChainDesc& desc, const IWindow* window) = 0;
 		virtual void destroySwapChain(ISwapChain* swapChain) = 0;
 
+		//
+		virtual IGraphicResourceDescriptor* createShaderResourceDescriptor(IGraphicResource* resource) = 0;
+		virtual void destroyShaderResourceDescriptor(IGraphicResourceDescriptor* descriptor) = 0;
+
 		//Buffers
 		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc) = 0;
 		virtual void destroyBuffer(IGPUBuffer* buffer) = 0;
+
+		virtual IGraphicResourceDescriptor* createBufferResourceDescriptor(IGPUBuffer* buffer) = 0;
+		virtual void destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor) = 0;
 
 		//Texture
 		virtual void destroyTexture2D(ITexture2D* texture) = 0;
@@ -96,8 +106,13 @@ namespace VT
 		virtual IFence* createFence() = 0;
 		virtual void destroyFence(IFence* fence) = 0;
 
+		//
+		virtual IGraphicResourceDescriptorHeap* getBindlessResourceDescriptionHeap() = 0;
 		virtual IGraphicResourceDescriptorHeap* createGraphicResourceDescriptionHeap(const GraphicResourceDescriptorHeapDesc& desc) = 0;
 		virtual void destroyGraphicResourceDescriptionHeap(IGraphicResourceDescriptorHeap* heap) = 0;
+
+		//
+		virtual void setResourceName(IGraphicResource* resource, const char* name) = 0;
 
 		virtual GraphicDeviceType getType() const = 0;
 	};

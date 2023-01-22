@@ -1,5 +1,7 @@
 #include "Engine.h"
 
+#include "LevelSystem/LevelSystem.h"
+
 #include "Core/UtilitiesMacros.h"
 #include "Engine/EngineEnvironment.h"
 
@@ -16,7 +18,6 @@
 #include "RenderSystem/RenderSystem.h"
 
 #include <cassert>
-
 
 
 bool VT::Engine::init(const EngineInitParam& initParam)
@@ -66,6 +67,10 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_renderSystem
 		&& m_engineEnvironment->m_renderSystem->init());
 
+	m_engineEnvironment->m_levelSystem = new LevelSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_levelSystem
+		&& m_engineEnvironment->m_levelSystem->init());
+
 	return true;
 }
 
@@ -73,6 +78,8 @@ void VT::Engine::release()
 {
 	if (m_engineEnvironment)
 	{
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_levelSystem);
+
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_renderSystem);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_meshSystem);
 

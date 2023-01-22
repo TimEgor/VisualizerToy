@@ -33,10 +33,16 @@ namespace VT_D3D12
 		D3D12CommandQueueComPtr createCommandQueue(D3D12_COMMAND_LIST_TYPE commandType);
 
 		D3D12ResourceDescriptorHeap* createResourceDescriptorHeapInternal(const VT::GraphicResourceDescriptorHeapDesc& desc);
+		bool createShaderResourceDescriptorInternal(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource,
+			const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc);
 
 	protected:
 		virtual bool initDevice(bool isSwapChainEnabled) override;
 		virtual void releaseDevice() override;
+
+		//
+		virtual bool createShaderResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource) override;
+		virtual void destroyShaderResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
 
 		//SwapChain
 		virtual VT::ISwapChain* createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
@@ -45,6 +51,9 @@ namespace VT_D3D12
 		//Buffer
 		virtual bool createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc) override;
 		virtual void destroyBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer) override;
+
+		virtual bool createBufferResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGPUBuffer* buffer) override;
+		virtual void destroyBufferResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
 
 		//Textures
 		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
@@ -78,9 +87,13 @@ namespace VT_D3D12
 		virtual bool createFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence) override;
 		virtual void destroyFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence) override;
 
+		//
+		virtual VT::IGraphicResourceDescriptorHeap* getBindlessResourceDescriptionHeap() override;
 		virtual VT::IGraphicResourceDescriptorHeap* createGraphicResourceDescriptionHeap(
 			const VT::GraphicResourceDescriptorHeapDesc& desc) override;
 		virtual void destroyGraphicResourceDescriptionHeap(VT::IGraphicResourceDescriptorHeap* heap) override;
+
+		virtual void setResourceName(VT::IGraphicResource* resource, const char* name) override;
 
 		virtual BufferStorage* createBufferStorage() const override;
 

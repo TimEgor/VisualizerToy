@@ -13,6 +13,5 @@ target_link_libraries(GraphicPresenter
 		Engine_COMMON
 		GraphicDevice
 		SwapChain
-		GraphicPresenter_COMMON
 		WindowSystem_COMMON
 )

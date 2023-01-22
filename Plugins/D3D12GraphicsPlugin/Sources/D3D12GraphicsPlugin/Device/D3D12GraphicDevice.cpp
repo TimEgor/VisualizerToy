@@ -77,6 +77,25 @@ VT_D3D12::D3D12ResourceDescriptorHeap* VT_D3D12::D3D12GraphicDevice::createResou
 	return new D3D12ResourceDescriptorHeap(desc, d3d12Heap, descriptorSize);
 }
 
+bool VT_D3D12::D3D12GraphicDevice::createShaderResourceDescriptorInternal(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource,
+	const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc)
+{
+	assert(resource);
+
+	ID3D12Resource* d3d12Resource = resource->getNativeHandleCast<ID3D12Resource>();
+
+	VT::DescriptorBindingHeapOffsetType offset = m_srvDescriptorHeap->allocateDescriptor();
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_srvDescriptorHeap->getCPUHandle(offset);
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_srvDescriptorHeap->getGPUHandle(offset);
+
+	m_d3d12Device->CreateShaderResourceView(d3d12Resource, srvDesc, cpuHandle);
+
+	new (descriptor) D3D12ResourceDescriptor(VT::GraphicResourceDescriptorType::SRV, offset, cpuHandle, gpuHandle);
+
+	return true;
+}
+
 bool VT_D3D12::D3D12GraphicDevice::chooseD3D12PhysDevice()
 {
 	assert(m_dxgiFactory);
@@ -144,6 +163,59 @@ void VT_D3D12::D3D12GraphicDevice::releaseDevice()
 	{
 		destroyGraphicResourceDescriptionHeap(m_srvDescriptorHeap);
 	}
+}
+
+bool VT_D3D12::D3D12GraphicDevice::createShaderResourceDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource)
+{
+	if (resource->getType() == VT::IGPUBuffer::getGraphicResourceType())
+	{
+		VT::IGPUBuffer* buffer = reinterpret_cast<VT::IGPUBuffer*>(resource);
+		const VT::GPUBufferDesc& bufferDesc = buffer->getDesc();
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC d3d12SRVDesc{};
+		d3d12SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		d3d12SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		d3d12SRVDesc.Buffer.FirstElement = 0;
+
+		if (bufferDesc.m_flag == VT::GPUBufferFlag::STRUCTURED)
+		{
+			assert(bufferDesc.m_byteStride);
+
+			d3d12SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+			d3d12SRVDesc.Buffer.NumElements = bufferDesc.m_byteSize / bufferDesc.m_byteStride;
+			d3d12SRVDesc.Buffer.StructureByteStride = bufferDesc.m_byteStride;
+			d3d12SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+		}
+		else if (bufferDesc.m_flag == VT::GPUBufferFlag::RAW)
+		{
+			d3d12SRVDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+			d3d12SRVDesc.Buffer.NumElements = bufferDesc.m_byteSize / sizeof(uint32_t);
+			d3d12SRVDesc.Buffer.StructureByteStride = 0;
+			d3d12SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+		}
+		else
+		{
+			d3d12SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+			d3d12SRVDesc.Buffer.NumElements = 1;
+			d3d12SRVDesc.Buffer.StructureByteStride = bufferDesc.m_byteSize;
+			d3d12SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+		}
+
+		return createShaderResourceDescriptorInternal(descriptor, resource, &d3d12SRVDesc);
+	}
+	else
+	{
+		return createShaderResourceDescriptorInternal(descriptor, resource, nullptr);
+	}
+
+	return false;
+}
+
+void VT_D3D12::D3D12GraphicDevice::destroyShaderResourceDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor)
+{
+	m_srvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
 }
 
 void VT_D3D12::D3D12GraphicDevice::update()
@@ -224,7 +296,7 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 	D3D12_RESOURCE_DESC d3d12ResourceDesc{};
 	d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 	d3d12ResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-	d3d12ResourceDesc.Width = desc.m_byteSize;
+	d3d12ResourceDesc.Width = VT::align(desc.m_byteSize, 256u);
 	d3d12ResourceDesc.Height = 1;
 	d3d12ResourceDesc.DepthOrArraySize = 1;
 	d3d12ResourceDesc.MipLevels = 1;
@@ -253,6 +325,36 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 void VT_D3D12::D3D12GraphicDevice::destroyBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer)
 {
 	assert(buffer);
+}
+
+bool VT_D3D12::D3D12GraphicDevice::createBufferResourceDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGPUBuffer* buffer)
+{
+	assert(buffer);
+
+	D3D12GPUBuffer* d3d12Buffer = reinterpret_cast<D3D12GPUBuffer*>(buffer);
+
+	VT::DescriptorBindingHeapOffsetType offset = m_srvDescriptorHeap->allocateDescriptor();
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_srvDescriptorHeap->getCPUHandle(offset);
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_srvDescriptorHeap->getGPUHandle(offset);
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC d3d12CBVDesc{};
+	d3d12CBVDesc.BufferLocation = d3d12Buffer->getD3D12Resource()->GetGPUVirtualAddress();
+	d3d12CBVDesc.SizeInBytes = VT::align(buffer->getDesc().m_byteSize, 256u);
+
+	m_d3d12Device->CreateConstantBufferView(&d3d12CBVDesc, cpuHandle);
+
+	new (descriptor) D3D12ResourceDescriptor(VT::GraphicResourceDescriptorType::CBV, offset, cpuHandle, gpuHandle);
+
+	return true;
+}
+
+void VT_D3D12::D3D12GraphicDevice::destroyBufferResourceDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor)
+{
+	assert(descriptor);
+
+	m_srvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture)
@@ -597,6 +699,11 @@ void VT_D3D12::D3D12GraphicDevice::destroyFence(VT::ManagedGraphicDevice::Manage
 	CloseHandle(d3d12Fence->getEventHandle());
 }
 
+VT::IGraphicResourceDescriptorHeap* VT_D3D12::D3D12GraphicDevice::getBindlessResourceDescriptionHeap()
+{
+	return m_srvDescriptorHeap;
+}
+
 VT::IGraphicResourceDescriptorHeap* VT_D3D12::D3D12GraphicDevice::createGraphicResourceDescriptionHeap(
 	const VT::GraphicResourceDescriptorHeapDesc& desc)
 {
@@ -607,6 +714,15 @@ void VT_D3D12::D3D12GraphicDevice::destroyGraphicResourceDescriptionHeap(VT::IGr
 {
 	assert(heap);
 	VT_SAFE_DESTROY(heap);
+}
+
+void VT_D3D12::D3D12GraphicDevice::setResourceName(VT::IGraphicResource* resource, const char* name)
+{
+	auto charsCount = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
+	std::vector<wchar_t> wstr(charsCount);
+	MultiByteToWideChar(CP_UTF8, 0, name, -1, wstr.data(), charsCount);
+
+	reinterpret_cast<ID3D12Resource*>(resource->getNativeHandle())->SetName(wstr.data());
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::BufferStorage* VT_D3D12::D3D12GraphicDevice::createBufferStorage() const

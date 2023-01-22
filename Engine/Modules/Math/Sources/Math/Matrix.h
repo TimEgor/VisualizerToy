@@ -187,4 +187,9 @@ namespace VT
 	using Matrix33 = Matrix33Base<float>;
 	using Matrix44 = Matrix44Base<float>;
 
+	const Matrix44 Matrix44Identity = Matrix44(1.0f, 0.0f, 0.0f, 0.0f,
+												0.0f, 1.0f, 0.0f, 0.0f,
+												0.0f, 0.0f, 1.0f, 0.0f,
+												0.0f, 0.0f, 0.0f, 1.0f);
+
 }

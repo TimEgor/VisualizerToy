@@ -141,7 +141,11 @@ void VT_SHADER_RC::ShaderConverterHLSL::convert(const VT::IFileSystem& inFileSys
 
 	if (inData && inDataSize > 0)
 	{
-		compileShader(inData, inDataSize, outData, outDataSize, args, nullptr);
+		VT::FileName dirPath;
+		VT::FileNameUtils::getFileDirPath(inFilePath, dirPath);
+		ShaderIncludeProvider includeProvider(inFileSystem, dirPath, *this);
+
+		compileShader(inData, inDataSize, outData, outDataSize, args, &includeProvider);
 	}
 	else
 	{
@@ -160,7 +164,11 @@ bool VT_SHADER_RC::ShaderConverterHLSL::convert(const VT::IFileSystem& inFileSys
 	size_t outDataSize = 0;
 	if (inData && inDataSize > 0)
 	{
-		compileShader(inData, inDataSize, &outData, outDataSize, args, nullptr);
+		VT::FileName dirPath;
+		VT::FileNameUtils::getFileDirPath(inFilePath, dirPath);
+		ShaderIncludeProvider includeProvider(inFileSystem, dirPath, *this);
+
+		compileShader(inData, inDataSize, &outData, outDataSize, args, &includeProvider);
 
 		if (outData && outDataSize > 0)
 		{
@@ -178,7 +186,11 @@ void VT_SHADER_RC::ShaderConverterHLSL::convert(const VT::IFileSystem& inFileSys
 
 	if (inData && inDataSize > 0)
 	{
-		compileShader(inData, inDataSize, outData, outDataSize, args, nullptr);
+		VT::FileName dirPath;
+		VT::FileNameUtils::getFileDirPath(inFilePath, dirPath);
+		ShaderIncludeProvider includeProvider(inFileSystem, dirPath, *this);
+
+		compileShader(inData, inDataSize, outData, outDataSize, args, &includeProvider);
 
 		if (outData && *outData && outDataSize > 0)
 		{

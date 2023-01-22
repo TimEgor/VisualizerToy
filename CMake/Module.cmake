@@ -71,12 +71,24 @@ macro(vt_link_module CURRENT_TARGET_NAME LINK_MODIFIER MODULE_NAME)
 	target_link_libraries(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME})
 endmacro()
 
+### vt_add_module
+function(vt_add_module CURRENT_TARGET_NAME LINK_MODIFIER MODULE MODULE_PATH BINARY_DIR)
+	message(">>> adding module: ${MODULE}")
+	add_subdirectory(${MODULE_PATH}/${MODULE} ${BINARY_DIR}/${MODULE})
+	vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE})
+endfunction()
+
+### vt_add_module_by_path
+function(vt_add_module_by_path CURRENT_TARGET_NAME LINK_MODIFIER MODULE_NAME MODULE_PATH BINARY_DIR)
+	message(">>> adding module: ${MODULE_NAME} (${MODULE_PATH})")
+	add_subdirectory(${MODULE_PATH} ${BINARY_DIR}/${MODULE_NAME})
+	vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME})
+endfunction()
+
 ### vt_add_modules
 function(vt_add_modules CURRENT_TARGET_NAME LINK_MODIFIER MODULES_SET MODULES_PATH BINARY_DIR)
 	foreach(MODULE ${MODULES_SET})
-		message(">>> adding module: ${MODULE}")
-		add_subdirectory(${MODULES_PATH}/${MODULE} ${BINARY_DIR}/${MODULE})
-		vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE})
+		vt_add_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE} ${MODULES_PATH} ${BINARY_DIR})
 	endforeach()
 endfunction()
 
@@ -219,6 +231,11 @@ function(vt_add_common_module_target_out_path CURRENT_MODULE_NAME LINK_MODIFIER 
 	vt_add_common_module_target_out_path(${CURRENT_MODULE_NAME}_COMMON ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME} ${OUTPUT_PATH})
 endfunction()
 
+### vt_add_ecs_module_target
+function(vt_add_ecs_module_target CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME)
+	vt_add_module_target_name(${CURRENT_MODULE_NAME}_ECS ${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME} ${CMAKE_CURRENT_BINARY_DIR}/Out)
+endfunction()
+
 ### vt_add_plugin_target
 function(vt_add_plugin_target CURRENT_MODULE_NAME LINK_MODIFIER FOLDER_NAME)
 	vt_add_module_target(${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${FOLDER_NAME})
@@ -231,12 +248,15 @@ endfunction()
 
 ### vt_add_common_module_out_path
 function(vt_add_common_module_out_path CURRENT_MODULE_NAME OUT_PATH)
-	if(NOT TARGET ${CURRENT_MODULE_NAME}_COMMON)
-		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../Common/ ${OUT_PATH})
-	endif()
+	vt_add_module_by_path(${CURRENT_MODULE_NAME} PUBLIC ${CURRENT_MODULE_NAME}_COMMON ${CMAKE_CURRENT_LIST_DIR}/../Common ${OUT_PATH})
 endfunction()
 
 ### vt_add_common_module
 function(vt_add_common_module CURRENT_MODULE_NAME)
 	vt_add_common_module_out_path(${CURRENT_MODULE_NAME} ${CMAKE_CURRENT_BINARY_DIR}/../${CURRENT_MODULE_NAME}_COMMON)
+endfunction()
+
+### vt_add_ecs_module
+function(vt_add_ecs_module CURRENT_MODULE_NAME)
+	vt_add_module_by_path(${CURRENT_MODULE_NAME} PUBLIC ${CURRENT_MODULE_NAME}_ECS ${CMAKE_CURRENT_LIST_DIR}/../ECS ${CMAKE_CURRENT_BINARY_DIR}/../${CURRENT_MODULE_NAME}_ECS)
 endfunction()

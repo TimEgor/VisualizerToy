@@ -9,16 +9,23 @@ vt_add_module_target(RenderSystem STATIC "VT_Engine/Graphics/Renderer/RenderSyst
 vt_add_common_module(RenderSystem)
 
 target_link_libraries(RenderSystem
-	PUBLIC
-		Core
+	PRIVATE
 		Engine_COMMON
-		RenderSystem_COMMON
-		MeshSystem_COMMON
+		EntityComponentSystem
+		MeshSystem_ECS
+		Scene_ECS
+
 		GraphicDevice
 		GraphicPipeline
 		GraphicPlatform
-		Textures
-		GPUBuffer
 		GraphicSynchronization
+		GPUBuffer
 		Math
+
+	PUBLIC
+		Core
+		MeshSystem_COMMON
+		LevelSystem_COMMON
+
+		Textures
 )
