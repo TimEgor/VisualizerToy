@@ -13,4 +13,6 @@ set(MODULES_SET
 	ResourceModule			Resources
 	Scene					Scene/Private
 	WindowSystem			WindowSystem/Private
+
+	ArgParser				Utils/ArgParser/Private
 )

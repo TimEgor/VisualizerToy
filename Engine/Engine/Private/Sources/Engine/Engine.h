@@ -12,7 +12,8 @@ namespace VT
 
 		//Times
 		ClockTimePoint m_startTime;
-		ClockTimePoint m_lastFrameStartTime;
+		ClockTimePoint m_currentFrameTime;
+		ClockTimePoint m_prevFrameStartTime;
 		float m_deltaTime = 0.0f;
 
 		bool m_isStoped = false;
@@ -24,6 +25,9 @@ namespace VT
 
 		virtual bool init(const EngineInitParam& initParam) override;
 		virtual void release() override;
+
+		virtual void beginFrame() override;
+		virtual void endFrame() override;
 
 		virtual void updateFrame() override;
 

@@ -29,6 +29,9 @@ namespace VT
 		virtual bool init(const EngineInitParam& initParam) = 0;
 		virtual void release() = 0;
 
+		virtual void beginFrame() = 0;
+		virtual void endFrame() = 0;
+
 		virtual void updateFrame() = 0;
 
 		virtual void startTimer() = 0;

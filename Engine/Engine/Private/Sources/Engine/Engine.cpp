@@ -101,15 +101,25 @@ void VT::Engine::release()
 	}
 }
 
-void VT::Engine::updateFrame()
+void VT::Engine::beginFrame()
 {
 	assert(m_engineEnvironment);
 
 	assert(m_engineEnvironment->m_windowSystem);
 	m_engineEnvironment->m_windowSystem->updateWindowEvents();
 
-	ClockTimePoint currentTime = Clock::getCurrentTime();
-	m_deltaTime = Clock::calkTimePointDelta(currentTime, m_lastFrameStartTime);
+	m_currentFrameTime = Clock::getCurrentTime();
+	m_deltaTime = Clock::calkTimePointDelta(m_currentFrameTime, m_prevFrameStartTime);
+}
+
+void VT::Engine::endFrame()
+{
+	m_prevFrameStartTime = m_currentFrameTime;
+}
+
+void VT::Engine::updateFrame()
+{
+	assert(m_engineEnvironment);
 
 	assert(m_engineEnvironment->m_gameSystem);
 	m_engineEnvironment->m_gameSystem->update(m_deltaTime);
@@ -118,7 +128,7 @@ void VT::Engine::updateFrame()
 void VT::Engine::startTimer()
 {
 	m_startTime = Clock::getCurrentTime();
-	m_lastFrameStartTime = m_startTime;
+	m_prevFrameStartTime = m_startTime;
 }
 
 void VT::Engine::stop()

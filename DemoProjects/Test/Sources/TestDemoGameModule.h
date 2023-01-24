@@ -13,6 +13,7 @@ namespace VT_DEMO_TEST
 	{
 	private:
 		VT::NodeTransforms* m_transforms = nullptr;
+		float m_time = 0.0f;
 
 	public:
 		TestDemoGameModule(VT::PluginID id, VT_PLATFORM_HANDLE_MODULE nativeHandle)

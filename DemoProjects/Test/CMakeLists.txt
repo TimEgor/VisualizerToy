@@ -30,11 +30,13 @@ vt_add_modules_by_path(DemoTest PUBLIC
 
 message("\n----------------------")
 
-#get_target_property(OUTPUT_LOCATION DemoTest RUNTIME_OUTPUT_DIRECTORY)
-#
-# if (MSVC)
-# 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT StandaloneLauncher)
-# 	set_target_properties(StandaloneLauncher PROPERTIES
-# 		VS_DEBUGGER_WORKING_DIRECTORY ${OUTPUT_LOCATION}
-# 	)
-# endif()
+get_target_property(OUTPUT_LOCATION DemoTest RUNTIME_OUTPUT_DIRECTORY)
+
+if (MSVC)
+	set_target_properties(DemoTest PROPERTIES
+		VS_DEBUGGER_COMMAND ${VT_ROOT_PATH}/StandaloneLauncher/Out/${CMAKE_GENERATOR_PLATFORM}/VT_StandaloneLauncher_$<CONFIG>_${CMAKE_GENERATOR_PLATFORM}.exe
+		VS_DEBUGGER_COMMAND_ARGUMENTS "--module=${OUTPUT_LOCATION}/DemoTest_$<CONFIG>_${CMAKE_GENERATOR_PLATFORM}.dll"
+
+		VS_STARTUP_PROJECT DemoTest
+	)
+endif()

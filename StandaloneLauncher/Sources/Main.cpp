@@ -1,32 +1,40 @@
 #include "Core/Platform.h"
 
 #include "InitParams.h"
+#include "ReturningCodes.h"
+#include "GameModuleLoader.h"
 
 #include "Engine/Engine.h"
 #include "Engine/EngineInstance.h"
 #include "Engine/EngineEnvironment.h"
 
+#include "GraphicDevice/IGraphicDevice.h"
+
 #include "GraphicPresenter/WindowGraphicPresenter.h"
-
-#include "SwapChain/ISwapChain.h"
 #include "WindowSystem/IWindow.h"
-
-#include "ReturningCodes.h"
+#include "SwapChain/ISwapChain.h"
 
 #include "RenderSystem/IRenderSystem.h"
 #include "ResourceSystem/IResourceSystem.h"
 
-#include "GraphicDevice/IGraphicDevice.h"
 #include "MeshSystem/MeshSystem.h"
 
+#include "GameSystem/IGameSystem.h"
 #include "LevelSystem/ILevelSystem.h"
+
+#include "ArgParser/Parser.h"
 
 #include <vector>
 
-#include "GameSystem/IGameSystem.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	VT::FileName gameModulePath;
+
+	VT::ArgParser mainArgParser;
+	mainArgParser.addOptionValue<VT::FileName>("--module", gameModulePath);
+	mainArgParser.parse(__argc, __argv);
+
 	VT::EngineInstance& engineInst = VT::EngineInstance::getInstance();
 
 	VT::IEngine* engine = new VT::Engine();
@@ -70,9 +78,17 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return VT_LAUNCHER_WINDOW_PRESENTER_INIT_ERROR;
 	}
 
+	if (gameModulePath.empty())
+	{
+		VT_Launcher::getGameModulePath(gameModulePath);
+	}
+
 	VT::EngineEnvironment* engineEnvironment = engineInst->getEnvironment();
-	engineEnvironment->m_gameSystem->loadGameModule(
-		VT::FileName(VT_ROOT_PATH) + "DemoProjects/Test/Out/Win32/VT_DemoTest_Debug_Win32" + VT::FileName(VT_DYNAMIC_LIB_EXT_NAME));
+
+	if (gameModulePath.empty() || !engineEnvironment->m_gameSystem->loadGameModule(gameModulePath))
+	{
+		return VT_LAUNCHER_INVALID_GAME_MODULE;
+	}
 
 	{
 		VT::IRenderSystem* renderSystem = engineEnvironment->m_renderSystem;
@@ -82,10 +98,11 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 		while (!engine->isStoped())
 		{
+			engine->beginFrame();
+
 			engine->updateFrame();
 
 			renderSystem->collectRenderingData(*levelSystem->getCurrentLevel());
-
 			renderSystem->waitFrame();
 
 			graphicPresenter->updateNextTargetTextureIndex();
@@ -97,6 +114,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 			);
 
 			graphicPresenter->present();
+
+			engine->endFrame();
 		}
 
 		engine->getEnvironment()->m_graphicDevice->waitIdle();
