@@ -70,7 +70,7 @@ namespace VT_DUMMY_RS
 		DummyResourceSystem() = default;
 		~DummyResourceSystem() { release(); }
 
-		virtual bool init() override;
+		virtual bool init(const VT::FileName& path) override;
 		virtual void release() override;
 
 		virtual void addResourceConverter(VT::IFileResourceConverter* converter) override;

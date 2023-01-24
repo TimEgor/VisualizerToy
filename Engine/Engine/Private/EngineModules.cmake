@@ -2,6 +2,7 @@ set(MODULES_SET
 	Containers				Containers
 	Core					Core
 	EntityComponentSystem	EntityComponentSystem
+	GameSystem				GameSystem/Private
 	GraphicsModule			Graphics
 	LevelSystem				LevelSystem/Private
 	Math					Math

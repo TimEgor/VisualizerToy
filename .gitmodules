@@ -4,3 +4,4 @@
 [submodule "Libs/entt"]
 	path = Libs/entt
 	url = https://github.com/skypjack/entt.git
+	ignore = dirty

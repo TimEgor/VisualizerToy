@@ -35,6 +35,8 @@ namespace VT
 		virtual void pauseRendering(bool state) override { m_isRenderingPaused = state; }
 		virtual bool isRenderingPaused() const override { return m_isRenderingPaused; }
 
+		virtual float getDeltaTime() const override { return m_deltaTime; }
+
 		inline virtual EngineEnvironment* getEnvironment() override { return m_engineEnvironment; }
 	};
 }

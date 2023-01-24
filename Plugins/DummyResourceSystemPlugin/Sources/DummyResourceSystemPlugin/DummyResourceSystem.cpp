@@ -7,10 +7,10 @@
 
 namespace VT_DUMMY_RS
 {
-	bool DummyResourceSystem::init()
+	bool DummyResourceSystem::init(const VT::FileName& path)
 	{
 		m_loader = new ResourceLoader();
-		VT_CHECK_INITIALIZATION(m_loader && m_loader->init(this));
+		VT_CHECK_INITIALIZATION(m_loader && m_loader->init(this, path));
 
 		VT_CHECK_INITIALIZATION(m_events.init());
 		m_resourceEvents.reserve(4096);

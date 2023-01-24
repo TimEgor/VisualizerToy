@@ -31,7 +31,7 @@ namespace VT
 		IResourceSystem() = default;
 		virtual ~IResourceSystem() {}
 
-		virtual bool init() = 0;
+		virtual bool init(const FileName& path) = 0;
 		virtual void release() = 0;
 
 		virtual void addResourceConverter(IFileResourceConverter* converter) = 0;

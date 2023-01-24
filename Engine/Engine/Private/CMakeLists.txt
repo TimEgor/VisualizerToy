@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.8)
 project(Engine)
 
 set(VT_ROOT_PATH ${CMAKE_CURRENT_LIST_DIR}/../../../)
+set(VT_ENGINE TRUE)
 
 include(${VT_ROOT_PATH}/CMake/SourceFilesGroups.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)

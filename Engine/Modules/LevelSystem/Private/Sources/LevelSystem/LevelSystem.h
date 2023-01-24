@@ -27,6 +27,8 @@ namespace VT
 		virtual void destroyLevel(ILevel* level) override;
 		virtual ILevel* getLevel(LevelID levelID) override;
 
+		virtual void setCurrentLevel(LevelID levelID) override;
+		virtual void setCurrentLevel(ILevel* level) override;
 		virtual ILevel* getCurrentLevel() override;
 	};
 }

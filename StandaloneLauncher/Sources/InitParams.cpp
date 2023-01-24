@@ -40,3 +40,8 @@ void VT_Launcher::getResourceSystemPluginPath(VT::FileName& outPath)
 {
 	preparePluginPath("DummyResourceSystemPlugin", outPath);
 }
+
+void VT_Launcher::getResourceSystemPath(VT::FileName& outPath)
+{
+	outPath = VT::FileName(VT_ROOT_PATH) + "DemoProjects/Assets";
+}

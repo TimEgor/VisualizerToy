@@ -71,18 +71,22 @@ macro(vt_link_module CURRENT_TARGET_NAME LINK_MODIFIER MODULE_NAME)
 	target_link_libraries(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME})
 endmacro()
 
+### vt_add_module_internal
+function(vt_add_module_internal CURRENT_TARGET_NAME LINK_MODIFIER MODULE MODULE_PATH BINARY_DIR)
+	add_subdirectory(${MODULE_PATH} ${BINARY_DIR}/${MODULE})
+	vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE})
+endfunction()
+
 ### vt_add_module
 function(vt_add_module CURRENT_TARGET_NAME LINK_MODIFIER MODULE MODULE_PATH BINARY_DIR)
 	message(">>> adding module: ${MODULE}")
-	add_subdirectory(${MODULE_PATH}/${MODULE} ${BINARY_DIR}/${MODULE})
-	vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE})
+	vt_add_module_internal(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE} ${MODULE_PATH}/${MODULE} ${BINARY_DIR})
 endfunction()
 
 ### vt_add_module_by_path
 function(vt_add_module_by_path CURRENT_TARGET_NAME LINK_MODIFIER MODULE_NAME MODULE_PATH BINARY_DIR)
 	message(">>> adding module: ${MODULE_NAME} (${MODULE_PATH})")
-	add_subdirectory(${MODULE_PATH} ${BINARY_DIR}/${MODULE_NAME})
-	vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME})
+	vt_add_module_internal(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME} ${MODULE_PATH} ${BINARY_DIR})
 endfunction()
 
 ### vt_add_modules
@@ -109,9 +113,7 @@ function(vt_add_modules_by_path CURRENT_TARGET_NAME LINK_MODIFIER MODULES_SET MO
 
 	array2d_begin_loop( advanced "${MODULES_SET}" 2 "MODULE_NAME;MODULE_PATH" )
 	while( advanced )
-		message(">>> adding module: ${MODULE_NAME} (${MODULE_PATH})")
-		add_subdirectory(${MODULES_PATH}/${MODULE_PATH} ${BINARY_DIR}/${MODULE_NAME})
-		vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME})
+		vt_add_module_by_path(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME} ${MODULES_PATH}/${MODULE_PATH} ${BINARY_DIR})
 		array2d_advance()
 	endwhile()
 endfunction()

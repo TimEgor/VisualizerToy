@@ -12,6 +12,8 @@ namespace VT
 		FileName m_graphicDevicePluginPath;
 		FileName m_resourceSystenPluginPath;
 
+		FileName m_resourceSystemPath;
+
 		FileName* m_converterPaths = nullptr;
 		uint32_t m_converterPathsCount = 0;
 
@@ -36,6 +38,8 @@ namespace VT
 
 		virtual void pauseRendering(bool state) = 0;
 		virtual bool isRenderingPaused() const = 0;
+
+		virtual float getDeltaTime() const = 0;
 
 		virtual EngineEnvironment* getEnvironment() = 0;
 	};

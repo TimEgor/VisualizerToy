@@ -38,7 +38,7 @@ namespace VT_DUMMY_RS
 		ResourceLoader() = default;
 		~ResourceLoader() { release(); }
 
-		bool init(DummyResourceSystem* resourceSystem);
+		bool init(DummyResourceSystem* resourceSystem, const VT::FileName& path);
 		void release();
 
 		void loadResource(const VT::FileName& name, Request request);

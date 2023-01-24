@@ -12,12 +12,13 @@
 
 constexpr char* ConvertedResourceDir = "CONVERTED/";
 
-bool VT_DUMMY_RS::ResourceLoader::init(DummyResourceSystem* resourceSystem)
+bool VT_DUMMY_RS::ResourceLoader::init(DummyResourceSystem* resourceSystem, const VT::FileName& path)
 {
 	m_resourceSystem = resourceSystem;
-	m_fileSystem = new VT::NativeFileSystem();
+	VT_CHECK_INITIALIZATION(m_resourceSystem);
 
-	VT_CHECK_INITIALIZATION(m_resourceSystem && m_fileSystem);
+	m_fileSystem = new VT::NativeFileSystem();
+	VT_CHECK_INITIALIZATION(m_fileSystem && m_fileSystem->init(path));
 
 	return true;
 }

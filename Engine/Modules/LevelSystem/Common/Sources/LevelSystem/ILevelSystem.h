@@ -17,6 +17,8 @@ namespace VT
 		virtual void destroyLevel(ILevel* level) = 0;
 		virtual ILevel* getLevel(LevelID levelID) = 0;
 
+		virtual void setCurrentLevel(LevelID levelID) = 0;
+		virtual void setCurrentLevel(ILevel* level) = 0;
 		virtual ILevel* getCurrentLevel() = 0;
 	};
 }

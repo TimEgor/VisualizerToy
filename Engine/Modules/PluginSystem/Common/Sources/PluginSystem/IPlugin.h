@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Platform.h"
+
 #include <cstdint>
 
 namespace VT

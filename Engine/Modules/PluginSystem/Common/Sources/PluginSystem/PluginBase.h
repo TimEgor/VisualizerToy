@@ -14,7 +14,7 @@ namespace VT
 		PluginBase(PluginID id, VT_PLATFORM_HANDLE_MODULE nativeHandle)
 			: m_handle(nativeHandle), m_id(id) {}
 
-		virtual PluginID getID() const override { return m_id; };
+		virtual PluginID getID() const override { return m_id; }
 		virtual VT_PLATFORM_HANDLE_MODULE getNativeHandle() const override { return m_handle; }
 	};
 }

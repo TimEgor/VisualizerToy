@@ -24,7 +24,7 @@ namespace VT
 		virtual bool init() override;
 		virtual void release() override;
 
-		virtual bool loadPlugin(const FileName& name) override;
+		virtual IPlugin* loadPlugin(const FileName& name) override;
 		virtual void unloadPlugin(const FileName& name) override;
 		virtual void unloadPlugin(PluginID id) override;
 

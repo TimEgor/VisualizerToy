@@ -1,5 +1,6 @@
 #include "Engine.h"
 
+#include "GameSystem/GameSystem.h"
 #include "LevelSystem/LevelSystem.h"
 
 #include "Core/UtilitiesMacros.h"
@@ -35,7 +36,7 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 
 	assert(initParam.m_resourceSystenPluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_resourceSystenPluginPath);
-	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_resourceSystem && m_engineEnvironment->m_resourceSystem->init());
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_resourceSystem && m_engineEnvironment->m_resourceSystem->init(initParam.m_resourceSystemPath));
 
 	m_engineEnvironment->m_windowSystem = new WindowSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem
@@ -67,6 +68,12 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_renderSystem
 		&& m_engineEnvironment->m_renderSystem->init());
 
+	// Game systems
+
+	m_engineEnvironment->m_gameSystem = new GameSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_gameSystem
+		&& m_engineEnvironment->m_gameSystem->init());
+
 	m_engineEnvironment->m_levelSystem = new LevelSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_levelSystem
 		&& m_engineEnvironment->m_levelSystem->init());
@@ -79,6 +86,7 @@ void VT::Engine::release()
 	if (m_engineEnvironment)
 	{
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_levelSystem);
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_gameSystem);
 
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_renderSystem);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_meshSystem);
@@ -99,6 +107,12 @@ void VT::Engine::updateFrame()
 
 	assert(m_engineEnvironment->m_windowSystem);
 	m_engineEnvironment->m_windowSystem->updateWindowEvents();
+
+	ClockTimePoint currentTime = Clock::getCurrentTime();
+	m_deltaTime = Clock::calkTimePointDelta(currentTime, m_lastFrameStartTime);
+
+	assert(m_engineEnvironment->m_gameSystem);
+	m_engineEnvironment->m_gameSystem->update(m_deltaTime);
 }
 
 void VT::Engine::startTimer()

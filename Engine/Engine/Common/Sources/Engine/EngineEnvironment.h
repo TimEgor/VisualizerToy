@@ -16,6 +16,7 @@ namespace VT
 
 	class IResourceSystem;
 
+	class IGameSystem;
 	class ILevelSystem;
 
 	struct EngineEnvironment final
@@ -34,6 +35,7 @@ namespace VT
 
 		IResourceSystem* m_resourceSystem = nullptr;
 
+		IGameSystem* m_gameSystem = nullptr;
 		ILevelSystem* m_levelSystem = nullptr;
 	};
 }

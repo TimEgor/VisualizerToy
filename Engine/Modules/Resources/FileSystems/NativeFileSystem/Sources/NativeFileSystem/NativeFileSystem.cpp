@@ -111,7 +111,7 @@ namespace VT
 		FileName targetResourceName;
 		prepareTargetName(resourceName, targetResourceName);
 
-		const FileName parentPath = FileNameUtils::getFileDirPath(resourceName);
+		const FileName parentPath = FileNameUtils::getFileDirPath(targetResourceName);
 		if (!existInternal(parentPath))
 		{
 			createDirectoryInternal(parentPath);

@@ -18,7 +18,7 @@ void VT::PluginSystem::release()
 	VT_SAFE_DESTROY(m_loader);
 }
 
-bool VT::PluginSystem::loadPlugin(const FileName& name)
+VT::IPlugin* VT::PluginSystem::loadPlugin(const FileName& name)
 {
 	assert(m_loader);
 

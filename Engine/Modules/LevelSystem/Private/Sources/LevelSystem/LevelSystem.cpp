@@ -27,6 +27,16 @@ VT::ILevel* VT::LevelSystem::getLevel(LevelID levelID)
 	return m_levelPool.getElement(levelID);
 }
 
+void VT::LevelSystem::setCurrentLevel(LevelID levelID)
+{
+	m_currentLevelID = levelID;
+}
+
+void VT::LevelSystem::setCurrentLevel(ILevel* level)
+{
+	setCurrentLevel(level->getID());
+}
+
 VT::ILevel* VT::LevelSystem::getCurrentLevel()
 {
 	return m_levelPool.getElement(m_currentLevelID);

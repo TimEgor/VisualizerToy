@@ -1,8 +1,7 @@
-#include "LevelSystem/ILevelSystem.h"
-
 #include "Core/Platform.h"
 
 #include "InitParams.h"
+
 #include "Engine/Engine.h"
 #include "Engine/EngineInstance.h"
 #include "Engine/EngineEnvironment.h"
@@ -17,14 +16,14 @@
 #include "RenderSystem/IRenderSystem.h"
 #include "ResourceSystem/IResourceSystem.h"
 
-#include <vector>
-
 #include "GraphicDevice/IGraphicDevice.h"
 #include "MeshSystem/MeshSystem.h"
-#include "MeshSystem/MeshComponent.h"
-#include "Scene/IScene.h"
-#include "Scene/Node.h"
-#include "Scene/SceneNodeIDComponent.h"
+
+#include "LevelSystem/ILevelSystem.h"
+
+#include <vector>
+
+#include "GameSystem/IGameSystem.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -38,6 +37,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		VT_Launcher::getPlatformPluginPath(initParams.m_platformPluginPath);
 		VT_Launcher::getGraphicsPluginPath(initParams.m_graphicDevicePluginPath);
 		VT_Launcher::getResourceSystemPluginPath(initParams.m_resourceSystenPluginPath);
+
+		VT_Launcher::getResourceSystemPath(initParams.m_resourceSystemPath);
 
 		std::vector<VT::FileName> converters;
 
@@ -69,25 +70,21 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return VT_LAUNCHER_WINDOW_PRESENTER_INIT_ERROR;
 	}
 
+	VT::EngineEnvironment* engineEnvironment = engineInst->getEnvironment();
+	engineEnvironment->m_gameSystem->loadGameModule(
+		VT::FileName(VT_ROOT_PATH) + "DemoProjects/Test/Out/Win32/VT_DemoTest_Debug_Win32" + VT::FileName(VT_DYNAMIC_LIB_EXT_NAME));
+
 	{
-		VT::IRenderSystem* renderSystem = engineInst->getEnvironment()->m_renderSystem;
-
-		VT::ILevel* level = engineInst->getEnvironment()->m_levelSystem->createLevel();
-		level->init();
-		VT::VT_Entity testEntity = level->createEntity();
-		level->getEntityComponentSystem()->addComponent<VT::MeshComponent>(testEntity,
-			engineInst->getEnvironment()->m_meshSystem->loadMesh("Cube.mesh"));
-		VT::NodeID testNodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(testEntity).getNodeID();
-		VT::NodeTransforms* transforms = level->getScene()->getNodeTransforms(testNodeID);
-		transforms->m_globalTransform.m_41 = 2.0f;
-
-		renderSystem->collectRenderingData(*level);
+		VT::IRenderSystem* renderSystem = engineEnvironment->m_renderSystem;
+		VT::ILevelSystem* levelSystem = engineEnvironment->m_levelSystem;
 
 		engine->startTimer();
 
 		while (!engine->isStoped())
 		{
 			engine->updateFrame();
+
+			renderSystem->collectRenderingData(*levelSystem->getCurrentLevel());
 
 			renderSystem->waitFrame();
 
