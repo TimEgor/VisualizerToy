@@ -29,10 +29,8 @@ VT::IPlugin* VT::PluginLoaderWin32::load(const FileName& name, VT::PluginID id)
 {
 	FileName dirPath;
 	FileNameUtils::getFileDirPath(name, dirPath);
-	if (!dirPath.empty())
-	{
-		SetDllDirectory(dirPath.c_str());
-	}
+	
+	SetDllDirectory(dirPath.c_str());
 
 	VT_PLATFORM_HANDLE_MODULE nativeHandle = LoadLibrary(name.c_str());
 	if (nativeHandle == nullptr)
