@@ -2,10 +2,10 @@
 
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "ObjectPool/ThreadSafeObjectPool.h"
-#include "ManagedResourceHandles.h"
 #include "NamedReferencePool/NamedObjectPoolHandle.h"
 #include "InputLayoutCollection.h"
 #include "NativeHandleHashPoolCollection.h"
+#include "ManagedObjectHandles/ManagedResourceHandles.h"
 
 namespace VT
 {
@@ -17,11 +17,11 @@ namespace VT
 
 		friend ManagedTexture2DResourceHandle;
 
-		friend ManagedVertexShaderResourceHandle;
-		friend ManagedPixelShaderResourceHandle;
+		friend ManagedVertexShaderGraphicObjectHandle;
+		friend ManagedPixelShaderGraphicObjectHandle;
 
-		friend ManagedPipelineStateResourceHandle;
-		friend ManagedPipelineBindingLayoutResourceHandle;
+		friend ManagedPipelineStateGraphicObjectHandle;
+		friend ManagedPipelineBindingLayoutGraphicObjectHandle;
 
 		friend class ManagedInputLayoutHandle;
 
@@ -29,12 +29,12 @@ namespace VT
 
 		using Texture2DPool = ThreadSafeObjectPool<ManagedTexture2DResourceHandle, NamedObjectPoolHandle32>;
 
-		using VertexShaderPool = ThreadSafeObjectPool<ManagedVertexShaderResourceHandle, NamedObjectPoolHandle32>;
-		using PixelShaderPool = ThreadSafeObjectPool<ManagedPixelShaderResourceHandle, NamedObjectPoolHandle32>;
+		using VertexShaderPool = ThreadSafeObjectPool<ManagedVertexShaderGraphicObjectHandle, NamedObjectPoolHandle32>;
+		using PixelShaderPool = ThreadSafeObjectPool<ManagedPixelShaderGraphicObjectHandle, NamedObjectPoolHandle32>;
 
-		using PipelineStateCollection = NativeHandleHashPoolCollection<ManagedPipelineStateResourceHandle,
+		using PipelineStateCollection = NativeHandleHashPoolCollection<ManagedPipelineStateGraphicObjectHandle,
 			PipelineStateReference, PipelineStateConstReference, PipelineStateHash, ObjectPoolHandle16>;
-		using PipelineBindingLayoutCollection = NativeHandleHashPoolCollection<ManagedPipelineBindingLayoutResourceHandle,
+		using PipelineBindingLayoutCollection = NativeHandleHashPoolCollection<ManagedPipelineBindingLayoutGraphicObjectHandle,
 			PipelineBindingLayoutReference, PipelineBindingLayoutConstReference, PipelineBindingLayoutHash, ObjectPoolHandle16>;
 
 	private:
@@ -48,6 +48,7 @@ namespace VT
 		PipelineStateCollection m_pipelineStateCollection;
 		PipelineBindingLayoutCollection m_pipelineBindingLayoutCollection;
 		InputLayoutCollection m_inputLayoutCollection;
+
 
 		//Resource deleting
 		void deleteGPUBufferInternal(IGPUBuffer* buffer);
@@ -63,7 +64,7 @@ namespace VT
 		//Reference deleting
 		void deleteGPUBufferReference(GPUBufferHandleID handleID);
 
-		void deleteTexture2DReference(Texture2DHandleID handleID);
+		void deleteTexture2DReference(TextureHandleID handleID);
 
 		void deleteVertexShaderReference(VertexShaderHandleID handleID);
 		void deletePixelShaderReference(PixelShaderHandleID handleID);
@@ -84,8 +85,9 @@ namespace VT
 
 		//Texture
 		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) override;
-		virtual Texture2DReference getTexture2D(Texture2DHandleID handle) override;
-		virtual bool isValidTexture2D(Texture2DHandleID handle) const override;
+		virtual Texture2DReference getTexture2D(TextureHandleID handle) override;
+		virtual bool isValidTexture2D(TextureHandleID handle) const override;
+
 
 		// Vertex Shader
 		virtual VertexShaderReference createVertexShader(const void* code, size_t codeSize) override;

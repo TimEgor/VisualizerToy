@@ -71,11 +71,11 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 					return nullptr;
 				}
 
-				shaderAccessor.m_element.getObjectCast<ManagedVertexShaderResourceHandle>()->setResource(shader);
+				shaderAccessor.m_element.getObjectCast<ManagedVertexShaderGraphicObjectHandle>()->setHandleObject(shader);
 			}
 		}
 
-		if (!shaderAccessor.m_element->getResource())
+		if (!shaderAccessor.m_element->getTypedObject())
 		{
 			deleteVertexShaderReference(nameID);
 			return nullptr;
@@ -113,7 +113,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShaderAsync(
 					if (data && dataSize > 0)
 					{
 						IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
-						shaderHandleReference.getObjectCast<ManagedVertexShaderResourceHandle>()->setResource(shader);
+						shaderHandleReference.getObjectCast<ManagedVertexShaderGraphicObjectHandle>()->setHandleObject(shader);
 					}
 				}
 

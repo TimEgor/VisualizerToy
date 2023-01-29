@@ -33,5 +33,7 @@ namespace VT_D3D12
 		D3D12_GPU_DESCRIPTOR_HANDLE getGPUHandle(VT::DescriptorBindingHeapOffsetType offset) const;
 
 		D3D12DescriptorHeapComPtr getD3D12DescriptorHeap() const { return m_d3d12Heap; }
+
+		virtual void* getNativeHandle() const override { return getD3D12DescriptorHeap().Get(); }
 	};
 }

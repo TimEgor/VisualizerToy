@@ -26,6 +26,8 @@ namespace VT_D3D12
 	public:
 		D3D12VertexShader(CodeBlobComPtr codeBlob)
 			: D3D12ShaderBase(codeBlob) {}
+
+		virtual void* getNativeHandle() const override { return getDXCShaderCodeBlob().Get(); }
 	};
 
 	class D3D12PixelShader final : public VT::ManagedGraphicDevice::ManagedPixelShaderBase, public D3D12ShaderBase
@@ -33,5 +35,7 @@ namespace VT_D3D12
 	public:
 		D3D12PixelShader(CodeBlobComPtr codeBlob)
 			: D3D12ShaderBase(codeBlob) {}
+
+		virtual void* getNativeHandle() const override { return getDXCShaderCodeBlob().Get(); }
 	};
 }

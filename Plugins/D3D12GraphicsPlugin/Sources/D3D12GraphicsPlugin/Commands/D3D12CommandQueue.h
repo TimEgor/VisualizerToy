@@ -15,5 +15,7 @@ namespace VT_D3D12
 			: m_d3d12Queue(d3d12CommandQueue) {}
 
 		D3D12CommandQueueComPtr getD3D12CommandQueue() const { return m_d3d12Queue; }
+
+		virtual void* getNativeHandle() const override { return getD3D12CommandQueue().Get(); }
 	};
 }

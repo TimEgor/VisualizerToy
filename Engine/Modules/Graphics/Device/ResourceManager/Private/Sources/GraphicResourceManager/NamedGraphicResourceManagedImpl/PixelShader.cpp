@@ -71,12 +71,12 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const F
 					return nullptr;
 				}
 
-				shaderAccessor.m_element.getObjectCast<ManagedPixelShaderResourceHandle>()->setResource(shader);
+				shaderAccessor.m_element.getObjectCast<ManagedPixelShaderGraphicObjectHandle>()->setHandleObject(shader);
 			}
 		}
 
 
-		if (!shaderAccessor.m_element->getResource())
+		if (!shaderAccessor.m_element->getTypedObject())
 		{
 			deletePixelShaderReference(nameID);
 			return nullptr;
@@ -114,7 +114,7 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShaderAsync(
 					if (data && dataSize > 0)
 					{
 						IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
-						shaderHandleReference.getObjectCast<ManagedPixelShaderResourceHandle>()->setResource(shader);
+						shaderHandleReference.getObjectCast<ManagedPixelShaderGraphicObjectHandle>()->setHandleObject(shader);
 					}
 				}
 

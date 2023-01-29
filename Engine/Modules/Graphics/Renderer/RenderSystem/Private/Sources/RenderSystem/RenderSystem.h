@@ -2,7 +2,7 @@
 
 #include "RenderSystem/IRenderSystem.h"
 #include "GraphicSynchronization/IFence.h"
-#include "GraphicResourceManager/ResourceHandles.h"
+#include "GraphicResourceManager/ObjectHandles.h"
 #include "MeshSystem/MeshHandle.h"
 #include "RenderingData.h"
 

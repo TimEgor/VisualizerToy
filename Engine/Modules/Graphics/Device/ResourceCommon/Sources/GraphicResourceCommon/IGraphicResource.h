@@ -1,22 +1,17 @@
 #pragma once
 
 #include "Core/TypeHashMacros.h"
+#include "GraphicObject/IGraphicObject.h"
 
 namespace VT
 {
 	using GraphicResourceType = HashTyped::Type;
 	using GraphicResourceTypeHash = uint32_t;
 
-	class IGraphicResource : public HashTyped
+	class IGraphicResource : public IGraphicObject, public HashTyped
 	{
 	public:
 		IGraphicResource() = default;
-		virtual ~IGraphicResource() = default;
-
-		virtual void* getNativeHandle() const = 0;
-
-		template<typename T>
-		T* getNativeHandleCast() const { return reinterpret_cast<T*>(getNativeHandle()); }
 
 		virtual GraphicResourceType getType() const = 0;
 	};

@@ -12,9 +12,9 @@ VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const Pi
 	PipelineStateHash id = desc.getHash();
 
 	IPipelineBindingLayout* nativeBindingLayout = nullptr;
-	if (bindingLayout && bindingLayout->getResource())
+	if (bindingLayout && bindingLayout->getTypedObject())
 	{
-		nativeBindingLayout = bindingLayout->getResource();
+		nativeBindingLayout = bindingLayout->getTypedObject();
 		hashCombine(id, nativeBindingLayout->getHash());
 	}
 
@@ -28,7 +28,7 @@ VT::PipelineStateReference VT::GraphicResourceManager::getPipelineState(const Pi
 	{
 		const InputLayoutDesc* inputlayoutDesc = inputLayout ? &inputLayout->getDesc() : nullptr;
 		IPipelineState* state = getGraphicDevice()->createPipelineState(desc, nativeBindingLayout, inputlayoutDesc);
-		accessInfo.m_handle.getObjectCast<ManagedPipelineStateResourceHandle>()->setResource(state);
+		accessInfo.m_handle.getObjectCast<ManagedPipelineStateGraphicObjectHandle>()->setHandleObject(state);
 	}
 
 	return accessInfo.m_handle;
@@ -49,7 +49,7 @@ VT::PipelineBindingLayoutReference VT::GraphicResourceManager::getPipelineBindin
 	if (accessInfo.m_isNew)
 	{
 		IPipelineBindingLayout* state = getGraphicDevice()->createPipelineBindingLayout(desc);
-		accessInfo.m_handle.getObjectCast<ManagedPipelineBindingLayoutResourceHandle>()->setResource(state);
+		accessInfo.m_handle.getObjectCast<ManagedPipelineBindingLayoutGraphicObjectHandle>()->setHandleObject(state);
 	}
 
 	return accessInfo.m_handle;

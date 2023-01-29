@@ -19,5 +19,7 @@ namespace VT_D3D12
 		D3D12RootSignatureComPtr getD3D12RootSignature() const { return m_d3d12RootSignature; }
 
 		virtual VT::PipelineBindingLayoutHash getHash() const override { return m_hash; }
+
+		virtual void* getNativeHandle() const override { return getD3D12RootSignature().Get(); }
 	};
 }

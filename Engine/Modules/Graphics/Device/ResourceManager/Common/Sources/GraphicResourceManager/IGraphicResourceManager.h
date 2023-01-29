@@ -2,7 +2,8 @@
 
 #include <functional>
 
-#include "ResourceHandles.h"
+#include "Core/FileName/FileName.h"
+#include "ObjectHandles.h"
 #include "InputLayoutHandle.h"
 
 class IRenderPass;
@@ -17,6 +18,9 @@ namespace VT
 	struct Texture2DDesc;
 	struct PipelineStateInfo;
 	struct PipelineBindingLayoutDesc;
+
+	using GraphicResourceName = FileName;
+	using GraphicResourceNameID = FileNameID;
 
 	class IGraphicResourceManager
 	{
@@ -38,8 +42,8 @@ namespace VT
 
 		//Texture2D
 		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) = 0;
-		virtual Texture2DReference getTexture2D(Texture2DHandleID handle) = 0;
-		virtual bool isValidTexture2D(Texture2DHandleID handle) const = 0;
+		virtual Texture2DReference getTexture2D(TextureHandleID handle) = 0;
+		virtual bool isValidTexture2D(TextureHandleID handle) const = 0;
 
 		//Vertex shader
 		virtual VertexShaderReference createVertexShader(const void* data, size_t dataSize) = 0;

@@ -1,14 +1,15 @@
 #pragma once
 
+#include "GraphicObject/IGraphicObject.h"
+
 namespace VT
 {
 	class ICommandList;
 
-	class ICommandQueue
+	class ICommandQueue : public IGraphicObject
 	{
 	public:
 		ICommandQueue() = default;
-		virtual ~ICommandQueue() {}
 
 		virtual void submitCommandList(ICommandList* commandList) = 0;
 	};

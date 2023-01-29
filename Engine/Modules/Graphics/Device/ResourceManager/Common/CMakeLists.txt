@@ -11,4 +11,8 @@ target_link_libraries(GraphicResourceManager_COMMON
 	INTERFACE
 		Multithreading
 		InputLayout
+		Textures
+		GPUBuffer
+		Shaders
+		GraphicPipeline
 )

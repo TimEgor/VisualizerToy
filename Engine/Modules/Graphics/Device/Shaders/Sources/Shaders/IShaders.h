@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GraphicObject/IGraphicObject.h"
+
 namespace VT
 {
 	enum class ShaderStageType
@@ -8,7 +10,7 @@ namespace VT
 		Pixel
 	};
 
-	class IShader
+	class IShader : public IGraphicObject
 	{
 	public:
 		IShader() = default;

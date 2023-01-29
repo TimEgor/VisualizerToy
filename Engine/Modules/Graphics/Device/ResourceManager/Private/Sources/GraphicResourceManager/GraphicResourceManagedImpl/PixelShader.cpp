@@ -21,8 +21,8 @@ VT::PixelShaderReference VT::GraphicResourceManager::createPixelShader(const voi
 	}
 
 	PixelShaderPool::NewElementInfo elementInfo = m_pixelShaders.addElementRaw();
-	ManagedPixelShaderResourceHandle* shaderHandle
-		= new (elementInfo.m_elementPtr) ManagedPixelShaderResourceHandle(shader, elementInfo.m_elementHandle.getKey());
+	ManagedPixelShaderGraphicObjectHandle* shaderHandle
+		= new (elementInfo.m_elementPtr) ManagedPixelShaderGraphicObjectHandle(shader, elementInfo.m_elementHandle.getKey());
 
 	return shaderHandle;
 }

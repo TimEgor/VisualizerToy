@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IGraphicResourceDescriptor.h"
+#include "GraphicObject/IGraphicObject.h"
 
 namespace VT
 {
@@ -11,7 +12,7 @@ namespace VT
 		bool m_isShaderVisible = true;
 	};
 
-	class IGraphicResourceDescriptorHeap
+	class IGraphicResourceDescriptorHeap : public IGraphicObject
 	{
 	public:
 		IGraphicResourceDescriptorHeap() = default;

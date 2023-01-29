@@ -7,7 +7,7 @@ include(${VT_ROOT_PATH}/CMake/Module.cmake)
 
 vt_add_module_target(GraphicCommandResources INTERFACE "VT_Engine/Graphics/Device")
 
-#target_link_libraries(GraphicCommandResources
-#	INTERFACE
-#		Core
-#)
+target_link_libraries(GraphicCommandResources
+	INTERFACE
+		GraphicObject
+)

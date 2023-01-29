@@ -32,5 +32,7 @@ namespace VT_D3D12
 		virtual void present() override;
 
 		DXGISwapChainComPtr getDXGISwapChain() const { return m_dxgiSwapChain; }
+
+		virtual void* getNativeHandle() const override { return getDXGISwapChain().Get(); }
 	};
 }

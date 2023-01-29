@@ -19,8 +19,8 @@ VT::VertexShaderReference VT::GraphicResourceManager::createVertexShader(const v
 	}
 
 	VertexShaderPool::NewElementInfo elementInfo = m_vertexShaders.addElementRaw();
-	ManagedVertexShaderResourceHandle* shaderHandle
-		= new (elementInfo.m_elementPtr) ManagedVertexShaderResourceHandle(shader, elementInfo.m_elementHandle.getKey());
+	ManagedVertexShaderGraphicObjectHandle* shaderHandle
+		= new (elementInfo.m_elementPtr) ManagedVertexShaderGraphicObjectHandle(shader, elementInfo.m_elementHandle.getKey());
 
 	return shaderHandle;
 }

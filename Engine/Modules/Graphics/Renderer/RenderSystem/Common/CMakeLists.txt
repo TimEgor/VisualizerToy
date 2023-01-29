@@ -9,6 +9,6 @@ vt_add_common_module_target(RenderSystem INTERFACE "VT_Engine/Graphics/Renderer/
 
 target_link_libraries(RenderSystem_COMMON
 	INTERFACE
+		GraphicResourceManager_COMMON
 		GraphicCommandResources
-		Textures
 )

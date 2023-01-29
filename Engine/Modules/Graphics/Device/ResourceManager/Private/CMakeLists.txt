@@ -18,6 +18,5 @@ target_link_libraries(GraphicResourceManager
 		GraphicDevice
 
 		ShaderConverter
-		GraphicPipeline
 		InputLayout
 )

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicResourceCommon/Format.h"
+#include "GraphicObject/IGraphicObject.h"
 
 namespace VT
 {
@@ -12,7 +13,7 @@ namespace VT
 
 	class ITexture2D;
 
-	class ISwapChain
+	class ISwapChain : public IGraphicObject
 	{
 	public:
 		ISwapChain() = default;

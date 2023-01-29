@@ -7,12 +7,12 @@ namespace VT
 {
 	class NamedGraphicResourceSystem final : public GraphicResourceManager
 	{
-		friend NamedManagedVertexShaderResourceHandle;
-		friend NamedManagedPixelShaderResourceHandle;
+		friend NamedManagedVertexShaderGraphicObjectHandle;
+		friend NamedManagedPixelShaderGraphicObjectHandle;
 
-		using NamedVertexShaderPool = NamedObjectPool<NamedManagedVertexShaderResourceHandle,
+		using NamedVertexShaderPool = NamedObjectPool<NamedManagedVertexShaderGraphicObjectHandle,
 		VertexShaderReference, NamedObjectPoolHandle32>;
-		using NamedPixelShaderPool = NamedObjectPool<NamedManagedPixelShaderResourceHandle,
+		using NamedPixelShaderPool = NamedObjectPool<NamedManagedPixelShaderGraphicObjectHandle,
 		PixelShaderReference, NamedObjectPoolHandle32>;
 
 	private:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/HashFunctions/StdHashCombine.h"
+#include "GraphicObject/IGraphicObject.h"
 
 #include <cstdint>
 #include <vector>
@@ -63,7 +64,7 @@ namespace VT
 		}
 	};
 
-	class IPipelineBindingLayout
+	class IPipelineBindingLayout : public IGraphicObject
 	{
 	public:
 		IPipelineBindingLayout() = default;

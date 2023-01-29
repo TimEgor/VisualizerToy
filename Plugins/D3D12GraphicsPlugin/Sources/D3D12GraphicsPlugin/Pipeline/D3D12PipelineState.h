@@ -23,5 +23,7 @@ namespace VT_D3D12
 
 		virtual VT::PipelineStateHash getHash() const override { return m_hash; }
 		virtual VT::PipelineBindingLayoutHash getBindingLayoutHash() const override { return m_bindingLayoutHash; }
+
+		virtual void* getNativeHandle() const override { return getD3D12Pipeline().Get(); }
 	};
 }

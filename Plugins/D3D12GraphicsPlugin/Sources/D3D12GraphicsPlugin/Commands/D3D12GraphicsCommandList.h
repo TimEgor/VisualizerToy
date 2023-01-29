@@ -20,5 +20,7 @@ namespace VT_D3D12
 
 		D3D12GraphicsCommandListComPtr getD3D12CommandList() const { return m_d3d12CommandList; }
 		D3D12CommandAllocatorComPtr getD3D12CommandAllocator() const { return m_d3d12CommandAllocator; }
+
+		virtual void* getNativeHandle() const override { return getD3D12CommandList().Get(); }
 	};
 }

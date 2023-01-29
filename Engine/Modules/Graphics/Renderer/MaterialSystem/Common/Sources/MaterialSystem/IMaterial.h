@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GraphicResourceManager/ResourceHandles.h"
+#include "GraphicResourceManager/ObjectHandles.h"
 
 namespace VT
 {

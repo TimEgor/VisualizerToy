@@ -35,7 +35,7 @@ namespace VT
 		}
 	};
 
-	class IPipelineState
+	class IPipelineState : public IGraphicObject
 	{
 	public:
 		IPipelineState() = default;

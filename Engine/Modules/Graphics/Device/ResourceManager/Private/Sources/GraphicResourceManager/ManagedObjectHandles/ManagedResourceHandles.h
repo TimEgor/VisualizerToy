@@ -1,0 +1,20 @@
+#pragma once
+
+#include "ManagedResourceHandleDeclartion.h"
+#include "GraphicResourceManager/ObjectHandles.h"
+
+namespace VT
+{
+	MANAGED_GRAPHIC_RESOURCE(GPUBufferResourceHandle)
+
+	MANAGED_GRAPHIC_RESOURCE(Texture2DResourceHandle)
+
+	MANAGED_GRAPHIC_RESOURCE(VertexShaderGraphicObjectHandle)
+	MANAGED_GRAPHIC_RESOURCE(PixelShaderGraphicObjectHandle)
+
+	MANAGED_GRAPHIC_RESOURCE(PipelineStateGraphicObjectHandle)
+	MANAGED_GRAPHIC_RESOURCE(PipelineBindingLayoutGraphicObjectHandle)
+
+	NAMED_MANAGED_GRAPHIC_RESOURCE(VertexShaderGraphicObjectHandle)
+	NAMED_MANAGED_GRAPHIC_RESOURCE(PixelShaderGraphicObjectHandle)
+}
