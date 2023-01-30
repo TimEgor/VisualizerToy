@@ -28,9 +28,9 @@ namespace VT
 	{
 		GPUBufferReference m_cameraTransformBuffer; // Global camera transforms
 		GPUBufferReference m_perObjectTransformBuffer;
-		IGraphicResourceDescriptor* m_cameraTransformCBV = nullptr;
-		IGraphicResourceDescriptor* m_perObjectTransformCBV = nullptr;
-		PipelineBindingLayoutReference m_bindingLayout = nullptr;
+		ShaderResourceViewReference m_cameraTransformCBV;
+		ShaderResourceViewReference m_perObjectTransformSRV;
+		PipelineBindingLayoutReference m_bindingLayout;
 	};
 
 	class RenderSystem final : public IRenderSystem

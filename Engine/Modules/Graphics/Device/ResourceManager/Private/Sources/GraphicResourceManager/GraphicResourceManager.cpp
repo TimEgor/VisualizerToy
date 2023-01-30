@@ -2,6 +2,8 @@
 
 bool VT::GraphicResourceManager::init()
 {
+	VT_CHECK_INITIALIZATION(m_shaderResourceViews.init(512, 1, 256))
+
 	VT_CHECK_INITIALIZATION(m_buffers.init(256, 1, 128))
 
 	VT_CHECK_INITIALIZATION(m_textures2D.init(256, 1, 64))
@@ -19,6 +21,8 @@ bool VT::GraphicResourceManager::init()
 
 void VT::GraphicResourceManager::release()
 {
+	m_shaderResourceViews.release();
+
 	m_buffers.release();
 
 	m_textures2D.release();

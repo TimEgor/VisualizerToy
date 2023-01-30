@@ -4,26 +4,26 @@
 
 namespace VT
 {
-	template <typename BaseType>
-	class ManagedGraphicResourceHandle : public BaseType
+	template <typename BaseHandleType>
+	class ManagedGraphicObjectHandle : public BaseHandleType
 	{
 	public:
-		using ResourceHandleBaseType = BaseType;
+		using ResourceHandleBaseType = BaseHandleType;
 
 	private:
 		virtual void selfDestroy() override;
 
 	public:
-		ManagedGraphicResourceHandle() = default;
-		ManagedGraphicResourceHandle(typename BaseType::HandleObjectType* object, typename BaseType::HandleID handleID)
-			: BaseType(object, handleID) {}
-		~ManagedGraphicResourceHandle();
+		ManagedGraphicObjectHandle() = default;
+		ManagedGraphicObjectHandle(typename BaseHandleType::HandleObjectType* object, typename BaseHandleType::HandleID handleID)
+			: BaseHandleType(object, handleID) {}
+		~ManagedGraphicObjectHandle();
 
-		void setHandleObject(typename BaseType::HandleObjectType* object) { m_objectPtr = object; }
+		void setHandleObject(typename BaseHandleType::HandleObjectType* object) { m_objectPtr = object; }
 	};
 
-	template <typename ManagedBaseType>
-	class NamedManagedGraphicResourceHandle final : public ManagedBaseType
+	template <typename ManagedBaseHandleType>
+	class NamedManagedGraphicObjectHandle final : public ManagedBaseHandleType
 	{
 	private:
 		FileNameID m_nameID;
@@ -31,18 +31,38 @@ namespace VT
 		virtual void selfDestroy() override;
 
 	public:
-		NamedManagedGraphicResourceHandle() = default;
-		NamedManagedGraphicResourceHandle(typename ManagedBaseType::ResourceHandleBaseType::HandleObjectType* object,
-			typename ManagedBaseType::ResourceHandleBaseType::HandleID handleID, FileNameID nameID)
-			: ManagedBaseType(object, handleID), m_nameID(nameID) {}
-		~NamedManagedGraphicResourceHandle() {}
+		NamedManagedGraphicObjectHandle() = default;
+		NamedManagedGraphicObjectHandle(typename ManagedBaseHandleType::ResourceHandleBaseType::HandleObjectType* object,
+			typename ManagedBaseHandleType::ResourceHandleBaseType::HandleID handleID, FileNameID nameID)
+			: ManagedBaseHandleType(object, handleID), m_nameID(nameID) {}
+		~NamedManagedGraphicObjectHandle() {}
 
 		FileNameID getNameID() const { return m_nameID; }
 	};
 
-#define MANAGED_GRAPHIC_RESOURCE(BASE_TYPE)			\
-	using Managed##BASE_TYPE = ManagedGraphicResourceHandle<BASE_TYPE>;
+	template <typename BaseViewHandleType>
+	class ManagedGraphicResourceViewHandle : public BaseViewHandleType
+	{
+	public:
+		using ResourceViewHandleBaseType = BaseViewHandleType;
 
-#define NAMED_MANAGED_GRAPHIC_RESOURCE(BASE_TYPE)	\
-	using NamedManaged##BASE_TYPE = NamedManagedGraphicResourceHandle<ManagedGraphicResourceHandle<BASE_TYPE>>;
+	private:
+		virtual void selfDestroy() override;
+
+	public:
+		ManagedGraphicResourceViewHandle() = default;
+		ManagedGraphicResourceViewHandle(IGraphicResourceDescriptor* descriptor, typename BaseViewHandleType::ViewHandleID viewHandleID,
+			GraphicResourceHandleID resourceHandleID, GraphicResourceType resourceType)
+			: BaseViewHandleType(descriptor, viewHandleID, resourceHandleID, resourceType) {}
+		~ManagedGraphicResourceViewHandle();
+	};
+
+#define MANAGED_GRAPHIC_OBJECT(BASE_TYPE)	\
+	using Managed##BASE_TYPE = ManagedGraphicObjectHandle<BASE_TYPE>;
+
+#define NAMED_MANAGED_GRAPHIC_OBJECT(BASE_MANAGED_HANDLE_TYPE)	\
+	using NamedManaged##BASE_MANAGED_HANDLE_TYPE = NamedManagedGraphicObjectHandle<ManagedGraphicObjectHandle<BASE_MANAGED_HANDLE_TYPE>>;
+
+#define MANAGED_GRAPHIC_VIEW_OBJECT(BASE_VIEW_TYPE)	\
+	using Managed##BASE_VIEW_TYPE = ManagedGraphicResourceViewHandle<BASE_VIEW_TYPE>;
 }

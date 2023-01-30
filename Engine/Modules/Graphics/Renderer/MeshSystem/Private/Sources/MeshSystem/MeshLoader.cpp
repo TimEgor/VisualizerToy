@@ -49,9 +49,9 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 			GPUBufferReference vertexBuffer = graphicResourceManager->createGPUBuffer(vertexBufferDesc);
 
 			void* mappingVertData = nullptr;
-			vertexBuffer->getBuffer()->mapData(&mappingVertData);
+			vertexBuffer->getTypedResource()->mapData(&mappingVertData);
 			memcpy(mappingVertData, vertData, vertexBufferDesc.m_byteSize);
-			vertexBuffer->getBuffer()->unmapData();
+			vertexBuffer->getTypedResource()->unmapData();
 
 			vertexData.m_bindings.emplace_back(vertexBuffer);
 
@@ -70,8 +70,8 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 		indexData.m_indexBuffer = graphicResourceManager->createGPUBuffer(indexBufferDesc);
 
 		void* mappingIndexData = nullptr;
-		indexData.m_indexBuffer->getBuffer()->mapData(&mappingIndexData);
+		indexData.m_indexBuffer->getTypedResource()->mapData(&mappingIndexData);
 		memcpy(mappingIndexData, vertData, indexBufferDesc.m_byteSize);
-		indexData.m_indexBuffer->getBuffer()->unmapData();
+		indexData.m_indexBuffer->getTypedResource()->unmapData();
 	}
 }

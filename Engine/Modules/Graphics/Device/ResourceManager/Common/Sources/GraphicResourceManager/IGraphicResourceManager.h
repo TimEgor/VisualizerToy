@@ -4,7 +4,6 @@
 
 #include "Core/FileName/FileName.h"
 #include "ObjectHandles.h"
-#include "InputLayoutHandle.h"
 
 class IRenderPass;
 
@@ -35,10 +34,15 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
+		//
+		virtual ShaderResourceViewReference createShaderResourceDescriptor(GraphicResourceReference resource) = 0;
+
 		//Buffers
 		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc) = 0;
 		virtual GPUBufferReference getGPUBuffer(GPUBufferHandleID handle) = 0;
 		virtual bool isValidGPUBuffer(GPUBufferHandleID handle) = 0;
+
+		virtual ShaderResourceViewReference createBufferResourceDescriptor(GPUBufferReference buffer) = 0;
 
 		//Texture2D
 		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) = 0;

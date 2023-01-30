@@ -24,12 +24,12 @@ namespace VT
 		return reinterpret_cast<NamedGraphicResourceSystem*>(getEnvironmentGraphicResourceManager());
 	}
 
-#define MANAGED_GRAPHIC_RESOURCE_DESTROY_RELEASE_IMPL(TYPE, FUNCTION_DSCTOR, FUNCTION_REF_RELEASE)				\
-	void ManagedGraphicResourceHandle<##TYPE##>::selfDestroy()													\
+#define MANAGED_GRAPHIC_OBJECT_DESTROY_RELEASE_IMPL(TYPE, FUNCTION_DSCTOR, FUNCTION_REF_RELEASE)				\
+	void ManagedGraphicObjectHandle<##TYPE##>::selfDestroy()													\
 	{																											\
 		getResourceManager()->FUNCTION_REF_RELEASE(m_id);														\
 	}																											\
-	ManagedGraphicResourceHandle<##TYPE##>::~ManagedGraphicResourceHandle<##TYPE##>()							\
+	ManagedGraphicObjectHandle<##TYPE##>::~ManagedGraphicObjectHandle<##TYPE##>()								\
 	{																											\
 		if (m_objectPtr)																						\
 		{																										\
@@ -37,11 +37,11 @@ namespace VT
 		}																										\
 	}
 
-#define MANAGED_GRAPHIC_RESOURCE_RELEASE_IMPL(TYPE, FUNCTION_DSCTOR)											\
-	void ManagedGraphicResourceHandle<##TYPE##>::selfDestroy()													\
+#define MANAGED_GRAPHIC_OBJECT_RELEASE_IMPL(TYPE, FUNCTION_DSCTOR)												\
+	void ManagedGraphicObjectHandle<##TYPE##>::selfDestroy()													\
 	{																											\
 	}																											\
-	ManagedGraphicResourceHandle<##TYPE##>::~ManagedGraphicResourceHandle<##TYPE##>()							\
+	ManagedGraphicObjectHandle<##TYPE##>::~ManagedGraphicObjectHandle<##TYPE##>()								\
 	{																											\
 		if (m_objectPtr)																						\
 		{																										\
@@ -49,12 +49,25 @@ namespace VT
 		}																										\
 	}
 
-#define NAMED_MANAGED_GRAPHIC_RESOURCE_DESTROY_IMPL(TYPE, FUNCTION_REF_RELEASE)								\
-	void NamedManagedGraphicResourceHandle<ManagedGraphicResourceHandle<##TYPE##>>::selfDestroy()			\
-	{																										\
-		if (m_nameID != InvalidFileNameID)																	\
-		{																									\
-			getNamedResourceManager()->FUNCTION_REF_RELEASE(m_nameID);										\
-		}																									\
+#define NAMED_MANAGED_GRAPHIC_OBJECT_DESTROY_IMPL(TYPE, FUNCTION_REF_RELEASE)									\
+	void NamedManagedGraphicObjectHandle<ManagedGraphicObjectHandle<##TYPE##>>::selfDestroy()					\
+	{																											\
+		if (m_nameID != InvalidFileNameID)																		\
+		{																										\
+			getNamedResourceManager()->FUNCTION_REF_RELEASE(m_nameID);											\
+		}																										\
+	}
+
+#define MANAGED_GRAPHIC_OBJECT_VIEW_DESTROY_RELEASE_IMPL(VIEW_TYPE, FUNCTION_DSCTOR, FUNCTION_REF_RELEASE)		\
+	void ManagedGraphicResourceViewHandle<##VIEW_TYPE##>::selfDestroy()											\
+	{																											\
+		getResourceManager()->FUNCTION_REF_RELEASE(m_id);														\
+	}																											\
+	ManagedGraphicResourceViewHandle<##VIEW_TYPE##>::~ManagedGraphicResourceViewHandle<##VIEW_TYPE##>()			\
+	{																											\
+		if (m_resourceDescriptor)																				\
+		{																										\
+			getResourceManager()->FUNCTION_DSCTOR(m_resourceDescriptor);										\
+		}																										\
 	}
 }

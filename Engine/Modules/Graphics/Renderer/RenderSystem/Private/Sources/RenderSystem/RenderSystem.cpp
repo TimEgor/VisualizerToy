@@ -69,9 +69,9 @@ bool VT::RenderSystem::init()
 	cameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
 
 	CameraTransforms* mappingCameraTransforms = nullptr;
-	m_drawingPassData.m_cameraTransformBuffer->getBuffer()->mapData(reinterpret_cast<void**>(&mappingCameraTransforms));
+	m_drawingPassData.m_cameraTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingCameraTransforms));
 	memcpy(mappingCameraTransforms, &cameraTransforms, sizeof(CameraTransforms));
-	m_drawingPassData.m_cameraTransformBuffer->getBuffer()->unmapData();
+	m_drawingPassData.m_cameraTransformBuffer->getTypedResource()->unmapData();
 
 	device->setResourceName(m_drawingPassData.m_cameraTransformBuffer->getResource(), "CameraTransform");
 
@@ -85,10 +85,8 @@ bool VT::RenderSystem::init()
 
 	//
 
-	m_drawingPassData.m_cameraTransformCBV = environment->m_graphicDevice->createBufferResourceDescriptor(
-		m_drawingPassData.m_cameraTransformBuffer->getBuffer());
-	m_drawingPassData.m_perObjectTransformCBV = environment->m_graphicDevice->createShaderResourceDescriptor(
-		m_drawingPassData.m_perObjectTransformBuffer->getBuffer());
+	m_drawingPassData.m_cameraTransformCBV = resManager->createBufferResourceDescriptor(m_drawingPassData.m_cameraTransformBuffer);
+	m_drawingPassData.m_perObjectTransformSRV = resManager->createShaderResourceDescriptor(m_drawingPassData.m_perObjectTransformBuffer.getObject());
 
 	////
 
@@ -152,10 +150,10 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 	m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
 	m_context->setBindingLayout(m_drawingPassData.m_bindingLayout->getTypedObject());
 
-	m_context->setBindingParameterValue(0, 0, m_drawingPassData.m_cameraTransformCBV->getBindingHeapOffset());
+	m_context->setBindingParameterValue(0, 0, m_drawingPassData.m_cameraTransformCBV->getResourceView()->getBindingHeapOffset());
 
 	Matrix44* mappingObjectTransform = nullptr;
-	m_drawingPassData.m_perObjectTransformBuffer->getBuffer()->mapData(reinterpret_cast<void**>(&mappingObjectTransform));
+	m_drawingPassData.m_perObjectTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingObjectTransform));
 
 	for (size_t meshDataIndex = 0; meshDataIndex < meshesCount; ++meshDataIndex)
 	{
@@ -181,7 +179,7 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 		for (uint32_t i = 0; i < vertBuffersCount; ++i)
 		{
-			vertBuffers.push_back(vertexData.m_bindings[i]->getBuffer());
+			vertBuffers.push_back(vertexData.m_bindings[i]->getTypedResource());
 		}
 
 		//
@@ -192,16 +190,16 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 		//
 
-		m_context->setBindingParameterValue(1, 0, m_drawingPassData.m_perObjectTransformCBV->getBindingHeapOffset());
+		m_context->setBindingParameterValue(1, 0, m_drawingPassData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
 		m_context->setBindingParameterValue(1, 1, meshDataIndex);
 
 		m_context->setPipelineState(pipelineState->getTypedObject());
 		m_context->setVertexBuffers(vertBuffers.size(), vertBuffers.data(), vertexData.m_inputLayout->getDesc());
-		m_context->setIndexBuffer(indexData.m_indexBuffer->getBuffer(), indexData.m_indexFormat);
+		m_context->setIndexBuffer(indexData.m_indexBuffer->getTypedResource(), indexData.m_indexFormat);
 		m_context->drawIndexed(indexData.m_indexCount);
 	}
 
-	m_drawingPassData.m_perObjectTransformBuffer->getBuffer()->unmapData();
+	m_drawingPassData.m_perObjectTransformBuffer->getTypedResource()->unmapData();
 
 	m_context->endRendering();
 	m_context->prepareTextureForPresenting(target);

@@ -19,8 +19,8 @@ VT::GPUBufferReference VT::GraphicResourceManager::createGPUBuffer(const GPUBuff
 	}
 
 	GPUBufferPool::NewElementInfo elementInfo = m_buffers.addElementRaw();
-	ManagedGPUBufferResourceHandle* bufferHandle
-		= new (elementInfo.m_elementPtr) ManagedGPUBufferResourceHandle(buffer, elementInfo.m_elementHandle.getKey());
+	ManagedGPUBufferGraphicResourceHandle* bufferHandle
+		= new (elementInfo.m_elementPtr) ManagedGPUBufferGraphicResourceHandle(buffer, elementInfo.m_elementHandle.getKey());
 
 	return bufferHandle;
 }
