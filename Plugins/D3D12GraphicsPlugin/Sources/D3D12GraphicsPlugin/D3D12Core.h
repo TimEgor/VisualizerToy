@@ -8,6 +8,8 @@
 
 #include <wrl/client.h>
 
+#include "D3D12MemAlloc.h"
+
 #define VT_D3D12ObjectRelease(objectComPtr)		\
 	if (objectComPtr)							\
 	{											\

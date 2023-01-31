@@ -24,4 +24,8 @@ namespace VT_D3D12
 	using DXGIFactoryComPtr = ComPtr<IDXGIFactory2>;
 	using DXGIAdapterComPtr = ComPtr<IDXGIAdapter1>;
 	using DXGISwapChainComPtr = ComPtr<IDXGISwapChain>;
+
+	//D3D12MA
+	using D3D12MemAllocatorComPtr = ComPtr<D3D12MA::Allocator>;
+	using D3D12MemAllocationComPtr = ComPtr<D3D12MA::Allocation>;
 }

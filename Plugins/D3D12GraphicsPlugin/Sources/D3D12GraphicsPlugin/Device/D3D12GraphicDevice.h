@@ -13,10 +13,12 @@ namespace VT_D3D12
 	class D3D12GraphicDevice final : public VT::ManagedGraphicDevice::ManagedGraphicDevice
 	{
 	private:
-		DXGIFactoryComPtr m_dxgiFactory = nullptr;
 		DXGIAdapterComPtr m_dxgiAdapter = nullptr;
+		DXGIFactoryComPtr m_dxgiFactory = nullptr;
 
 		D3D12DeviceComPtr m_d3d12Device = nullptr;
+
+		D3D12MemAllocatorComPtr m_memAllocator = nullptr;
 
 		D3D12CommandQueueComPtr m_commandQueue = nullptr; //TODO: moved from here to separated object
 

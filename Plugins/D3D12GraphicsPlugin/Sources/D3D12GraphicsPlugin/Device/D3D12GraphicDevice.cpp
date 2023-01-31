@@ -15,7 +15,7 @@
 #include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineState.h"
 #include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineBindingLayout.h"
 #include "D3D12GraphicsPlugin/Synchronization/D3D12Fence.h"
-//
+
 #include "D3D12GraphicsPlugin/Utilities/FormatConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/DescriptorTypeConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/InputLayoutConverter.h"
@@ -122,6 +122,16 @@ bool VT_D3D12::D3D12GraphicDevice::chooseD3D12PhysDevice()
 bool VT_D3D12::D3D12GraphicDevice::initDevice(bool isSwapChainEnabled)
 {
 	VT_CHECK_RETURN_FALSE(initD3D12Device(isSwapChainEnabled));
+
+	//
+	D3D12MA::ALLOCATOR_DESC allocatorDesc{};
+	allocatorDesc.pAdapter = m_dxgiAdapter.Get();
+	allocatorDesc.pDevice = m_d3d12Device.Get();
+
+	D3D12MA::Allocator* memAllocator = nullptr;
+	VT_CHECK_RETURN_FALSE(SUCCEEDED(D3D12MA::CreateAllocator(&allocatorDesc, &memAllocator) && memAllocator));
+
+	m_memAllocator = memAllocator;
 
 	//
 	m_commandQueue = createCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT); // TODO: move to separated abstract class (D3D12CommandQueue : ICommandQueue)
@@ -304,20 +314,21 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 	d3d12ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	d3d12ResourceDesc.SampleDesc.Count = 1;
 
-	D3D12_HEAP_PROPERTIES d3d12HeapProp{};
-	d3d12HeapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
+	D3D12MA::ALLOCATION_DESC allocationDesc{};
+	allocationDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
 
 	ID3D12Resource* d3d12Resource = nullptr;
+	D3D12MA::Allocation* d3d12MemAllocation = nullptr;
 
-	HRESULT creationResult = m_d3d12Device->CreateCommittedResource(&d3d12HeapProp, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, VT_IID(d3d12Resource), VT_PPV(d3d12Resource));
+	HRESULT creationResult = m_memAllocator->CreateResource(&allocationDesc, &d3d12ResourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &d3d12MemAllocation, VT_IID(d3d12Resource), VT_PPV(d3d12Resource));
 
 	if (FAILED(creationResult))
 	{
 		return false;
 	}
 
-	new (buffer) D3D12GPUBuffer(desc, m_d3d12Device, d3d12Resource);
+	new (buffer) D3D12GPUBuffer(desc, m_d3d12Device, d3d12Resource, d3d12MemAllocation);
 
 	return true;
 }

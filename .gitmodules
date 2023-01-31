@@ -5,3 +5,6 @@
 	path = Libs/entt
 	url = https://github.com/skypjack/entt.git
 	ignore = dirty
+[submodule "Libs/D3D12MemoryAllocator"]
+	path = Libs/D3D12MemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
