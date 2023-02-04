@@ -52,13 +52,15 @@ namespace VT::ManagedGraphicDevice
 		virtual void destroyShaderResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
 
 		//Buffer
-		virtual bool createBuffer(ManagedGPUBufferBase* buffer, const GPUBufferDesc& desc) = 0;
+		virtual bool createBuffer(ManagedGPUBufferBase* buffer, const GPUBufferDesc& desc,
+			GraphicStateValueType initialState, const InitialGPUBufferData* initialData) = 0;
 		virtual void destroyBuffer(ManagedGPUBufferBase* buffer) = 0;
 
 		virtual bool createBufferResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, IGPUBuffer* buffer) = 0;
 		virtual void destroyBufferResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
 
 		//Textures
+		virtual bool createTexture2D(ManagedTexture2DBase* texture, const Texture2DDesc& desc, TextureState initialState) = 0;
 		virtual void destroyTexture2D(ManagedTexture2DBase* texture) = 0;
 
 		virtual bool createRenderTargetDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, ITexture* texture) = 0;
@@ -114,13 +116,15 @@ namespace VT::ManagedGraphicDevice
 		virtual void destroyShaderResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
 
 		//Buffer
-		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc) override;
+		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc,
+			GraphicStateValueType initialState, const InitialGPUBufferData* initialData) override;
 		virtual void destroyBuffer(IGPUBuffer* buffer) override;
 
 		virtual IGraphicResourceDescriptor* createBufferResourceDescriptor(IGPUBuffer* buffer) override;
 		virtual void destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
 
 		//Textures
+		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, TextureState initialState) override;
 		virtual void destroyTexture2D(ITexture2D* texture) override;
 
 		virtual IGraphicResourceDescriptor* createRenderTargetDescriptor(ITexture* texture) override;

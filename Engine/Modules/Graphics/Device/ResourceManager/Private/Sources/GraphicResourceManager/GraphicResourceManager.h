@@ -92,7 +92,8 @@ namespace VT
 		virtual ShaderResourceViewReference createShaderResourceDescriptor(GraphicResourceReference resource) override;
 
 		//Buffer
-		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc) override;
+		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc, GraphicStateValueType initialState,
+			const InitialGPUBufferData* initialData = nullptr) override;
 		virtual GPUBufferReference getGPUBuffer(GPUBufferHandleID handle) override;
 		virtual bool isValidGPUBuffer(GPUBufferHandleID handle) override;
 

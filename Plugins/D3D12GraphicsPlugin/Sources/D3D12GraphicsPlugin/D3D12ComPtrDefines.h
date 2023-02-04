@@ -11,6 +11,7 @@ namespace VT_D3D12
 	using D3D12DescriptorHeapComPtr = ComPtr<ID3D12DescriptorHeap>;
 
 	using D3D12CommandAllocatorComPtr = ComPtr<ID3D12CommandAllocator>;
+	using D3D12CommandListComPtr = ComPtr<ID3D12CommandList>;
 	using D3D12GraphicsCommandListComPtr = ComPtr<ID3D12GraphicsCommandList>;
 	using D3D12CommandQueueComPtr = ComPtr<ID3D12CommandQueue>;
 

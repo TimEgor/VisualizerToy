@@ -46,12 +46,15 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 			const InputLayoutBindingDesc& bindingDesc = inputLayoutDesc.m_bindings[i];
 
 			vertexBufferDesc.m_byteSize = bindingDesc.m_stride * vertexData.m_vertexCount;
-			GPUBufferReference vertexBuffer = graphicResourceManager->createGPUBuffer(vertexBufferDesc);
 
-			void* mappingVertData = nullptr;
-			vertexBuffer->getTypedResource()->mapData(&mappingVertData);
-			memcpy(mappingVertData, vertData, vertexBufferDesc.m_byteSize);
-			vertexBuffer->getTypedResource()->unmapData();
+			InitialGPUBufferData bufferData
+			{
+				vertData,
+				vertexBufferDesc.m_byteSize
+			};
+
+			GPUBufferReference vertexBuffer = graphicResourceManager->createGPUBuffer(vertexBufferDesc,
+				GPUBufferState::VERTEX_BUFFER, &bufferData);
 
 			vertexData.m_bindings.emplace_back(vertexBuffer);
 
@@ -67,11 +70,13 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 		indexBufferDesc.m_usage = GPUBufferUsageType::INDEX_BUFFER;
 		indexBufferDesc.m_byteSize = indexData.m_indexCount * meshHeader->m_indexSize;
 
-		indexData.m_indexBuffer = graphicResourceManager->createGPUBuffer(indexBufferDesc);
+		InitialGPUBufferData bufferData
+		{
+			vertData,
+			indexBufferDesc.m_byteSize
+		};
 
-		void* mappingIndexData = nullptr;
-		indexData.m_indexBuffer->getTypedResource()->mapData(&mappingIndexData);
-		memcpy(mappingIndexData, vertData, indexBufferDesc.m_byteSize);
-		indexData.m_indexBuffer->getTypedResource()->unmapData();
+		indexData.m_indexBuffer = graphicResourceManager->createGPUBuffer(indexBufferDesc,
+			GPUBufferState::INDEX_BUFFER, &bufferData);
 	}
 }

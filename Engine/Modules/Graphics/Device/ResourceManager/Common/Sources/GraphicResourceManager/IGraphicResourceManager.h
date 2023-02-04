@@ -9,7 +9,6 @@ class IRenderPass;
 
 namespace VT
 {
-	struct TextureViewDesc;
 	class IWindow;
 
 	struct SwapChainDesc;
@@ -38,7 +37,8 @@ namespace VT
 		virtual ShaderResourceViewReference createShaderResourceDescriptor(GraphicResourceReference resource) = 0;
 
 		//Buffers
-		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc) = 0;
+		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc, GraphicStateValueType initialState,
+			const InitialGPUBufferData* initialData = nullptr) = 0;
 		virtual GPUBufferReference getGPUBuffer(GPUBufferHandleID handle) = 0;
 		virtual bool isValidGPUBuffer(GPUBufferHandleID handle) = 0;
 

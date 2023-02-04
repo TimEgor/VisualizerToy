@@ -9,5 +9,5 @@ vt_add_module_target(GPUBuffer INTERFACE "VT_Engine/Graphics/Device")
 
 target_link_libraries(GPUBuffer
 	INTERFACE
-		Core
+		GraphicResourceCommon
 )

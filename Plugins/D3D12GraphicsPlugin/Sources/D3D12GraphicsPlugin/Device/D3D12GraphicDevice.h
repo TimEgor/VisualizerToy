@@ -8,7 +8,10 @@
 namespace VT_D3D12
 {
 	class D3D12Fence;
+	class D3D12ResourceBase;
 	class D3D12ResourceDescriptorHeap;
+
+	class D3D12UploadingContext;
 
 	class D3D12GraphicDevice final : public VT::ManagedGraphicDevice::ManagedGraphicDevice
 	{
@@ -20,7 +23,7 @@ namespace VT_D3D12
 
 		D3D12MemAllocatorComPtr m_memAllocator = nullptr;
 
-		D3D12CommandQueueComPtr m_commandQueue = nullptr; //TODO: moved from here to separated object
+		D3D12CommandQueueComPtr m_graphicQueue = nullptr; //TODO: moved from here to separated object
 
 		D3D12ResourceDescriptorHeap* m_rtvDescriptorHeap = nullptr;
 		D3D12ResourceDescriptorHeap* m_srvDescriptorHeap = nullptr;
@@ -29,14 +32,21 @@ namespace VT_D3D12
 
 		D3D_FEATURE_LEVEL m_featureLevel = D3D_FEATURE_LEVEL_12_1;
 
+		D3D12UploadingContext* m_uploadingContext = nullptr;
+
 		bool chooseD3D12PhysDevice();
 		bool initD3D12Device(bool isSwapChainEnabled);
+
+		D3D12UploadingContext* createUploadingContext();
 
 		D3D12CommandQueueComPtr createCommandQueue(D3D12_COMMAND_LIST_TYPE commandType);
 
 		D3D12ResourceDescriptorHeap* createResourceDescriptorHeapInternal(const VT::GraphicResourceDescriptorHeapDesc& desc);
 		bool createShaderResourceDescriptorInternal(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource,
 			const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc);
+
+		D3D12_RESOURCE_STATES chooseInitialResourceState(bool isHostVisible, bool havingInitialData, D3D12_RESOURCE_STATES targetInitialState);
+		void uploadBufferResourceData(bool useUploadingContext, D3D12ResourceBase* dstResource, const VT::InitialGPUBufferData& data);
 
 	protected:
 		virtual bool initDevice(bool isSwapChainEnabled) override;
@@ -51,13 +61,15 @@ namespace VT_D3D12
 		virtual void destroySwapChain(VT::ISwapChain* swapChain) override;
 
 		//Buffer
-		virtual bool createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc) override;
+		virtual bool createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc,
+			VT::GraphicStateValueType initialState, const VT::InitialGPUBufferData* initialData) override;
 		virtual void destroyBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer) override;
 
 		virtual bool createBufferResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGPUBuffer* buffer) override;
 		virtual void destroyBufferResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
 
 		//Textures
+		virtual bool createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture, const VT::Texture2DDesc& desc, VT::TextureState initialState) override;
 		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
 
 		virtual bool createRenderTargetDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::ITexture* texture) override;
@@ -119,6 +131,10 @@ namespace VT_D3D12
 		virtual void update() override;
 
 		virtual void waitIdle() override;
+
+		virtual void resetContexts() override;
+		virtual void submitContexts() override;
+		virtual void waitContexts() override;
 
 		VT_GRAPHIC_DEVICE_TYPE(VT_GRAPHIC_DEVICE_D3D12_TYPE)
 	};

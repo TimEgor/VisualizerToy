@@ -5,7 +5,7 @@
 
 namespace VT_D3D12
 {
-	inline D3D12_INPUT_CLASSIFICATION converteInputLayoutBindingTypeVTtoD3D12(const VT::InputLayoutBindingType bindingType)
+	inline D3D12_INPUT_CLASSIFICATION convertInputLayoutBindingTypeVTtoD3D12(const VT::InputLayoutBindingType bindingType)
 	{
 		switch (bindingType)
 		{
@@ -169,7 +169,7 @@ namespace VT_D3D12
 			d3D12ElementDesc.Format = convertInputLayoutFormatVTtoDXGI(elementDesc.m_type, elementDesc.m_componentsCount);
 			d3D12ElementDesc.InputSlot = elementDesc.m_slot;
 			d3D12ElementDesc.AlignedByteOffset = elementDesc.m_offset;
-			d3D12ElementDesc.InputSlotClass = converteInputLayoutBindingTypeVTtoD3D12(elementBindingDesc.m_type);
+			d3D12ElementDesc.InputSlotClass = convertInputLayoutBindingTypeVTtoD3D12(elementBindingDesc.m_type);
 			d3D12ElementDesc.InstanceDataStepRate = 0;
 		}
 	}

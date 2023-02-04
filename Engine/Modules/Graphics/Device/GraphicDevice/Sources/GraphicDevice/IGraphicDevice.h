@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core/TypeHashMacros.h"
+#include "GPUBuffer/IGPUBuffer.h"
+#include "Textures/TextureCommon.h"
 
 namespace VT
 {
@@ -9,9 +11,6 @@ namespace VT
 
 	class IGraphicResource;
 
-	class IGPUBuffer;
-
-	class ITexture;
 	class ITexture2D;
 
 	class IVertexShader;
@@ -29,9 +28,7 @@ namespace VT
 
 	struct SwapChainDesc;
 
-	struct GPUBufferDesc;
-
-	struct TextureViewDesc;
+	struct Texture2DDesc;
 
 	struct PipelineStateInfo;
 	struct PipelineBindingLayoutDesc;
@@ -58,6 +55,10 @@ namespace VT
 
 		virtual void update() = 0;
 
+		virtual void resetContexts() = 0;
+		virtual void submitContexts() = 0;
+		virtual void waitContexts() = 0;
+
 		virtual void waitIdle() = 0;
 
 		//SwapChain
@@ -69,13 +70,15 @@ namespace VT
 		virtual void destroyShaderResourceDescriptor(IGraphicResourceDescriptor* descriptor) = 0;
 
 		//Buffers
-		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc) = 0;
+		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc, GraphicStateValueType initialState,
+			const InitialGPUBufferData* initialData = nullptr) = 0;
 		virtual void destroyBuffer(IGPUBuffer* buffer) = 0;
 
 		virtual IGraphicResourceDescriptor* createBufferResourceDescriptor(IGPUBuffer* buffer) = 0;
 		virtual void destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor) = 0;
 
 		//Texture
+		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, TextureState initialState) = 0;
 		virtual void destroyTexture2D(ITexture2D* texture) = 0;
 
 		virtual IGraphicResourceDescriptor* createRenderTargetDescriptor(ITexture* texture) = 0;

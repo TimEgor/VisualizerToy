@@ -5,6 +5,7 @@
 namespace VT
 {
 	using FenceValueType = uint64_t;
+	constexpr FenceValueType InitialFenceValue = 0;
 
 	class IFence
 	{

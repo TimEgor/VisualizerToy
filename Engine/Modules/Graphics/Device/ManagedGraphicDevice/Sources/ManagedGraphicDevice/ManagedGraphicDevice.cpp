@@ -86,12 +86,13 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyShaderResourceDescri
 	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
 }
 
-VT::IGPUBuffer* VT::ManagedGraphicDevice::ManagedGraphicDevice::createBuffer(const GPUBufferDesc& desc)
+VT::IGPUBuffer* VT::ManagedGraphicDevice::ManagedGraphicDevice::createBuffer(const GPUBufferDesc& desc,
+	GraphicStateValueType initialState, const InitialGPUBufferData* initialData)
 {
 	assert(m_bufferStorage);
 
 	ManagedGPUBufferStorageInfoBase::NewObjectInfo newObjectInfo = m_bufferStorage->addNewObject();
-	if (!createBuffer(newObjectInfo.m_objectPtr, desc))
+	if (!createBuffer(newObjectInfo.m_objectPtr, desc, initialState, initialData))
 	{
 		m_bufferStorage->removeObject(newObjectInfo.m_objectHandle);
 		return nullptr;
@@ -138,6 +139,22 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyBufferResourceDescri
 
 	destroyRenderTargetDescriptor(managedDescriptor);
 	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
+}
+
+VT::ITexture2D* VT::ManagedGraphicDevice::ManagedGraphicDevice::createTexture2D(const Texture2DDesc& desc, TextureState initialState)
+{
+	assert(m_descriptorStorage);
+
+	ManagedTexture2DStorageInfoBase::NewObjectInfo newObjectInfo = m_texture2DStorage->addNewObject();
+	if (!createTexture2D(newObjectInfo.m_objectPtr, desc, initialState))
+	{
+		m_texture2DStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
 }
 
 void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyTexture2D(ITexture2D* texture)

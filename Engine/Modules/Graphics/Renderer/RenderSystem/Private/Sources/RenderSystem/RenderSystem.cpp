@@ -52,7 +52,8 @@ bool VT::RenderSystem::init()
 
 	//
 	transformBufferDesc.m_byteSize = sizeof(CameraTransforms);
-	m_drawingPassData.m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc);
+	transformBufferDesc.isHostVisible = true;
+	m_drawingPassData.m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
 
 	CameraTransforms cameraTransforms;
 	COMPUTE_MATH::ComputeMatrix viewTransform = COMPUTE_MATH::matrixLookToLH(
@@ -79,7 +80,7 @@ bool VT::RenderSystem::init()
 	transformBufferDesc.m_byteSize = sizeof(Matrix44) * 50;
 	transformBufferDesc.m_byteStride = sizeof(Matrix44);
 	transformBufferDesc.m_flag = GPUBufferFlag::STRUCTURED;
-	m_drawingPassData.m_perObjectTransformBuffer = resManager->createGPUBuffer(transformBufferDesc);
+	m_drawingPassData.m_perObjectTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
 
 	device->setResourceName(m_drawingPassData.m_perObjectTransformBuffer->getResource(), "PerObjectTransform");
 
@@ -207,8 +208,8 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 	CommandListSubmitInfo submitInfo;
 	submitInfo.m_fence = m_frameFence;
-	m_lastSubmittedFenceValue = m_frameFence->getValue();
 
+	m_lastSubmittedFenceValue = m_frameFence->getValue();
 	environment->m_graphicDevice->submitCommandList(m_context->getCommandList(), submitInfo);
 }
 

@@ -85,10 +85,15 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 	VT::EngineEnvironment* engineEnvironment = engineInst->getEnvironment();
 
+	VT::IGraphicDevice* graphicDevice = engineEnvironment->m_graphicDevice;
+	graphicDevice->resetContexts();
+
 	if (gameModulePath.empty() || !engineEnvironment->m_gameSystem->loadGameModule(gameModulePath))
 	{
 		return VT_LAUNCHER_INVALID_GAME_MODULE;
 	}
+
+	graphicDevice->submitContexts();
 
 	{
 		VT::IRenderSystem* renderSystem = engineEnvironment->m_renderSystem;
@@ -99,6 +104,9 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		while (!engine->isStoped())
 		{
 			engine->beginFrame();
+
+			graphicDevice->waitContexts();
+			graphicDevice->resetContexts();
 
 			engine->updateFrame();
 
@@ -114,6 +122,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 			);
 
 			graphicPresenter->present();
+			graphicDevice->submitContexts();
 
 			engine->endFrame();
 		}

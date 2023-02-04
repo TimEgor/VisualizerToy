@@ -11,6 +11,8 @@ namespace VT_D3D12
 		D3D12MemAllocationComPtr m_d3d12MemAllocation = nullptr;
 
 	public:
+		D3D12ResourceBase(D3D12ResourceComPtr d3d12Resource)
+			: m_d3d12Resource(d3d12Resource) {}
 		D3D12ResourceBase(D3D12ResourceComPtr d3d12Resource, D3D12MemAllocationComPtr d3d12MemAllocation)
 			: m_d3d12Resource(d3d12Resource), m_d3d12MemAllocation(d3d12MemAllocation) {}
 

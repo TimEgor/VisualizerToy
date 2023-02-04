@@ -8,3 +8,6 @@
 [submodule "Libs/D3D12MemoryAllocator"]
 	path = Libs/D3D12MemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
+[submodule "Libs/DirectX-Headers"]
+	path = Libs/DirectX-Headers
+	url = https://github.com/microsoft/DirectX-Headers.git

@@ -1,5 +1,6 @@
 #include "D3D12GraphicDevice.h"
 
+#include "D3D12UploadingContext.h"
 #include "Core/UtilitiesMacros.h"
 #include "Core/String/Format.h"
 #include "Core/Output.h"
@@ -19,6 +20,8 @@
 #include "D3D12GraphicsPlugin/Utilities/FormatConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/DescriptorTypeConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/InputLayoutConverter.h"
+#include "D3D12GraphicsPlugin/Utilities/ResourceStateConverter.h"
+#include "D3D12GraphicsPlugin/Utilities/ResourceUsageConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/ShaderStageConverter.h"
 
 
@@ -44,6 +47,38 @@ bool VT_D3D12::D3D12GraphicDevice::initD3D12Device(bool isSwapChainEnabled)
 		VT_IID_COM(m_d3d12Device), VT_PPV_COM(m_d3d12Device))));
 
 	return true;
+}
+
+VT_D3D12::D3D12UploadingContext* VT_D3D12::D3D12GraphicDevice::createUploadingContext()
+{
+	ID3D12CommandAllocator* d3d12Allocator = nullptr;
+	HRESULT creationResult = m_d3d12Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY,
+		VT_IID(d3d12Allocator), VT_PPV(d3d12Allocator));
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	ID3D12GraphicsCommandList* d3d12List = nullptr;
+	creationResult = m_d3d12Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COPY,
+		d3d12Allocator, nullptr, VT_IID(d3d12List), VT_PPV(d3d12List));
+	if (FAILED(creationResult))
+	{
+		d3d12Allocator->Release();
+		return false;
+	}
+
+	d3d12List->Close();
+
+	D3D12Fence* syncFence = VT_ALLOCATE_RAW(D3D12Fence, sizeof(D3D12Fence));
+	createFence(syncFence);
+
+	D3D12UploadingContext* newContext = new D3D12UploadingContext(
+		createCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY), d3d12List, d3d12Allocator, *syncFence);
+
+	VT_SAFE_DESTROY_RAW_WITHOUT_DSTR(syncFence);
+
+	return newContext;
 }
 
 VT_D3D12::D3D12CommandQueueComPtr VT_D3D12::D3D12GraphicDevice::createCommandQueue(D3D12_COMMAND_LIST_TYPE commandType)
@@ -96,6 +131,82 @@ bool VT_D3D12::D3D12GraphicDevice::createShaderResourceDescriptorInternal(
 	return true;
 }
 
+D3D12_RESOURCE_STATES VT_D3D12::D3D12GraphicDevice::chooseInitialResourceState(bool isHostVisible,
+	bool havingInitialData, D3D12_RESOURCE_STATES targetInitialState)
+{
+	if (isHostVisible)
+	{
+		return D3D12_RESOURCE_STATE_GENERIC_READ;
+	}
+
+	if (havingInitialData)
+	{
+		return D3D12_RESOURCE_STATE_COPY_DEST;
+	}
+
+	return targetInitialState;
+}
+
+void VT_D3D12::D3D12GraphicDevice::uploadBufferResourceData(bool useUploadingContext,
+	D3D12ResourceBase* dstResource, const VT::InitialGPUBufferData& initialData)
+{
+	assert(dstResource);
+	assert(initialData.data && initialData.dataSize > 0);
+
+	D3D12ResourceComPtr d3d12DstResource = dstResource->getD3D12Resource();
+
+	if (useUploadingContext)
+	{
+		assert(m_uploadingContext);
+
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
+		UINT rowNum = 0;
+		UINT64 rowSize = 0;
+		UINT64 uploadResouceSize = 0;
+		m_d3d12Device->GetCopyableFootprints(&d3d12DstResource->GetDesc(), 0, 1, 0, &footprint, &rowNum, &rowSize, &uploadResouceSize);
+
+		D3D12_RESOURCE_DESC d3d12ResourceDesc{};
+		d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		d3d12ResourceDesc.Alignment = 0;
+		d3d12ResourceDesc.Width = uploadResouceSize;
+		d3d12ResourceDesc.Height = 1;
+		d3d12ResourceDesc.DepthOrArraySize = 1;
+		d3d12ResourceDesc.MipLevels = 1;
+		d3d12ResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+		d3d12ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		d3d12ResourceDesc.SampleDesc.Count = 1;
+
+		D3D12MA::ALLOCATION_DESC allocationDesc{};
+		allocationDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+
+		const D3D12_RESOURCE_STATES d3d12ResourceState = D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+		ID3D12Resource* d3d12Resource = nullptr;
+		D3D12MA::Allocation* d3d12MemAllocation = nullptr;
+
+		HRESULT creationResult = m_memAllocator->CreateResource(&allocationDesc, &d3d12ResourceDesc,
+			d3d12ResourceState, nullptr, &d3d12MemAllocation, VT_IID(d3d12Resource), VT_PPV(d3d12Resource));
+
+		assert(SUCCEEDED(creationResult));
+
+		D3D12_SUBRESOURCE_DATA uplodingData{};
+		uplodingData.pData = initialData.data;
+		uplodingData.RowPitch = initialData.dataSize;
+		uplodingData.SlicePitch = 0;
+
+		D3D12ResourceBase uplodingBuffer(d3d12Resource, d3d12MemAllocation);
+
+		m_uploadingContext->uploadResource(&uplodingBuffer, dstResource, uplodingData);
+	}
+	else
+	{
+		uint8_t* uploadingData = nullptr;
+		d3d12DstResource->Map(0, nullptr, reinterpret_cast<void**>(&uploadingData));
+		memcpy(uploadingData, initialData.data, initialData.dataSize);
+		d3d12DstResource->Unmap(0, nullptr);
+	}
+}
+
 bool VT_D3D12::D3D12GraphicDevice::chooseD3D12PhysDevice()
 {
 	assert(m_dxgiFactory);
@@ -134,8 +245,8 @@ bool VT_D3D12::D3D12GraphicDevice::initDevice(bool isSwapChainEnabled)
 	m_memAllocator = memAllocator;
 
 	//
-	m_commandQueue = createCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT); // TODO: move to separated abstract class (D3D12CommandQueue : ICommandQueue)
-	VT_CHECK_RETURN_FALSE(m_commandQueue);
+	m_graphicQueue = createCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT); // TODO: move to separated abstract class (D3D12CommandQueue : ICommandQueue)
+	VT_CHECK_RETURN_FALSE(m_graphicQueue);
 
 	//
 	VT::GraphicResourceDescriptorHeapDesc descriptorHeapDesc{};
@@ -155,15 +266,21 @@ bool VT_D3D12::D3D12GraphicDevice::initDevice(bool isSwapChainEnabled)
 	VT_CHECK_RETURN_FALSE(m_srvDescriptorHeap);
 
 	//
-	m_globalDeviceFence = reinterpret_cast<D3D12Fence*>(new uint8_t[sizeof(D3D12Fence)]);
+	m_globalDeviceFence = VT_ALLOCATE_RAW(D3D12Fence, sizeof(D3D12Fence));
 	createFence(m_globalDeviceFence);
 	VT_CHECK_RETURN_FALSE(m_globalDeviceFence);
+
+	//
+	m_uploadingContext = createUploadingContext();
 
 	return true;
 }
 
 void VT_D3D12::D3D12GraphicDevice::releaseDevice()
 {
+	VT_SAFE_DESTROY(m_uploadingContext);
+	VT_SAFE_DESTROY_RAW(m_globalDeviceFence, D3D12Fence);
+
 	if (m_rtvDescriptorHeap)
 	{
 		destroyGraphicResourceDescriptionHeap(m_rtvDescriptorHeap);
@@ -214,12 +331,8 @@ bool VT_D3D12::D3D12GraphicDevice::createShaderResourceDescriptor(
 
 		return createShaderResourceDescriptorInternal(descriptor, resource, &d3d12SRVDesc);
 	}
-	else
-	{
-		return createShaderResourceDescriptorInternal(descriptor, resource, nullptr);
-	}
 
-	return false;
+	return createShaderResourceDescriptorInternal(descriptor, resource, nullptr);
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyShaderResourceDescriptor(
@@ -235,10 +348,30 @@ void VT_D3D12::D3D12GraphicDevice::update()
 void VT_D3D12::D3D12GraphicDevice::waitIdle()
 {
 	VT::FenceValueType fenceVal = m_globalDeviceFence->getValue();
-	m_commandQueue->Signal(m_globalDeviceFence->getD3D12Fence().Get(), fenceVal);
+	m_graphicQueue->Signal(m_globalDeviceFence->getD3D12Fence().Get(), fenceVal);
 	m_globalDeviceFence->incrementValue();
 
 	m_globalDeviceFence->wait(fenceVal);
+
+	waitContexts();
+}
+
+void VT_D3D12::D3D12GraphicDevice::resetContexts()
+{
+	assert(m_uploadingContext);
+	m_uploadingContext->reset();
+}
+
+void VT_D3D12::D3D12GraphicDevice::submitContexts()
+{
+	assert(m_uploadingContext);
+	m_uploadingContext->submit();
+}
+
+void VT_D3D12::D3D12GraphicDevice::waitContexts()
+{
+	assert(m_uploadingContext);
+	m_uploadingContext->wait();
 }
 
 VT::ISwapChain* VT_D3D12::D3D12GraphicDevice::createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window)
@@ -260,14 +393,14 @@ VT::ISwapChain* VT_D3D12::D3D12GraphicDevice::createSwapChain(const VT::SwapChai
 
 	IDXGISwapChain1* d3d12SwapChain = nullptr;
 
-	HRESULT creatingResult = m_dxgiFactory->CreateSwapChainForHwnd(m_commandQueue.Get(), windowHandle, &d3d12SwapChainDesc, nullptr, nullptr, &d3d12SwapChain);
+	HRESULT creatingResult = m_dxgiFactory->CreateSwapChainForHwnd(m_graphicQueue.Get(), windowHandle, &d3d12SwapChainDesc, nullptr, nullptr, &d3d12SwapChain);
 	if (FAILED(creatingResult))
 	{
 		return false;
 	}
 
-	D3D12Texture2D* textures = reinterpret_cast<D3D12Texture2D*>(new uint8_t[sizeof(D3D12Texture2D) * desc.m_imageCount]);
-	D3D12ResourceDescriptor* descriptors = reinterpret_cast<D3D12ResourceDescriptor*>(new uint8_t[sizeof(D3D12ResourceDescriptor) * desc.m_imageCount]);
+	D3D12Texture2D* textures = VT_ALLOCATE_RAW(D3D12Texture2D, sizeof(D3D12Texture2D) * desc.m_imageCount);
+	D3D12ResourceDescriptor* descriptors = VT_ALLOCATE_RAW(D3D12ResourceDescriptor, sizeof(D3D12ResourceDescriptor) * desc.m_imageCount);
 
 	VT::Texture2DDesc textureDesc{};
 	textureDesc.m_format = desc.m_format;
@@ -293,19 +426,20 @@ void VT_D3D12::D3D12GraphicDevice::destroySwapChain(VT::ISwapChain* swapChain)
 	assert(swapChain);
 
 	void* textures = swapChain->getTargetTexture(0);
-	VT_SAFE_DESTROY_ARRAY(textures);
+	VT_SAFE_DESTROY_RAW_WITHOUT_DSTR(textures);
 
 	void* views = swapChain->getTargetTextureView(0);
-	VT_SAFE_DESTROY_ARRAY(views);
+	VT_SAFE_DESTROY_RAW_WITHOUT_DSTR(views);
 
 	VT_SAFE_DESTROY(swapChain);
 }
 
-bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc)
+bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc,
+	VT::GraphicStateValueType initialState, const VT::InitialGPUBufferData* initialData)
 {
 	D3D12_RESOURCE_DESC d3d12ResourceDesc{};
 	d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	d3d12ResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+	d3d12ResourceDesc.Alignment = 0;
 	d3d12ResourceDesc.Width = VT::align(desc.m_byteSize, 256u);
 	d3d12ResourceDesc.Height = 1;
 	d3d12ResourceDesc.DepthOrArraySize = 1;
@@ -315,20 +449,28 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 	d3d12ResourceDesc.SampleDesc.Count = 1;
 
 	D3D12MA::ALLOCATION_DESC allocationDesc{};
-	allocationDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+	allocationDesc.HeapType = desc.isHostVisible ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
+
+	D3D12_RESOURCE_STATES targetInitialState = convertBufferStateVTtoD3D12(initialState);
+	const D3D12_RESOURCE_STATES d3d12ResourceState = chooseInitialResourceState(desc.isHostVisible, initialData, targetInitialState);
 
 	ID3D12Resource* d3d12Resource = nullptr;
 	D3D12MA::Allocation* d3d12MemAllocation = nullptr;
 
 	HRESULT creationResult = m_memAllocator->CreateResource(&allocationDesc, &d3d12ResourceDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &d3d12MemAllocation, VT_IID(d3d12Resource), VT_PPV(d3d12Resource));
+		d3d12ResourceState, nullptr, &d3d12MemAllocation, VT_IID(d3d12Resource), VT_PPV(d3d12Resource));
 
 	if (FAILED(creationResult))
 	{
 		return false;
 	}
 
-	new (buffer) D3D12GPUBuffer(desc, m_d3d12Device, d3d12Resource, d3d12MemAllocation);
+	D3D12GPUBuffer* gpuBuffer = new (buffer) D3D12GPUBuffer(desc, m_d3d12Device, d3d12Resource, d3d12MemAllocation);
+
+	if (initialData)
+	{
+		uploadBufferResourceData(!desc.isHostVisible, gpuBuffer, *initialData);
+	}
 
 	return true;
 }
@@ -366,6 +508,42 @@ void VT_D3D12::D3D12GraphicDevice::destroyBufferResourceDescriptor(
 	assert(descriptor);
 
 	m_srvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
+}
+
+bool VT_D3D12::D3D12GraphicDevice::createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture,
+	const VT::Texture2DDesc& desc, VT::TextureState initialState)
+{
+	D3D12_RESOURCE_DESC d3d12ResourceDesc{};
+	d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	d3d12ResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+	d3d12ResourceDesc.Width = desc.m_width;
+	d3d12ResourceDesc.Height = desc.m_height;
+	d3d12ResourceDesc.DepthOrArraySize = 1;
+	d3d12ResourceDesc.MipLevels = 1;
+	d3d12ResourceDesc.Format = convertFormatVTtoD3D12(desc.m_format);
+	d3d12ResourceDesc.SampleDesc.Count = 1;
+	d3d12ResourceDesc.Flags = convertTextureUsageVTtoD3D12(desc.m_usage);
+
+	D3D12MA::ALLOCATION_DESC allocationDesc{};
+	allocationDesc.HeapType = desc.isHostVisible ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
+
+	const D3D12_RESOURCE_STATES d3d12ResourceState = desc.isHostVisible ?
+		D3D12_RESOURCE_STATE_GENERIC_READ : convertTextureStateVTtoD3D12(initialState);
+
+	ID3D12Resource* d3d12Resource = nullptr;
+	D3D12MA::Allocation* d3d12MemAllocation = nullptr;
+
+	HRESULT creationResult = m_memAllocator->CreateResource(&allocationDesc, &d3d12ResourceDesc,
+		d3d12ResourceState, nullptr, &d3d12MemAllocation, VT_IID(d3d12Resource), VT_PPV(d3d12Resource));
+
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	new (texture) D3D12Texture2D(desc, d3d12Resource, d3d12MemAllocation);
+
+	return true;
 }
 
 void VT_D3D12::D3D12GraphicDevice::destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture)
@@ -639,7 +817,7 @@ void VT_D3D12::D3D12GraphicDevice::destroyPipelineBindingLayout(VT::ManagedGraph
 
 bool VT_D3D12::D3D12GraphicDevice::createCommandList(VT::ManagedGraphicDevice::ManagedCommandListBase* commandList)
 {
-	D3D12_COMMAND_LIST_TYPE type = m_commandQueue->GetDesc().Type;
+	D3D12_COMMAND_LIST_TYPE type = m_graphicQueue->GetDesc().Type;
 
 	ID3D12CommandAllocator* d3d12Allocator = nullptr;
 	HRESULT creationResult = m_d3d12Device->CreateCommandAllocator(type, VT_IID(d3d12Allocator), VT_PPV(d3d12Allocator));
@@ -673,12 +851,12 @@ void VT_D3D12::D3D12GraphicDevice::submitCommandList(VT::ICommandList* list, con
 	D3D12GraphicsCommandList* d3d12CommandList = reinterpret_cast<D3D12GraphicsCommandList*>(list);
 	ID3D12CommandList* d3d12CommandListHandle = d3d12CommandList->getD3D12CommandList().Get();
 
-	m_commandQueue->ExecuteCommandLists(1, &d3d12CommandListHandle);
+	m_graphicQueue->ExecuteCommandLists(1, &d3d12CommandListHandle);
 
 	D3D12Fence* d3d12Fence = reinterpret_cast<D3D12Fence*>(info.m_fence);
 	if (d3d12Fence)
 	{
-		m_commandQueue->Signal(d3d12Fence->getD3D12Fence().Get(), d3d12Fence->getValue());
+		m_graphicQueue->Signal(d3d12Fence->getD3D12Fence().Get(), d3d12Fence->getValue());
 		d3d12Fence->incrementValue();
 	}
 }

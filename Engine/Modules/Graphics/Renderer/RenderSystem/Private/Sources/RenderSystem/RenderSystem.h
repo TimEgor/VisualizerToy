@@ -39,7 +39,7 @@ namespace VT
 		IRenderContext* m_context = nullptr;
 
 		IFence* m_frameFence = nullptr;
-		FenceValueType m_lastSubmittedFenceValue = 0;
+		FenceValueType m_lastSubmittedFenceValue = InitialFenceValue;
 
 		TestMaterialDrawingData m_materialDrawingData;
 		DrawingPassData m_drawingPassData;

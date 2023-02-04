@@ -10,4 +10,5 @@ vt_add_module_target(GraphicResourceCommon INTERFACE "VT_Engine/Graphics/Device"
 target_link_libraries(GraphicResourceCommon
 	INTERFACE
 		GraphicObject
+		GraphicSynchronization
 )

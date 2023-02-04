@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GraphicResourceCommon/IGraphicResource.h"
+#include "GraphicResourceCommon/GraphicResourceBase.h"
 
 #include <cstdint>
 
@@ -17,7 +17,23 @@ namespace VT
 		DIMENSION_3D
 	};
 
-	class ITexture : public IGraphicResource
+	enum TextureUsage : GraphicStateValueType
+	{
+		TEXTURE_USAGE_UNKNOWN,
+
+		TEXTURE_USAGE_RENDER_TARGET,
+		TEXTURE_USAGE_DEPTH_STENCIL,
+		TEXTURE_USAGE_DENY_SHADER_RESOURCE
+	};
+
+	enum TextureState
+	{
+		RENDER_TARGET = MAX_COMMON_STATE << 1,
+		DEPTH_STENCIL = MAX_COMMON_STATE << 2,
+		DEPTH_STENCIL_READONLY = MAX_COMMON_STATE << 3,
+	};
+
+	class ITexture : public GraphicResourceBase
 	{
 	public:
 		ITexture() = default;

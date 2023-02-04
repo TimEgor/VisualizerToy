@@ -5,7 +5,7 @@
 
 namespace VT_D3D12
 {
-	D3D12_SHADER_VISIBILITY convertShaderStageVisibilityVTtoD3D12(VT::ShaderStageVisibility stage)
+	inline D3D12_SHADER_VISIBILITY convertShaderStageVisibilityVTtoD3D12(VT::ShaderStageVisibility stage)
 	{
 		switch (stage)
 		{

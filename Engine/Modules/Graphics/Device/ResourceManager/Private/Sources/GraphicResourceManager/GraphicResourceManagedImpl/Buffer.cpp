@@ -10,9 +10,10 @@ void VT::GraphicResourceManager::deleteGPUBufferReference(GPUBufferHandleID hand
 	m_buffers.removeElement(handleID);
 }
 
-VT::GPUBufferReference VT::GraphicResourceManager::createGPUBuffer(const GPUBufferDesc& desc)
+VT::GPUBufferReference VT::GraphicResourceManager::createGPUBuffer(const GPUBufferDesc& desc,
+	GraphicStateValueType initialState, const InitialGPUBufferData* initialData)
 {
-	IGPUBuffer* buffer = getGraphicDevice()->createBuffer(desc);
+	IGPUBuffer* buffer = getGraphicDevice()->createBuffer(desc, initialState, initialData);
 	if (!buffer)
 	{
 		return nullptr;
