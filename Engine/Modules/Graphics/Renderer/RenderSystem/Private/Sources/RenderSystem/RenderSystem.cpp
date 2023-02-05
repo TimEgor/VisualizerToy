@@ -7,7 +7,7 @@
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicResourceManager/IGraphicResourceManager.h"
-#include "RenderSystem/IRenderContext.h"
+#include "RenderContext/IRenderContext.h"
 
 #include "GraphicPipeline/IPipelineState.h"
 #include "GraphicPipeline/IPipelineBindingLayout.h"
@@ -34,6 +34,7 @@ bool VT::RenderSystem::init()
 
 	m_context = environment->m_graphicPlatform->createRenderContext();
 	VT_CHECK_INITIALIZATION(m_context && m_context->init(commandList));
+	VT_CHECK_INITIALIZATION(m_graphicContext.init(m_context));
 
 	m_frameFence = environment->m_graphicDevice->createFence();
 	VT_CHECK_INITIALIZATION(m_frameFence);
@@ -132,21 +133,18 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 	pipelineStateInfo.m_formats.push_back(targetDesc.m_format);
 
-	RenderContextBeginInfo contextInfo{};
-	contextInfo.m_targets.push_back({ target, targetView,
+	RenderContextTarget targets[] = { {target, targetView,
 		Viewport(targetDesc.m_width, targetDesc.m_height),
-		Scissors(targetDesc.m_width, targetDesc.m_height)
-	});
+		Scissors(targetDesc.m_width, targetDesc.m_height),
+		{0.5f, 0.5f, 0.5f, 1.0f}
+	} };
 
 	const RenderingData::TransformDataCollection& transforms = m_renderingData.getTransformDataCollection();
 	const RenderingData::MeshDataCollection& meshes = m_renderingData.getMeshDataCollection();
 	const size_t meshesCount = meshes.size();
 
-	std::vector<IGPUBuffer*> vertBuffers;
-
 	m_context->begin();
-	m_context->prepareTextureForRendering(target);
-	m_context->beginRendering(contextInfo);
+	m_graphicContext.setRenderingTargets(1, targets);
 
 	m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
 	m_context->setBindingLayout(m_drawingPassData.m_bindingLayout->getTypedObject());
@@ -174,15 +172,6 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 		PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(
 			pipelineStateInfo, m_drawingPassData.m_bindingLayout, vertexData.m_inputLayout);
 
-		vertBuffers.clear();
-		const uint32_t vertBuffersCount = static_cast<uint32_t>(vertexData.m_bindings.size());
-		vertBuffers.reserve(vertBuffersCount);
-
-		for (uint32_t i = 0; i < vertBuffersCount; ++i)
-		{
-			vertBuffers.push_back(vertexData.m_bindings[i]->getTypedResource());
-		}
-
 		//
 
 		COMPUTE_MATH::ComputeMatrix objectTransform = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(transforms[meshData.m_transformIndex]);
@@ -194,16 +183,16 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 		m_context->setBindingParameterValue(1, 0, m_drawingPassData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
 		m_context->setBindingParameterValue(1, 1, meshDataIndex);
 
-		m_context->setPipelineState(pipelineState->getTypedObject());
-		m_context->setVertexBuffers(vertBuffers.size(), vertBuffers.data(), vertexData.m_inputLayout->getDesc());
-		m_context->setIndexBuffer(indexData.m_indexBuffer->getTypedResource(), indexData.m_indexFormat);
+		m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
+		m_graphicContext.setPipelineState(pipelineState);
+		m_graphicContext.setVertexBuffers(vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
+		m_graphicContext.setIndexBuffer(indexData.m_indexBuffer, indexData.m_indexFormat);
 		m_context->drawIndexed(indexData.m_indexCount);
 	}
 
 	m_drawingPassData.m_perObjectTransformBuffer->getTypedResource()->unmapData();
 
-	m_context->endRendering();
-	m_context->prepareTextureForPresenting(target);
+	m_graphicContext.prepareTextureResourceForPresenting(target);
 	m_context->end();
 
 	CommandListSubmitInfo submitInfo;

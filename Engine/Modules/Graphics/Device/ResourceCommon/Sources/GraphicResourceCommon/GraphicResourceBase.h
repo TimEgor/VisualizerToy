@@ -9,6 +9,8 @@ namespace VT
 	protected:
 		FenceValueType m_usingFenceValues[static_cast<uint32_t>(GraphicResourceUsingMarkType::COUNT)];
 
+		GraphicStateValueType m_state = CommonGraphicState::UNDEFINED;
+
 	public:
 		GraphicResourceBase()
 		{
@@ -29,5 +31,8 @@ namespace VT
 				currentFenceVal = fenceVal;
 			}
 		}
+
+		virtual GraphicStateValueType getState() const override { return m_state; }
+		virtual void setState(GraphicStateValueType state) override { m_state = state; }
 	};
 }

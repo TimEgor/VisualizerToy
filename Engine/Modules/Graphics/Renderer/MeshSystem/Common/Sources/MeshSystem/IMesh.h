@@ -8,6 +8,7 @@
 
 namespace VT
 {
+
 	struct MeshVertexData final
 	{
 		using MeshVertexBindingContainer = std::vector<GPUBufferReference>;

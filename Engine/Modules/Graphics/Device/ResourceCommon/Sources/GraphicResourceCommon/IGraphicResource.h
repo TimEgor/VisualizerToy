@@ -14,8 +14,10 @@ namespace VT
 		SHADER_RESOURCE_COMPUTE = 1 << 1,
 		UNORDERED_ACCESS = 1 << 2,
 		COMMON_READ = 1 << 3,
+		COPY_SRC = 1 << 4,
+		COPY_DEST = 1 << 5,
 
-		MAX_COMMON_STATE = COMMON_READ
+		MAX_COMMON_STATE = COPY_DEST
 	};
 
 	enum class GraphicResourceUsingMarkType : uint32_t
@@ -36,6 +38,9 @@ namespace VT
 
 		virtual bool isUsing(GraphicResourceUsingMarkType markType, FenceValueType fenceVal) const = 0;
 		virtual void markUsage(GraphicResourceUsingMarkType markType, FenceValueType fenceVal) = 0;
+
+		virtual GraphicStateValueType getState() const = 0;
+		virtual void setState(GraphicStateValueType state) = 0;
 
 		virtual GraphicResourceType getType() const = 0;
 	};

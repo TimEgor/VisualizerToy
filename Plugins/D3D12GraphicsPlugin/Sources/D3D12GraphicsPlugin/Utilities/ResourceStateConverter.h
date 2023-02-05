@@ -17,6 +17,10 @@ namespace VT_D3D12
 			return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 		case VT::CommonGraphicState::COMMON_READ:
 			return D3D12_RESOURCE_STATE_GENERIC_READ;
+		case VT::CommonGraphicState::COPY_SRC:
+			return D3D12_RESOURCE_STATE_COPY_SOURCE;
+		case VT::CommonGraphicState::COPY_DEST:
+			return D3D12_RESOURCE_STATE_COPY_DEST;
 
 		case VT::GPUBufferState::VERTEX_BUFFER:
 		case VT::GPUBufferState::CONSTANT_BUFFER:
@@ -32,6 +36,7 @@ namespace VT_D3D12
 		}
 	}
 
+
 	inline D3D12_RESOURCE_STATES convertTextureStateVTtoD3D12(VT::GraphicStateValueType state)
 	{
 		switch (state)
@@ -42,6 +47,12 @@ namespace VT_D3D12
 			return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 		case VT::CommonGraphicState::UNORDERED_ACCESS:
 			return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		case VT::CommonGraphicState::COMMON_READ:
+			return D3D12_RESOURCE_STATE_GENERIC_READ;
+		case VT::CommonGraphicState::COPY_SRC:
+			return D3D12_RESOURCE_STATE_COPY_SOURCE;
+		case VT::CommonGraphicState::COPY_DEST:
+			return D3D12_RESOURCE_STATE_COPY_DEST;
 
 		case VT::TextureState::RENDER_TARGET:
 			return D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -49,6 +60,8 @@ namespace VT_D3D12
 			return D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_DEPTH_WRITE;
 		case VT::TextureState::DEPTH_STENCIL_READONLY:
 			return D3D12_RESOURCE_STATE_DEPTH_READ;
+		case VT::TextureState::PRESENTING:
+			return D3D12_RESOURCE_STATE_PRESENT;
 
 		case VT::CommonGraphicState::UNDEFINED:
 		default:

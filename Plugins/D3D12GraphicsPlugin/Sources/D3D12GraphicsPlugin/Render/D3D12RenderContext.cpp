@@ -5,16 +5,19 @@
 #include "D3D12GraphicsPlugin/Commands/D3D12GraphicsCommandList.h"
 #include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineState.h"
 #include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineBindingLayout.h"
-#include "D3D12GraphicsPlugin/Textures/D3D12Texture2D.h"
 #include "D3D12GraphicsPlugin/Buffer/D3D12GPUBuffer.h"
 #include "D3D12GraphicsPlugin/Resource/D3D12ResourceDescriptor.h"
 #include "D3D12GraphicsPlugin/Resource/D3D12ResourceDescriptorHeap.h"
 #include "D3D12GraphicsPlugin/Utilities/InputLayoutConverter.h"
+#include "D3D12GraphicsPlugin/Utilities/ResourceStateConverter.h"
+#include "D3D12GraphicsPlugin/Utilities/PrimitiveTopologyConverter.h"
 
 bool VT_D3D12::D3D12RenderContext::init(VT::ICommandList* commandList)
 {
 	m_commandList = reinterpret_cast<D3D12GraphicsCommandList*>(commandList);
 	VT_CHECK_INITIALIZATION(m_commandList);
+
+	VT_CHECK_INITIALIZATION(m_barrierCache.init(32));
 
 	return true;
 }
@@ -35,84 +38,102 @@ void VT_D3D12::D3D12RenderContext::begin()
 
 void VT_D3D12::D3D12RenderContext::end()
 {
+	m_barrierCache.flush(m_commandList->getD3D12CommandList());
 	m_commandList->close();
 }
 
-void VT_D3D12::D3D12RenderContext::beginRendering(const VT::RenderContextBeginInfo& info)
+void VT_D3D12::D3D12RenderContext::clearRenderTarget(const VT::IGraphicResourceDescriptor* renderTargetView,
+	const float* clearValues)
 {
-	D3D12GraphicsCommandListComPtr d3d12CommandList = m_commandList->getD3D12CommandList();
+	m_barrierCache.flush(m_commandList->getD3D12CommandList());
 
-	const size_t targetsCount = info.m_targets.size();
+	const D3D12ResourceDescriptor* d3d12Descriptor = reinterpret_cast<const D3D12ResourceDescriptor*>(renderTargetView);
+	m_commandList->getD3D12CommandList()->ClearRenderTargetView(d3d12Descriptor->getCPUHandle(), clearValues, 0, nullptr);
+}
 
-	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> targetHandles;
-	std::vector<D3D12_VIEWPORT> viewports;
-	std::vector<D3D12_RECT> scissors;
+void VT_D3D12::D3D12RenderContext::setRenderTargets(uint32_t count,
+	VT::IGraphicResourceDescriptor* const* renderTargetViews)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE d3d12RTVHandles[MAX_RENDER_TARGETS_COUNT];
 
-	targetHandles.reserve(targetsCount);
-	viewports.reserve(targetsCount);
-	scissors.reserve(targetsCount);
-
-	for (const auto& target : info.m_targets)
+	for (uint32_t i = 0; i < count; ++i)
 	{
-		D3D12_VIEWPORT d3d12Viewport{};
-		d3d12Viewport.TopLeftX = static_cast<float>(target.m_viewport.m_x);
-		d3d12Viewport.TopLeftY = static_cast<float>(target.m_viewport.m_y);
-		d3d12Viewport.Width = static_cast<float>(target.m_viewport.m_width);
-		d3d12Viewport.Height = static_cast<float>(target.m_viewport.m_height);
+		const VT::IGraphicResourceDescriptor* rtvDescriptor = renderTargetViews[i];
+
+		const D3D12ResourceDescriptor* d3d12Descriptor = reinterpret_cast<const D3D12ResourceDescriptor*>(rtvDescriptor);
+		d3d12RTVHandles[i] = d3d12Descriptor->getCPUHandle();
+	}
+
+	m_commandList->getD3D12CommandList()->OMSetRenderTargets(static_cast<UINT>(count), d3d12RTVHandles, false, nullptr);
+}
+
+void VT_D3D12::D3D12RenderContext::setViewports(uint32_t count, const VT::Viewport* viewports)
+{
+	D3D12_VIEWPORT d3d12Viewports[MAX_RENDER_TARGETS_COUNT];
+
+	for (uint32_t i = 0; i < count; ++i)
+	{
+		const VT::Viewport& viewport = viewports[i];
+
+		D3D12_VIEWPORT& d3d12Viewport = d3d12Viewports[i];
+		d3d12Viewport.TopLeftX = static_cast<float>(viewport.m_x);
+		d3d12Viewport.TopLeftY = static_cast<float>(viewport.m_y);
+		d3d12Viewport.Width = static_cast<float>(viewport.m_width);
+		d3d12Viewport.Height = static_cast<float>(viewport.m_height);
 		d3d12Viewport.MaxDepth = 1.0f;
 		d3d12Viewport.MinDepth = 0.0f;
-
-		D3D12_RECT d3d12Scissors{};
-		d3d12Scissors.left = target.m_scissors.m_left;
-		d3d12Scissors.top = target.m_scissors.m_top;
-		d3d12Scissors.right = target.m_scissors.m_right;
-		d3d12Scissors.bottom = target.m_scissors.m_bottom;
-
-		D3D12ResourceDescriptor* d3d12Descriptor = reinterpret_cast<D3D12ResourceDescriptor*>(target.m_view);
-		targetHandles.push_back(d3d12Descriptor->getCPUHandle());
-		viewports.push_back(d3d12Viewport);
-		scissors.push_back(d3d12Scissors);
 	}
 
-	d3d12CommandList->OMSetRenderTargets(targetHandles.size(), targetHandles.data(), false, nullptr);
+	m_commandList->getD3D12CommandList()->RSSetViewports(count, d3d12Viewports);
+}
 
-	float clearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	for (const auto& handle : targetHandles)
+void VT_D3D12::D3D12RenderContext::setScissors(uint32_t count, const VT::Scissors* scissors)
+{
+	D3D12_RECT d3d12Scissors[MAX_RENDER_TARGETS_COUNT];
+
+	for (uint32_t i = 0; i < count; ++i)
 	{
-		d3d12CommandList->ClearRenderTargetView(handle, clearColor, 0, nullptr);
+		const VT::Scissors& targetScissors = scissors[i];
+
+		D3D12_RECT& d3d12TargetScissors = d3d12Scissors[i];
+		d3d12TargetScissors.left = static_cast<long>(targetScissors.m_left);
+		d3d12TargetScissors.top = static_cast<long>(targetScissors.m_top);
+		d3d12TargetScissors.right = static_cast<long>(targetScissors.m_right);
+		d3d12TargetScissors.bottom = static_cast<long>(targetScissors.m_bottom);
 	}
 
-	//TMP
-	d3d12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	d3d12CommandList->RSSetViewports(targetsCount, viewports.data());
-	d3d12CommandList->RSSetScissorRects(targetsCount, scissors.data());
+	m_commandList->getD3D12CommandList()->RSSetScissorRects(count, d3d12Scissors);
 }
 
-void VT_D3D12::D3D12RenderContext::endRendering()
+void VT_D3D12::D3D12RenderContext::changeResourceState(VT::IGraphicResource* resource,
+	VT::GraphicStateValueType currentState, VT::GraphicStateValueType targetState)
 {
-}
+	if (currentState == targetState)
+	{
+		return;
+	}
 
-void VT_D3D12::D3D12RenderContext::prepareTextureForRendering(VT::ITexture2D* texture)
-{
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = reinterpret_cast<D3D12Texture2D*>(texture)->getD3D12Resource().Get();
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	D3D12_RESOURCE_STATES beforeState = D3D12_RESOURCE_STATE_COMMON;
+	D3D12_RESOURCE_STATES afterState = D3D12_RESOURCE_STATE_COMMON;
 
-	m_commandList->getD3D12CommandList()->ResourceBarrier(1, &barrier);
-}
+	VT::GraphicResourceType resourceType = resource->getType();
+	if (resourceType == VT::IGPUBuffer::getGraphicResourceType())
+	{
+		beforeState = convertBufferStateVTtoD3D12(currentState);
+		afterState = convertBufferStateVTtoD3D12(targetState);
+	}
+	else if (resourceType == VT::ITexture::getGraphicResourceType())
+	{
+		beforeState = convertTextureStateVTtoD3D12(currentState);
+		afterState = convertTextureStateVTtoD3D12(targetState);
+	}
 
-void VT_D3D12::D3D12RenderContext::prepareTextureForPresenting(VT::ITexture2D* texture)
-{
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = reinterpret_cast<D3D12Texture2D*>(texture)->getD3D12Resource().Get();
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	D3D12_RESOURCE_TRANSITION_BARRIER barrier{};
+	barrier.pResource = resource->getNativeHandleCast<ID3D12Resource>();
+	barrier.StateBefore = beforeState;
+	barrier.StateAfter = afterState;
 
-	m_commandList->getD3D12CommandList()->ResourceBarrier(1, &barrier);
+	m_barrierCache.addBarrier(m_commandList->getD3D12CommandList(), barrier);
 }
 
 void VT_D3D12::D3D12RenderContext::setDescriptorHeap(VT::IGraphicResourceDescriptorHeap* heap)
@@ -150,7 +171,7 @@ void VT_D3D12::D3D12RenderContext::setPipelineState(const VT::IPipelineState* pi
 void VT_D3D12::D3D12RenderContext::setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers,
 	const VT::InputLayoutDesc& inputLayoutDesc)
 {
-	std::vector<D3D12_VERTEX_BUFFER_VIEW> d3d12VertexViews(buffersCount);
+	D3D12_VERTEX_BUFFER_VIEW d3d12VertexViews[MAX_VERTEX_BUFFERS_COUNT];
 
 	for (uint32_t bufferIndex = 0; bufferIndex < buffersCount; ++bufferIndex)
 	{
@@ -165,7 +186,7 @@ void VT_D3D12::D3D12RenderContext::setVertexBuffers(uint32_t buffersCount, VT::I
 		d3d12VertexView.StrideInBytes = bindingDesc.m_stride;
 	}
 
-	m_commandList->getD3D12CommandList()->IASetVertexBuffers(0, buffersCount, d3d12VertexViews.data());
+	m_commandList->getD3D12CommandList()->IASetVertexBuffers(0, buffersCount, d3d12VertexViews);
 }
 
 void VT_D3D12::D3D12RenderContext::setIndexBuffer(VT::IGPUBuffer* buffer, VT::InputLayoutElementType indexType)
@@ -180,12 +201,19 @@ void VT_D3D12::D3D12RenderContext::setIndexBuffer(VT::IGPUBuffer* buffer, VT::In
 	m_commandList->getD3D12CommandList()->IASetIndexBuffer(&d3d12IndexView);
 }
 
+void VT_D3D12::D3D12RenderContext::setPrimitiveTopology(VT::PrimitiveTopology topology)
+{
+	m_commandList->getD3D12CommandList()->IASetPrimitiveTopology(convertPrimitiveTopologyVTtoD3D12(topology));
+}
+
 void VT_D3D12::D3D12RenderContext::draw(uint32_t vertCount)
 {
+	m_barrierCache.flush(m_commandList->getD3D12CommandList());
 	m_commandList->getD3D12CommandList()->DrawInstanced(vertCount, 1, 0, 0);
 }
 
 void VT_D3D12::D3D12RenderContext::drawIndexed(uint32_t indexCount)
 {
+	m_barrierCache.flush(m_commandList->getD3D12CommandList());
 	m_commandList->getD3D12CommandList()->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
 }

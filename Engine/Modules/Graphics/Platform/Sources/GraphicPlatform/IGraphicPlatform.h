@@ -18,7 +18,7 @@ namespace VT
 		virtual void release() = 0;
 
 		virtual IGraphicDevice* createGraphicDevice() = 0;
-		virtual VT::IRenderContext* createRenderContext() = 0;
+		virtual IRenderContext* createRenderContext() = 0;
 
 		virtual GraphicPlatformType getType() const = 0;
 	};

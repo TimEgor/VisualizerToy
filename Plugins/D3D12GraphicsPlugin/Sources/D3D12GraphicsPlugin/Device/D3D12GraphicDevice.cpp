@@ -131,7 +131,7 @@ bool VT_D3D12::D3D12GraphicDevice::createShaderResourceDescriptorInternal(
 	return true;
 }
 
-D3D12_RESOURCE_STATES VT_D3D12::D3D12GraphicDevice::chooseInitialResourceState(bool isHostVisible,
+D3D12_RESOURCE_STATES VT_D3D12::D3D12GraphicDevice::chooseInitialD3D12ResourceState(bool isHostVisible,
 	bool havingInitialData, D3D12_RESOURCE_STATES targetInitialState)
 {
 	if (isHostVisible)
@@ -147,8 +147,24 @@ D3D12_RESOURCE_STATES VT_D3D12::D3D12GraphicDevice::chooseInitialResourceState(b
 	return targetInitialState;
 }
 
+VT::GraphicStateValueType VT_D3D12::D3D12GraphicDevice::chooseInitialVTResourceState(bool isHostVisible,
+	bool havingInitialData, VT::GraphicStateValueType targetInitialState)
+{
+	if (isHostVisible)
+	{
+		return VT::CommonGraphicState::COMMON_READ;
+	}
+
+	if (havingInitialData)
+	{
+		return VT::CommonGraphicState::COPY_DEST;
+	}
+
+	return targetInitialState;
+}
+
 void VT_D3D12::D3D12GraphicDevice::uploadBufferResourceData(bool useUploadingContext,
-	D3D12ResourceBase* dstResource, const VT::InitialGPUBufferData& initialData)
+                                                            D3D12GPUBuffer* dstResource, const VT::InitialGPUBufferData& initialData)
 {
 	assert(dstResource);
 	assert(initialData.data && initialData.dataSize > 0);
@@ -413,6 +429,7 @@ VT::ISwapChain* VT_D3D12::D3D12GraphicDevice::createSwapChain(const VT::SwapChai
 
 		d3d12SwapChain->GetBuffer(i, VT_IID(d3d12TextureResource), VT_PPV(d3d12TextureResource));
 		D3D12Texture2D* d3d12Texture = new (&textures[i]) D3D12Texture2D(textureDesc, d3d12TextureResource);
+		d3d12Texture->setState(VT::TextureState::PRESENTING);
 		createRenderTargetDescriptor(&descriptors[i], d3d12Texture);
 	}
 
@@ -452,7 +469,7 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 	allocationDesc.HeapType = desc.isHostVisible ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
 
 	D3D12_RESOURCE_STATES targetInitialState = convertBufferStateVTtoD3D12(initialState);
-	const D3D12_RESOURCE_STATES d3d12ResourceState = chooseInitialResourceState(desc.isHostVisible, initialData, targetInitialState);
+	const D3D12_RESOURCE_STATES d3d12ResourceState = chooseInitialD3D12ResourceState(desc.isHostVisible, initialData, targetInitialState);
 
 	ID3D12Resource* d3d12Resource = nullptr;
 	D3D12MA::Allocation* d3d12MemAllocation = nullptr;
@@ -466,6 +483,7 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 	}
 
 	D3D12GPUBuffer* gpuBuffer = new (buffer) D3D12GPUBuffer(desc, m_d3d12Device, d3d12Resource, d3d12MemAllocation);
+	gpuBuffer->setState(chooseInitialVTResourceState(desc.isHostVisible, initialData, initialState));
 
 	if (initialData)
 	{
@@ -783,7 +801,7 @@ bool VT_D3D12::D3D12GraphicDevice::createPipelineBindingLayout(
 	D3D12BlobComPtr errorBlob = nullptr;
 	serializationResult = D3D12SerializeRootSignature(&d3d12RootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, signature.GetAddressOf(), errorBlob.GetAddressOf());
 #else
-	serializationResult = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, signature.GetAddressOf(), nullptr);
+	serializationResult = D3D12SerializeRootSignature(&d3d12RootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, signature.GetAddressOf(), nullptr);
 #endif // _DEBUG
 
 	if (FAILED(serializationResult))
@@ -850,7 +868,7 @@ void VT_D3D12::D3D12GraphicDevice::submitCommandList(VT::ICommandList* list, con
 {
 	D3D12GraphicsCommandList* d3d12CommandList = reinterpret_cast<D3D12GraphicsCommandList*>(list);
 	ID3D12CommandList* d3d12CommandListHandle = d3d12CommandList->getD3D12CommandList().Get();
-
+	
 	m_graphicQueue->ExecuteCommandLists(1, &d3d12CommandListHandle);
 
 	D3D12Fence* d3d12Fence = reinterpret_cast<D3D12Fence*>(info.m_fence);

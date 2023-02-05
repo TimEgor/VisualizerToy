@@ -36,7 +36,7 @@ namespace VT
 		TypedTextureResourceHandle(TextureType* texture, GraphicResourceHandleID handleID)
 			: TextureResourceHandle(texture, handleID) {}
 
-		TextureType* getTypeTexture() const { return getTextureCast<ITexture>(); }
+		TextureType* getTypeTexture() const { return getTextureCast<TextureType>(); }
 	};
 
 	COUNTABLE_REFERENCES_DECLARATION_BY_NAME(TextureResourceHandle, Texture)

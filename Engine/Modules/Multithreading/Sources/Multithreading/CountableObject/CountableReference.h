@@ -6,6 +6,9 @@
 
 namespace VT
 {
+	template<typename T>
+	class CountableObjetcReference;
+
 	template <typename T>
 	class CountableConstObjetcReference
 	{
@@ -27,6 +30,7 @@ namespace VT
 		CountableConstObjetcReference(const T* object);
 		CountableConstObjetcReference(const CountableConstObjetcReference<T>& reference);
 		CountableConstObjetcReference(CountableConstObjetcReference<T>&& reference);
+		CountableConstObjetcReference(const CountableObjetcReference<T>& reference);
 		virtual ~CountableConstObjetcReference() { releaseReference(); }
 
 		inline CountableConstObjetcReference& operator=(T* object) { return operator=(const_cast<const T*>(object)); }

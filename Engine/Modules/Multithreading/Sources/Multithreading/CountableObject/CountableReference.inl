@@ -53,6 +53,15 @@ namespace VT
 	}
 
 	template<typename T>
+	CountableConstObjetcReference<T>::CountableConstObjetcReference(const CountableObjetcReference<T>& reference)
+	{
+		if (reference.m_object)
+		{
+			m_object = reinterpret_cast<T*>(const_cast<T*>(reference.m_object)->getReferenceObject());
+		}
+	}
+
+	template<typename T>
 	CountableConstObjetcReference<T>& CountableConstObjetcReference<T>::operator=(const T* objectRef)
 	{
 		assign(objectRef);

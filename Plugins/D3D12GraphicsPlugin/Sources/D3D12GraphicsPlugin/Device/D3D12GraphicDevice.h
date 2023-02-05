@@ -7,6 +7,7 @@
 
 namespace VT_D3D12
 {
+	class D3D12GPUBuffer;
 	class D3D12Fence;
 	class D3D12ResourceBase;
 	class D3D12ResourceDescriptorHeap;
@@ -45,8 +46,9 @@ namespace VT_D3D12
 		bool createShaderResourceDescriptorInternal(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource,
 			const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc);
 
-		D3D12_RESOURCE_STATES chooseInitialResourceState(bool isHostVisible, bool havingInitialData, D3D12_RESOURCE_STATES targetInitialState);
-		void uploadBufferResourceData(bool useUploadingContext, D3D12ResourceBase* dstResource, const VT::InitialGPUBufferData& data);
+		D3D12_RESOURCE_STATES chooseInitialD3D12ResourceState(bool isHostVisible, bool havingInitialData, D3D12_RESOURCE_STATES targetInitialState);
+		VT::GraphicStateValueType chooseInitialVTResourceState(bool isHostVisible, bool havingInitialData, VT::GraphicStateValueType targetInitialState);
+		void uploadBufferResourceData(bool useUploadingContext, D3D12GPUBuffer* dstResource, const VT::InitialGPUBufferData& data);
 
 	protected:
 		virtual bool initDevice(bool isSwapChainEnabled) override;

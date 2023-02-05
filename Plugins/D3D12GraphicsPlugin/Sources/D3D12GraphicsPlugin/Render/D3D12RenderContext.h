@@ -1,7 +1,8 @@
 #pragma once
 
 #include "InputLayout/InputLayout.h"
-#include "RenderSystem/IRenderContext.h"
+#include "RenderContext/IRenderContext.h"
+#include "D3D12ResourceBarrierCache.h"
 
 namespace VT_D3D12
 {
@@ -10,6 +11,7 @@ namespace VT_D3D12
 	class D3D12RenderContext final : public VT::IRenderContext
 	{
 	private:
+		D3D12ResourceBarrierCache m_barrierCache;
 		D3D12GraphicsCommandList* m_commandList = nullptr;
 
 	public:
@@ -24,11 +26,13 @@ namespace VT_D3D12
 		virtual void begin() override;
 		virtual void end() override;
 
-		virtual void beginRendering(const VT::RenderContextBeginInfo& info) override;
-		virtual void endRendering() override;
+		virtual void clearRenderTarget(const VT::IGraphicResourceDescriptor* renderTargetView, const float* clearValues) override;
+		virtual void setRenderTargets(uint32_t count, VT::IGraphicResourceDescriptor* const* renderTargetViews) override;
+		virtual void setViewports(uint32_t count, const VT::Viewport* viewports) override;
+		virtual void setScissors(uint32_t count, const VT::Scissors* scissors) override;
 
-		virtual void prepareTextureForRendering(VT::ITexture2D* texture) override;
-		virtual void prepareTextureForPresenting(VT::ITexture2D* texture) override;
+		virtual void changeResourceState(VT::IGraphicResource* resource,
+			VT::GraphicStateValueType currentState, VT::GraphicStateValueType targetState) override;
 
 		virtual void setDescriptorHeap(VT::IGraphicResourceDescriptorHeap* heap) override;
 
@@ -39,6 +43,8 @@ namespace VT_D3D12
 		virtual void setPipelineState(const VT::IPipelineState* pipelineState) override;
 		virtual void setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers, const VT::InputLayoutDesc& inputLayoutDesc) override;
 		virtual void setIndexBuffer(VT::IGPUBuffer* buffer, VT::InputLayoutElementType indexType) override;
+
+		virtual void setPrimitiveTopology(VT::PrimitiveTopology topology) override;
 
 		virtual void draw(uint32_t vertCount) override;
 		virtual void drawIndexed(uint32_t indexCount) override;

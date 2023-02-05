@@ -18,6 +18,7 @@ target_link_libraries(D3D12GraphicsPlugin
 		ManagedGraphicDevice
 
 		RenderSystem_COMMON
+		RenderContext
 
 		PluginSystem_COMMON
 		WindowSystem_COMMON

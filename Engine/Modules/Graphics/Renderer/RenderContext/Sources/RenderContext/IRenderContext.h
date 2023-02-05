@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-
 #include "Textures/TextureCommon.h"
+#include "GraphicResourceCommon/PrimitiveTopology.h"
+#include "InputLayout/InputLayout.h"
 
 namespace VT
 {
@@ -38,22 +38,12 @@ namespace VT
 			: m_width(width), m_height(height) {}
 	};
 
-	struct RenderContextTarget final
-	{
-		ITexture2D* m_texture = nullptr;
-		IGraphicResourceDescriptor* m_view = nullptr;
-
-		Viewport m_viewport;
-		Scissors m_scissors;
-	};
-
-	struct RenderContextBeginInfo final
-	{
-		std::vector<RenderContextTarget> m_targets;
-	};
-
 	class IRenderContext
 	{
+	public:
+		static constexpr uint32_t MAX_RENDER_TARGETS_COUNT = 8;
+		static constexpr uint32_t MAX_VERTEX_BUFFERS_COUNT = 16;
+
 	public:
 		IRenderContext() = default;
 		virtual ~IRenderContext() {}
@@ -66,11 +56,13 @@ namespace VT
 		virtual void begin() = 0;
 		virtual void end() = 0;
 
-		virtual void beginRendering(const RenderContextBeginInfo& info) = 0;
-		virtual void endRendering() = 0;
+		virtual void clearRenderTarget(const IGraphicResourceDescriptor* renderTargetView, const float* clearValues) = 0;
+		virtual void setRenderTargets(uint32_t count, IGraphicResourceDescriptor* const* renderTargetViews) = 0;
+		virtual void setViewports(uint32_t count, const Viewport* viewports) = 0;
+		virtual void setScissors(uint32_t count, const Scissors* scissors) = 0;
 
-		virtual void prepareTextureForRendering(ITexture2D* texture) = 0;
-		virtual void prepareTextureForPresenting(ITexture2D* texture) = 0;
+		virtual void changeResourceState(IGraphicResource* resource,
+			GraphicStateValueType currentState, GraphicStateValueType targetState) = 0;
 
 		virtual void setDescriptorHeap(IGraphicResourceDescriptorHeap* heap) = 0;
 
@@ -81,6 +73,8 @@ namespace VT
 		virtual void setPipelineState(const IPipelineState* pipelineState) = 0;
 		virtual void setVertexBuffers(uint32_t buffersCount, IGPUBuffer** buffers, const InputLayoutDesc& inputLayoutDesc) = 0;
 		virtual void setIndexBuffer(IGPUBuffer* buffer, InputLayoutElementType indexType) = 0;
+
+		virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
 
 		virtual void draw(uint32_t vertCount) = 0;
 		virtual void drawIndexed(uint32_t indexCount) = 0;

@@ -1,0 +1,19 @@
+#pragma once
+
+namespace VT
+{
+	enum class PrimitiveTopology
+	{
+		UNDEFINED,
+
+		POINTLIST,
+		LINELIST,
+		LINESTRIP,
+		TRIANGLELIST,
+		TRIANGLESTRIP,
+		LINELIST_ADJ,
+		LINESTRIP_ADJ,
+		TRIANGLELIST_ADJ,
+		TRIANGLESTRIP_ADJ
+	};
+}

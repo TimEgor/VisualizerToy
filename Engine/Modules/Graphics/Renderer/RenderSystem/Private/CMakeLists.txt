@@ -15,17 +15,16 @@ target_link_libraries(RenderSystem
 		MeshSystem_ECS
 		Scene_ECS
 
+		RenderContext
+
 		GraphicDevice
 		GraphicPipeline
 		GraphicPlatform
 		GraphicSynchronization
-		GPUBuffer
 		Math
 
 	PUBLIC
 		Core
 		MeshSystem_COMMON
 		LevelSystem_COMMON
-
-		Textures
 )

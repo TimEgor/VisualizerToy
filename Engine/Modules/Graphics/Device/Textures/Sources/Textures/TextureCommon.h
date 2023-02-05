@@ -31,6 +31,7 @@ namespace VT
 		RENDER_TARGET = MAX_COMMON_STATE << 1,
 		DEPTH_STENCIL = MAX_COMMON_STATE << 2,
 		DEPTH_STENCIL_READONLY = MAX_COMMON_STATE << 3,
+		PRESENTING = MAX_COMMON_STATE << 4
 	};
 
 	class ITexture : public GraphicResourceBase
