@@ -5,9 +5,6 @@
 
 namespace VT
 {
-	class ICommandList;
-	class IGraphicResourceDescriptorHeap;
-
 	struct RenderContextTarget final
 	{
 		ITexture2D* m_targetTexture = nullptr;
@@ -19,28 +16,17 @@ namespace VT
 		float clearValue[4];
 	};
 
-	class GraphicRenderContext final
+	namespace GraphicRenderContextUtils
 	{
-	private:
-		IRenderContext* m_context = nullptr;
+		void setRenderingTargets(IRenderContext* context, uint32_t targetsCount, const RenderContextTarget* targets);
 
-	public:
-		GraphicRenderContext() = default;
+		void prepareTextureForRendering(IRenderContext* context, Texture2DReference texture);
+		void prepareTextureResourceForPresenting(IRenderContext* context, ITexture2D* texture);
+		void prepareTextureResourceForRendering(IRenderContext* context, ITexture2D* texture);
+		void prepareResourceForBinding(IRenderContext* context, GraphicResourceReference resource, GraphicStateValueType targetState);
 
-		bool init(IRenderContext* context);
-		void release();
-
-		IRenderContext* getRenderContext() { return m_context; }
-
-		void setRenderingTargets(uint32_t targetsCount, const RenderContextTarget* targets);
-
-		void prepareTextureForRendering(Texture2DReference texture);
-		void prepareTextureResourceForPresenting(ITexture2D* texture);
-		void prepareTextureResourceForRendering(ITexture2D* texture);
-		void prepareResourceForBinding(GraphicResourceReference resource, GraphicStateValueType targetState);
-
-		void setPipelineState(PipelineStateReference pipelineState);
-		void setVertexBuffers(uint32_t buffersCount, const GPUBufferReference* buffers, const InputLayoutDesc& inputLayoutDesc);
-		void setIndexBuffer(GPUBufferReference buffer, InputLayoutElementType indexType);
-	};
+		void setPipelineState(IRenderContext* context, PipelineStateReference pipelineState);
+		void setVertexBuffers(IRenderContext* context, uint32_t buffersCount, const GPUBufferReference* buffers, const InputLayoutDesc& inputLayoutDesc);
+		void setIndexBuffer(IRenderContext* context, GPUBufferReference buffer, InputLayoutElementType indexType);
+	}
 }

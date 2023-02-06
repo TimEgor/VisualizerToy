@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GraphicRenderContext.h"
 #include "RenderSystem/IRenderSystem.h"
 #include "GraphicSynchronization/IFence.h"
 #include "GraphicResourceManager/ObjectHandles.h"
@@ -38,7 +37,6 @@ namespace VT
 	{
 	private:
 		IRenderContext* m_context = nullptr;
-		GraphicRenderContext m_graphicContext;
 
 		IFence* m_frameFence = nullptr;
 		FenceValueType m_lastSubmittedFenceValue = InitialFenceValue;

@@ -468,7 +468,7 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 	D3D12MA::ALLOCATION_DESC allocationDesc{};
 	allocationDesc.HeapType = desc.isHostVisible ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
 
-	D3D12_RESOURCE_STATES targetInitialState = convertBufferStateVTtoD3D12(initialState);
+	const D3D12_RESOURCE_STATES targetInitialState = convertBufferStateVTtoD3D12(initialState);
 	const D3D12_RESOURCE_STATES d3d12ResourceState = chooseInitialD3D12ResourceState(desc.isHostVisible, initialData, targetInitialState);
 
 	ID3D12Resource* d3d12Resource = nullptr;
@@ -545,8 +545,8 @@ bool VT_D3D12::D3D12GraphicDevice::createTexture2D(VT::ManagedGraphicDevice::Man
 	D3D12MA::ALLOCATION_DESC allocationDesc{};
 	allocationDesc.HeapType = desc.isHostVisible ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
 
-	const D3D12_RESOURCE_STATES d3d12ResourceState = desc.isHostVisible ?
-		D3D12_RESOURCE_STATE_GENERIC_READ : convertTextureStateVTtoD3D12(initialState);
+	const D3D12_RESOURCE_STATES targetInitialState = convertTextureStateVTtoD3D12(initialState);
+	const D3D12_RESOURCE_STATES d3d12ResourceState = chooseInitialD3D12ResourceState(desc.isHostVisible, false, targetInitialState);
 
 	ID3D12Resource* d3d12Resource = nullptr;
 	D3D12MA::Allocation* d3d12MemAllocation = nullptr;
@@ -559,7 +559,8 @@ bool VT_D3D12::D3D12GraphicDevice::createTexture2D(VT::ManagedGraphicDevice::Man
 		return false;
 	}
 
-	new (texture) D3D12Texture2D(desc, d3d12Resource, d3d12MemAllocation);
+	D3D12Texture2D* gpuTexture2D = new (texture) D3D12Texture2D(desc, d3d12Resource, d3d12MemAllocation);
+	gpuTexture2D->setState(chooseInitialVTResourceState(desc.isHostVisible, false, initialState));
 
 	return true;
 }

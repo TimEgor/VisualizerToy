@@ -7,7 +7,7 @@
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicResourceManager/IGraphicResourceManager.h"
-#include "RenderContext/IRenderContext.h"
+#include "GraphicRenderContext.h"
 
 #include "GraphicPipeline/IPipelineState.h"
 #include "GraphicPipeline/IPipelineBindingLayout.h"
@@ -34,7 +34,6 @@ bool VT::RenderSystem::init()
 
 	m_context = environment->m_graphicPlatform->createRenderContext();
 	VT_CHECK_INITIALIZATION(m_context && m_context->init(commandList));
-	VT_CHECK_INITIALIZATION(m_graphicContext.init(m_context));
 
 	m_frameFence = environment->m_graphicDevice->createFence();
 	VT_CHECK_INITIALIZATION(m_frameFence);
@@ -144,7 +143,7 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 	const size_t meshesCount = meshes.size();
 
 	m_context->begin();
-	m_graphicContext.setRenderingTargets(1, targets);
+	GraphicRenderContextUtils::setRenderingTargets(m_context, 1, targets);
 
 	m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
 	m_context->setBindingLayout(m_drawingPassData.m_bindingLayout->getTypedObject());
@@ -184,15 +183,15 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 		m_context->setBindingParameterValue(1, 1, meshDataIndex);
 
 		m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
-		m_graphicContext.setPipelineState(pipelineState);
-		m_graphicContext.setVertexBuffers(vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
-		m_graphicContext.setIndexBuffer(indexData.m_indexBuffer, indexData.m_indexFormat);
+		GraphicRenderContextUtils::setPipelineState(m_context, pipelineState);
+		GraphicRenderContextUtils::setVertexBuffers(m_context, vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
+		GraphicRenderContextUtils::setIndexBuffer(m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
 		m_context->drawIndexed(indexData.m_indexCount);
 	}
 
 	m_drawingPassData.m_perObjectTransformBuffer->getTypedResource()->unmapData();
 
-	m_graphicContext.prepareTextureResourceForPresenting(target);
+	GraphicRenderContextUtils::prepareTextureResourceForPresenting(m_context, target);
 	m_context->end();
 
 	CommandListSubmitInfo submitInfo;
