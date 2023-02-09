@@ -122,18 +122,9 @@ void VT_MODEL_RC::ModelHier::prepareMeshData(FbxMesh* fbxMesh, MeshData& meshDat
 			);
 
 			//Normal
-			int normalIndex = 0;
-			FbxLayerElement::EReferenceMode normalReferenceMode = elementNormal->GetReferenceMode();
-			if (normalReferenceMode == FbxGeometryElement::eDirect)
-			{
-				normalIndex = globalVertexIndex;
-			}
-			else
-			{
-				normalIndex = elementNormal->GetIndexArray().GetAt(globalVertexIndex);
-			}
+			FbxVector4 meshVertNormal;
+			fbxMesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, meshVertNormal);
 
-			FbxVector4 meshVertNormal = elementNormal->GetDirectArray().GetAt(normalIndex);
 			meshData.m_normals.emplace_back(
 				static_cast<float>(meshVertNormal[0]),
 				static_cast<float>(meshVertNormal[1]),
@@ -154,8 +145,8 @@ void VT_MODEL_RC::ModelHier::prepareMeshData(FbxMesh* fbxMesh, MeshData& meshDat
 
 			FbxVector2 meshVertUV = elementUV->GetDirectArray().GetAt(uvIndex);
 			meshData.m_UVs.emplace_back(
-				static_cast<float>(meshVertNormal[0]),
-				static_cast<float>(meshVertNormal[1])
+				static_cast<float>(meshVertUV[0]),
+				static_cast<float>(meshVertUV[1])
 			);
 		}
 	}

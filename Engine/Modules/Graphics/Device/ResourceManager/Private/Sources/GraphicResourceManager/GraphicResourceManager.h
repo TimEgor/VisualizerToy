@@ -14,6 +14,7 @@ namespace VT
 	class GraphicResourceManager : public IGraphicResourceManager
 	{
 		friend ManagedShaderGraphicResourceViewHandle;
+		friend ManagedRenderTargetGraphicResourceViewHandle;
 
 		friend ManagedGPUBufferGraphicResourceHandle;
 
@@ -28,6 +29,7 @@ namespace VT
 		friend class ManagedInputLayoutHandle;
 
 		using ShaderResourceViewPool = ThreadSafeObjectPool<ManagedShaderGraphicResourceViewHandle, ObjectPoolHandle32>;
+		using RenderTargetViewPool = ThreadSafeObjectPool<ManagedRenderTargetGraphicResourceViewHandle, ObjectPoolHandle16>;
 
 		using GPUBufferPool = ThreadSafeObjectPool<ManagedGPUBufferGraphicResourceHandle, ObjectPoolHandle32>;
 
@@ -43,6 +45,7 @@ namespace VT
 
 	private:
 		ShaderResourceViewPool m_shaderResourceViews;
+		RenderTargetViewPool m_renderTargetViews;
 
 		GPUBufferPool m_buffers;
 
@@ -58,6 +61,7 @@ namespace VT
 
 		//Resource deleting
 		void deleteShaderResourceViewInternal(IGraphicResourceDescriptor* descriptor);
+		void deleteRenderTargetViewInternal(IGraphicResourceDescriptor* descriptor);
 
 		void deleteGPUBufferInternal(IGPUBuffer* buffer);
 
@@ -71,6 +75,7 @@ namespace VT
 
 		//Reference deleting
 		void deleteShaderResourceViewReference(ShaderResourceViewHandleID handleID);
+		void deleteRenderTargetViewReference(RenderTargetViewHandleID handleID);
 
 		void deleteGPUBufferReference(GPUBufferHandleID handleID);
 
@@ -90,6 +95,8 @@ namespace VT
 
 		//
 		virtual ShaderResourceViewReference createShaderResourceDescriptor(GraphicResourceReference resource) override;
+		virtual RenderTargetViewReference createRenderTargetDescriptor(TextureReference texture) override;
+		virtual DepthStencilViewReference createDepthStencilDescriptor(TextureReference texture) override;
 
 		//Buffer
 		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc, GraphicStateValueType initialState,
@@ -100,7 +107,7 @@ namespace VT
 		virtual ShaderResourceViewReference createBufferResourceDescriptor(GPUBufferReference buffer) override;
 
 		//Texture
-		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) override;
+		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState) override;
 		virtual Texture2DReference getTexture2D(TextureHandleID handle) override;
 		virtual bool isValidTexture2D(TextureHandleID handle) const override;
 

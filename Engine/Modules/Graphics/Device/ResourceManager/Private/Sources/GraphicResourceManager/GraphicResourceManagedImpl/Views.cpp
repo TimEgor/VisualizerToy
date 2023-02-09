@@ -74,3 +74,62 @@ VT::ShaderResourceViewReference VT::GraphicResourceManager::createBufferResource
 
 	return nullptr;
 }
+
+void VT::GraphicResourceManager::deleteRenderTargetViewInternal(IGraphicResourceDescriptor* descriptor)
+{
+	assert(descriptor);
+	getGraphicDevice()->destroyRenderTargetDescriptor(descriptor);
+}
+
+void VT::GraphicResourceManager::deleteRenderTargetViewReference(RenderTargetViewHandleID handleID)
+{
+	m_renderTargetViews.removeElement(handleID);
+}
+
+VT::RenderTargetViewReference VT::GraphicResourceManager::createRenderTargetDescriptor(TextureReference texture)
+{
+	ITexture* deviceTextures = texture ? texture->getTexture() : nullptr;
+
+	if (deviceTextures)
+	{
+		IGraphicResourceDescriptor* deviceDescriptor = getGraphicDevice()->createRenderTargetDescriptor(deviceTextures);
+
+		if (deviceDescriptor)
+		{
+			RenderTargetViewPool::NewElementInfo newDescriptorInfo = m_renderTargetViews.addElementRaw();
+			ManagedRenderTargetGraphicResourceViewHandle* newDescriptorHandle =
+				new (newDescriptorInfo.m_elementPtr) ManagedRenderTargetGraphicResourceViewHandle(
+					deviceDescriptor, newDescriptorInfo.m_elementHandle.getKey(),
+					texture->getID(), deviceTextures->getType()
+				);
+
+			return newDescriptorHandle;
+		}
+	}
+
+	return nullptr;
+}
+
+VT::DepthStencilViewReference VT::GraphicResourceManager::createDepthStencilDescriptor(TextureReference texture)
+{
+	ITexture* deviceTextures = texture ? texture->getTexture() : nullptr;
+
+	if (deviceTextures)
+	{
+		IGraphicResourceDescriptor* deviceDescriptor = getGraphicDevice()->createDepthStencilDescriptor(deviceTextures);
+
+		if (deviceDescriptor)
+		{
+			RenderTargetViewPool::NewElementInfo newDescriptorInfo = m_renderTargetViews.addElementRaw();
+			ManagedRenderTargetGraphicResourceViewHandle* newDescriptorHandle =
+				new (newDescriptorInfo.m_elementPtr) ManagedRenderTargetGraphicResourceViewHandle(
+					deviceDescriptor, newDescriptorInfo.m_elementHandle.getKey(),
+					texture->getID(), deviceTextures->getType()
+				);
+
+			return newDescriptorHandle;
+		}
+	}
+
+	return nullptr;
+}

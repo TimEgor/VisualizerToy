@@ -1,37 +1,16 @@
 #pragma once
 
+#include "IRenderPass.h"
 #include "RenderSystem/IRenderSystem.h"
 #include "GraphicSynchronization/IFence.h"
-#include "GraphicResourceManager/ObjectHandles.h"
-#include "MeshSystem/MeshHandle.h"
 #include "RenderingData.h"
+#include "RenderPasses/GBufferPass.h"
 
 namespace VT
 {
 	class IFence;
 	class IRenderContext;
 	class IPipelineBindingLayout;
-
-	struct TestMaterialDrawingData final
-	{
-		VertexShaderReference m_vertShader;
-		PixelShaderReference m_pixelShader;
-	};
-
-	struct alignas(16) CameraTransforms final
-	{
-		Matrix44 m_viewTransform = Matrix44Identity;
-		Matrix44 m_projectionTransform = Matrix44Identity;
-	};
-
-	struct DrawingPassData final
-	{
-		GPUBufferReference m_cameraTransformBuffer; // Global camera transforms
-		GPUBufferReference m_perObjectTransformBuffer;
-		ShaderResourceViewReference m_cameraTransformCBV;
-		ShaderResourceViewReference m_perObjectTransformSRV;
-		PipelineBindingLayoutReference m_bindingLayout;
-	};
 
 	class RenderSystem final : public IRenderSystem
 	{
@@ -41,9 +20,12 @@ namespace VT
 		IFence* m_frameFence = nullptr;
 		FenceValueType m_lastSubmittedFenceValue = InitialFenceValue;
 
-		TestMaterialDrawingData m_materialDrawingData;
-		DrawingPassData m_drawingPassData;
+		CameraRenderingData m_cameraData;
 		RenderingData m_renderingData;
+
+		GBufferPass m_gBufferPass;
+
+		bool initCameraData();
 
 	public:
 		RenderSystem() = default;

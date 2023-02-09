@@ -27,6 +27,7 @@ namespace VT_D3D12
 		D3D12CommandQueueComPtr m_graphicQueue = nullptr; //TODO: moved from here to separated object
 
 		D3D12ResourceDescriptorHeap* m_rtvDescriptorHeap = nullptr;
+		D3D12ResourceDescriptorHeap* m_dsvDescriptorHeap = nullptr;
 		D3D12ResourceDescriptorHeap* m_srvDescriptorHeap = nullptr;
 
 		D3D12Fence* m_globalDeviceFence = nullptr;
@@ -71,11 +72,14 @@ namespace VT_D3D12
 		virtual void destroyBufferResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
 
 		//Textures
-		virtual bool createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture, const VT::Texture2DDesc& desc, VT::TextureState initialState) override;
+		virtual bool createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture, const VT::Texture2DDesc& desc, VT::GraphicStateValueType initialState) override;
 		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
 
 		virtual bool createRenderTargetDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::ITexture* texture) override;
 		virtual void destroyRenderTargetDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
+
+		virtual bool createDepthStencilDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::ITexture* texture) override;
+		virtual void destroyDepthStencilDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
 
 		//Shaders
 		virtual bool createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader, const void* code, size_t codeSize) override;

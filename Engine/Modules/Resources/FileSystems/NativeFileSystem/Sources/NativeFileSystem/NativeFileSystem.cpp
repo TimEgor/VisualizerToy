@@ -130,7 +130,10 @@ namespace VT
 
 	IFileSystem::IWriteStream* NativeFileSystem::openWriteStream(const FileName& resourceName) const
 	{
-		return new NativeFileSystemWriteStream(resourceName, std::ios_base::out | std::ios_base::trunc);
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
+
+		return new NativeFileSystemWriteStream(targetResourceName, std::ios_base::out | std::ios_base::trunc);
 	}
 
 	void NativeFileSystem::closeWriteStream(IWriteStream* stream) const
@@ -141,17 +144,26 @@ namespace VT
 
 	IFileSystem::IWriteStream* NativeFileSystem::openBinaryWriteStream(const FileName& resourceName) const
 	{
-		return new NativeFileSystemWriteStream(resourceName, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
+
+		return new NativeFileSystemWriteStream(targetResourceName, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
 	}
 
 	IFileSystem::IReadStream* NativeFileSystem::openReadStream(const FileName& resourceName) const
 	{
-		return new NativeFileSystemReadStream(resourceName, std::ios_base::in);
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
+
+		return new NativeFileSystemReadStream(targetResourceName, std::ios_base::in);
 	}
 
 	IFileSystem::IReadStream* NativeFileSystem::openBinaryReadStream(const FileName& resourceName) const
 	{
-		return new NativeFileSystemReadStream(resourceName, std::ios_base::in | std::ios_base::binary);
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
+
+		return new NativeFileSystemReadStream(targetResourceName, std::ios_base::in | std::ios_base::binary);
 	}
 
 	void NativeFileSystem::closeReadStream(IReadStream* stream) const
@@ -162,12 +174,18 @@ namespace VT
 
 	IFileSystem::IReadWriteStream* NativeFileSystem::openReadWriteStream(const FileName& resourceName) const
 	{
-		return new NativeFileSystemReadWriteStream(resourceName, std::ios_base::out | std::ios_base::in | std::ios_base::trunc);
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
+
+		return new NativeFileSystemReadWriteStream(targetResourceName, std::ios_base::out | std::ios_base::in | std::ios_base::trunc);
 	}
 
 	IFileSystem::IReadWriteStream* NativeFileSystem::openBinaryReadWriteStream(const FileName& resourceName) const
 	{
-		return new NativeFileSystemReadWriteStream(resourceName, std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::binary);
+		FileName targetResourceName;
+		prepareTargetName(resourceName, targetResourceName);
+
+		return new NativeFileSystemReadWriteStream(targetResourceName, std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::binary);
 	}
 
 	void NativeFileSystem::closeReadWriteStream(IReadWriteStream* stream) const

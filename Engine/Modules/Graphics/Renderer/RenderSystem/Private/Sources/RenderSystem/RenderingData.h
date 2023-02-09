@@ -7,6 +7,12 @@
 
 namespace VT
 {
+	struct alignas(16) CameraTransforms final
+	{
+		Matrix44 m_viewTransform = Matrix44Identity;
+		Matrix44 m_projectionTransform = Matrix44Identity;
+	};
+
 	struct MeshRenderingDataNode final
 	{
 		MeshConstReference m_mesh = nullptr;

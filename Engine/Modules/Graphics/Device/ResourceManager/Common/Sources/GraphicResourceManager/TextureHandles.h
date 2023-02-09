@@ -34,9 +34,9 @@ namespace VT
 	public:
 		TypedTextureResourceHandle() = default;
 		TypedTextureResourceHandle(TextureType* texture, GraphicResourceHandleID handleID)
-			: TextureResourceHandle(texture, handleID) {}
+			: TextureResourceHandle(reinterpret_cast<ITexture*>(texture), handleID) {}
 
-		TextureType* getTypeTexture() const { return getTextureCast<TextureType>(); }
+		TextureType* getTypedTexture() const { return getTextureCast<TextureType>(); }
 	};
 
 	COUNTABLE_REFERENCES_DECLARATION_BY_NAME(TextureResourceHandle, Texture)

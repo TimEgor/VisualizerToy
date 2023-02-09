@@ -16,6 +16,7 @@
 #include "MeshSystem/MeshComponent.h"
 
 #include "Math/Matrix.h"
+#include "ResourceSystem/IResourceSystem.h"
 
 VT_PLUGIN(VT_DEMO_TEST::TestDemoGameModule)
 
@@ -32,6 +33,8 @@ void VT_DEMO_TEST::TestDemoGameModule::onLoaded()
 	VT::ILevel* level = getEngineEnvironment()->m_levelSystem->createLevel();
 
 	getEngineEnvironment()->m_levelSystem->setCurrentLevel(level);
+
+	getEngineEnvironment()->m_resourceSystem->getResource("TestCube.fbx");
 
 	level->init();
 	VT::VT_Entity testEntity = level->createEntity();

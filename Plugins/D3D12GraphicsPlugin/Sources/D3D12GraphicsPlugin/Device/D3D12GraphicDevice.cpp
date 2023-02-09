@@ -274,6 +274,13 @@ bool VT_D3D12::D3D12GraphicDevice::initDevice(bool isSwapChainEnabled)
 	m_rtvDescriptorHeap = createResourceDescriptorHeapInternal(descriptorHeapDesc);
 	VT_CHECK_RETURN_FALSE(m_rtvDescriptorHeap);
 
+	descriptorHeapDesc.m_elementsCount = 32;
+	descriptorHeapDesc.m_descriptorType = VT::GraphicResourceDescriptorType::DSV;
+	descriptorHeapDesc.m_isShaderVisible = false;
+
+	m_dsvDescriptorHeap = createResourceDescriptorHeapInternal(descriptorHeapDesc);
+	VT_CHECK_RETURN_FALSE(m_dsvDescriptorHeap);
+
 	descriptorHeapDesc.m_elementsCount = 4096;
 	descriptorHeapDesc.m_descriptorType = VT::GraphicResourceDescriptorType::SRV;
 	descriptorHeapDesc.m_isShaderVisible = true;
@@ -300,6 +307,11 @@ void VT_D3D12::D3D12GraphicDevice::releaseDevice()
 	if (m_rtvDescriptorHeap)
 	{
 		destroyGraphicResourceDescriptionHeap(m_rtvDescriptorHeap);
+	}
+
+	if (m_dsvDescriptorHeap)
+	{
+		destroyGraphicResourceDescriptionHeap(m_dsvDescriptorHeap);
 	}
 
 	if (m_srvDescriptorHeap)
@@ -529,7 +541,7 @@ void VT_D3D12::D3D12GraphicDevice::destroyBufferResourceDescriptor(
 }
 
 bool VT_D3D12::D3D12GraphicDevice::createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture,
-	const VT::Texture2DDesc& desc, VT::TextureState initialState)
+	const VT::Texture2DDesc& desc, VT::GraphicStateValueType initialState)
 {
 	D3D12_RESOURCE_DESC d3d12ResourceDesc{};
 	d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -594,8 +606,32 @@ void VT_D3D12::D3D12GraphicDevice::destroyRenderTargetDescriptor(
 	m_rtvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
 }
 
+bool VT_D3D12::D3D12GraphicDevice::createDepthStencilDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::ITexture* texture)
+{
+	assert(texture);
+
+	D3D12Texture2D* d3d12Texture = reinterpret_cast<D3D12Texture2D*>(texture);
+
+	VT::DescriptorBindingHeapOffsetType offset = m_rtvDescriptorHeap->allocateDescriptor();
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_rtvDescriptorHeap->getCPUHandle(offset);
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_rtvDescriptorHeap->getGPUHandle(offset);
+
+	m_d3d12Device->CreateDepthStencilView(d3d12Texture->getD3D12Resource().Get(), nullptr, cpuHandle);
+
+	new (descriptor) D3D12ResourceDescriptor(VT::GraphicResourceDescriptorType::DSV, offset, cpuHandle, gpuHandle);
+
+	return true;
+}
+
+void VT_D3D12::D3D12GraphicDevice::destroyDepthStencilDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor)
+{
+	m_dsvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
+}
+
 bool VT_D3D12::D3D12GraphicDevice::createVertexShader(VT::ManagedGraphicDevice::ManagedVertexShaderBase* shader,
-	const void* code, size_t codeSize)
+                                                      const void* code, size_t codeSize)
 {
 	assert(shader);
 
@@ -704,7 +740,7 @@ bool VT_D3D12::D3D12GraphicDevice::createPipelineState(VT::ManagedGraphicDevice:
 	}
 
 	d3d12PipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-	d3d12PipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	d3d12PipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 	d3d12PipelineDesc.RasterizerState.DepthClipEnable = false;
 	d3d12PipelineDesc.RasterizerState.FrontCounterClockwise = false;
 	d3d12PipelineDesc.RasterizerState.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;

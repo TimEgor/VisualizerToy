@@ -1,7 +1,7 @@
 #ifndef __VERTEX_SAHDER_COMMON__
 #define __VERTEX_SAHDER_COMMON__
 
-#include "CommonShaderBinding.hlsli"
+#include "CommonGBufferShaderBinding.hlsli"
 
 ConstantBuffer<ElementBufferBindingInfo> perObjectTransformBufferBindingData : register(b1);
 

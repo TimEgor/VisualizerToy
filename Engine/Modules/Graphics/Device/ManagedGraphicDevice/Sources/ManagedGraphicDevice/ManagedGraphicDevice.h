@@ -60,11 +60,14 @@ namespace VT::ManagedGraphicDevice
 		virtual void destroyBufferResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
 
 		//Textures
-		virtual bool createTexture2D(ManagedTexture2DBase* texture, const Texture2DDesc& desc, TextureState initialState) = 0;
+		virtual bool createTexture2D(ManagedTexture2DBase* texture, const Texture2DDesc& desc, GraphicStateValueType initialState) = 0;
 		virtual void destroyTexture2D(ManagedTexture2DBase* texture) = 0;
 
 		virtual bool createRenderTargetDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, ITexture* texture) = 0;
 		virtual void destroyRenderTargetDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
+
+		virtual bool createDepthStencilDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, ITexture* texture) = 0;
+		virtual void destroyDepthStencilDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
 
 		//Shaders
 		virtual bool createVertexShader(ManagedVertexShaderBase* shader, const void* code, size_t codeSize) = 0;
@@ -124,11 +127,14 @@ namespace VT::ManagedGraphicDevice
 		virtual void destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
 
 		//Textures
-		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, TextureState initialState) override;
+		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState) override;
 		virtual void destroyTexture2D(ITexture2D* texture) override;
 
 		virtual IGraphicResourceDescriptor* createRenderTargetDescriptor(ITexture* texture) override;
 		virtual void destroyRenderTargetDescriptor(IGraphicResourceDescriptor* descriptor) override;
+
+		virtual IGraphicResourceDescriptor* createDepthStencilDescriptor(ITexture* texture) override;
+		virtual void destroyDepthStencilDescriptor(IGraphicResourceDescriptor* descriptor) override;
 
 		//Shaders
 		virtual IVertexShader* createVertexShader(const void* code, size_t codeSize) override;

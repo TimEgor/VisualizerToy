@@ -78,11 +78,14 @@ namespace VT
 		virtual void destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor) = 0;
 
 		//Texture
-		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, TextureState initialState) = 0;
+		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState) = 0;
 		virtual void destroyTexture2D(ITexture2D* texture) = 0;
 
 		virtual IGraphicResourceDescriptor* createRenderTargetDescriptor(ITexture* texture) = 0;
 		virtual void destroyRenderTargetDescriptor(IGraphicResourceDescriptor* descriptor) = 0;
+
+		virtual IGraphicResourceDescriptor* createDepthStencilDescriptor(ITexture* texture) = 0;
+		virtual void destroyDepthStencilDescriptor(IGraphicResourceDescriptor* descriptor) = 0;
 
 		//Shaders
 		virtual IVertexShader* createVertexShader(const void* code, size_t codeSize) = 0;

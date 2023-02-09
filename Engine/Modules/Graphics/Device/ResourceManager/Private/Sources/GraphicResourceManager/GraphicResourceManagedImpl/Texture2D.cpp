@@ -10,9 +10,19 @@ void VT::GraphicResourceManager::deleteTexture2DReference(TextureHandleID handle
 	m_textures2D.removeElement(handleID);
 }
 
-VT::Texture2DReference VT::GraphicResourceManager::createTexture2D(const Texture2DDesc& desc)
+VT::Texture2DReference VT::GraphicResourceManager::createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState)
 {
-	return Texture2DReference();
+	ITexture2D* texture = getGraphicDevice()->createTexture2D(desc, initialState);
+	if (!texture)
+	{
+		return nullptr;
+	}
+
+	Texture2DPool::NewElementInfo elementInfo = m_textures2D.addElementRaw();
+	ManagedTexture2DResourceHandle* textureHandle
+		= new (elementInfo.m_elementPtr) ManagedTexture2DResourceHandle(texture, elementInfo.m_elementHandle.getKey());
+
+	return textureHandle;
 }
 
 VT::Texture2DReference VT::GraphicResourceManager::getTexture2D(TextureHandleID handle)

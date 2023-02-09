@@ -38,7 +38,7 @@ void VT::GraphicRenderContextUtils::setRenderingTargets(IRenderContext* context,
 
 void VT::GraphicRenderContextUtils::prepareTextureForRendering(IRenderContext* context, Texture2DReference texture)
 {
-	prepareTextureResourceForRendering(context, texture->getTypeTexture());
+	prepareTextureResourceForRendering(context, texture->getTypedTexture());
 }
 
 void VT::GraphicRenderContextUtils::prepareTextureResourceForRendering(IRenderContext* context, ITexture2D* texture)

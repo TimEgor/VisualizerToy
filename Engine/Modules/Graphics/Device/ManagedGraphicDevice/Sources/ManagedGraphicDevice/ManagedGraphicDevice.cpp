@@ -141,7 +141,7 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyBufferResourceDescri
 	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
 }
 
-VT::ITexture2D* VT::ManagedGraphicDevice::ManagedGraphicDevice::createTexture2D(const Texture2DDesc& desc, TextureState initialState)
+VT::ITexture2D* VT::ManagedGraphicDevice::ManagedGraphicDevice::createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState)
 {
 	assert(m_descriptorStorage);
 
@@ -185,6 +185,33 @@ VT::IGraphicResourceDescriptor* VT::ManagedGraphicDevice::ManagedGraphicDevice::
 }
 
 void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyRenderTargetDescriptor(IGraphicResourceDescriptor* descriptor)
+{
+	assert(descriptor);
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorBase* managedDescriptor = reinterpret_cast<ManagedGraphicResourceDescriptorBase*>(descriptor);
+
+	destroyRenderTargetDescriptor(managedDescriptor);
+	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
+}
+
+VT::IGraphicResourceDescriptor* VT::ManagedGraphicDevice::ManagedGraphicDevice::createDepthStencilDescriptor(ITexture* texture)
+{
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorStorageInfoBase::NewObjectInfo newObjectInfo = m_descriptorStorage->addNewObject();
+	if (!createDepthStencilDescriptor(newObjectInfo.m_objectPtr, texture))
+	{
+		m_descriptorStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyDepthStencilDescriptor(IGraphicResourceDescriptor* descriptor)
 {
 	assert(descriptor);
 	assert(m_descriptorStorage);

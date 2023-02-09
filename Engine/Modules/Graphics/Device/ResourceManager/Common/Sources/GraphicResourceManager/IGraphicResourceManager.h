@@ -36,6 +36,9 @@ namespace VT
 		//
 		virtual ShaderResourceViewReference createShaderResourceDescriptor(GraphicResourceReference resource) = 0;
 
+		virtual RenderTargetViewReference createRenderTargetDescriptor(TextureReference texture) = 0;
+		virtual DepthStencilViewReference createDepthStencilDescriptor(TextureReference texture) = 0;
+
 		//Buffers
 		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc, GraphicStateValueType initialState,
 			const InitialGPUBufferData* initialData = nullptr) = 0;
@@ -45,7 +48,7 @@ namespace VT
 		virtual ShaderResourceViewReference createBufferResourceDescriptor(GPUBufferReference buffer) = 0;
 
 		//Texture2D
-		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc) = 0;
+		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState) = 0;
 		virtual Texture2DReference getTexture2D(TextureHandleID handle) = 0;
 		virtual bool isValidTexture2D(TextureHandleID handle) const = 0;
 

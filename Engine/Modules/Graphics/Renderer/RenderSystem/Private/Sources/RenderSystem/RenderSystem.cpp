@@ -9,8 +9,6 @@
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "GraphicRenderContext.h"
 
-#include "GraphicPipeline/IPipelineState.h"
-#include "GraphicPipeline/IPipelineBindingLayout.h"
 #include "Textures/ITexture2D.h"
 #include "GPUBuffer/IGPUBuffer.h"
 
@@ -24,36 +22,17 @@
 #include "Math/ComputeVector.h"
 #include "Math/Consts.h"
 
-bool VT::RenderSystem::init()
+bool VT::RenderSystem::initCameraData()
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicDevice* device = environment->m_graphicDevice;
-
-	ICommandList* commandList = environment->m_graphicDevice->createCommandList();
-	VT_CHECK_INITIALIZATION(commandList);
-
-	m_context = environment->m_graphicPlatform->createRenderContext();
-	VT_CHECK_INITIALIZATION(m_context && m_context->init(commandList));
-
-	m_frameFence = environment->m_graphicDevice->createFence();
-	VT_CHECK_INITIALIZATION(m_frameFence);
-
-	////
-
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
-	m_materialDrawingData.m_vertShader = resManager->loadVertexShader("TestInputLayoutVertexShader.hlsl");
-	m_materialDrawingData.m_pixelShader = resManager->loadPixelShader("TestInputLayoutPixelShader.hlsl");
-
-	VT_CHECK_INITIALIZATION(m_materialDrawingData.m_vertShader && m_materialDrawingData.m_pixelShader);
-
-	////
 
 	GPUBufferDesc transformBufferDesc{};
 
-	//
 	transformBufferDesc.m_byteSize = sizeof(CameraTransforms);
 	transformBufferDesc.isHostVisible = true;
-	m_drawingPassData.m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
+	m_cameraData.m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
 
 	CameraTransforms cameraTransforms;
 	COMPUTE_MATH::ComputeMatrix viewTransform = COMPUTE_MATH::matrixLookToLH(
@@ -70,32 +49,35 @@ bool VT::RenderSystem::init()
 	cameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
 
 	CameraTransforms* mappingCameraTransforms = nullptr;
-	m_drawingPassData.m_cameraTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingCameraTransforms));
+	m_cameraData.m_cameraTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingCameraTransforms));
 	memcpy(mappingCameraTransforms, &cameraTransforms, sizeof(CameraTransforms));
-	m_drawingPassData.m_cameraTransformBuffer->getTypedResource()->unmapData();
+	m_cameraData.m_cameraTransformBuffer->getTypedResource()->unmapData();
 
-	device->setResourceName(m_drawingPassData.m_cameraTransformBuffer->getResource(), "CameraTransform");
+	device->setResourceName(m_cameraData.m_cameraTransformBuffer->getResource(), "CameraTransform");
+
+	m_cameraData.m_cameraTransformCBV = resManager->createBufferResourceDescriptor(m_cameraData.m_cameraTransformBuffer);
+
+	return true;
+}
+
+bool VT::RenderSystem::init()
+{
+	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
+
+	ICommandList* commandList = environment->m_graphicDevice->createCommandList();
+	VT_CHECK_INITIALIZATION(commandList);
+
+	m_context = environment->m_graphicPlatform->createRenderContext();
+	VT_CHECK_INITIALIZATION(m_context && m_context->init(commandList));
+
+	m_frameFence = environment->m_graphicDevice->createFence();
+	VT_CHECK_INITIALIZATION(m_frameFence);
 
 	//
-	transformBufferDesc.m_byteSize = sizeof(Matrix44) * 50;
-	transformBufferDesc.m_byteStride = sizeof(Matrix44);
-	transformBufferDesc.m_flag = GPUBufferFlag::STRUCTURED;
-	m_drawingPassData.m_perObjectTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
-
-	device->setResourceName(m_drawingPassData.m_perObjectTransformBuffer->getResource(), "PerObjectTransform");
+	VT_CHECK_INITIALIZATION(initCameraData());
 
 	//
-
-	m_drawingPassData.m_cameraTransformCBV = resManager->createBufferResourceDescriptor(m_drawingPassData.m_cameraTransformBuffer);
-	m_drawingPassData.m_perObjectTransformSRV = resManager->createShaderResourceDescriptor(m_drawingPassData.m_perObjectTransformBuffer.getObject());
-
-	////
-
-	PipelineBindingLayoutDesc bindingDesc{};
-	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES); // Camera transforms
-	bindingDesc.m_descriptorBindings.emplace_back(2, 1, 0, ShaderStageVisibility::VERTEX_STAGE); // Object transforms
-
-	m_drawingPassData.m_bindingLayout = resManager->getPipelineBindingLayout(bindingDesc);
+	VT_CHECK_INITIALIZATION(m_gBufferPass.init());
 
 	return true;
 }
@@ -109,6 +91,8 @@ void VT::RenderSystem::release()
 		environment->m_graphicDevice->destroyFence(m_frameFence);
 		m_frameFence = nullptr;
 	}
+
+	m_gBufferPass.release();
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_context);
 }
@@ -124,72 +108,9 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
-	PipelineStateInfo pipelineStateInfo{};
-	pipelineStateInfo.m_vertexShader = m_materialDrawingData.m_vertShader->getTypedObject();
-	pipelineStateInfo.m_pixelShader = m_materialDrawingData.m_pixelShader->getTypedObject();
-
-	const Texture2DDesc& targetDesc = target->getDesc();
-
-	pipelineStateInfo.m_formats.push_back(targetDesc.m_format);
-
-	RenderContextTarget targets[] = { {target, targetView,
-		Viewport(targetDesc.m_width, targetDesc.m_height),
-		Scissors(targetDesc.m_width, targetDesc.m_height),
-		{0.5f, 0.5f, 0.5f, 1.0f}
-	} };
-
-	const RenderingData::TransformDataCollection& transforms = m_renderingData.getTransformDataCollection();
-	const RenderingData::MeshDataCollection& meshes = m_renderingData.getMeshDataCollection();
-	const size_t meshesCount = meshes.size();
-
 	m_context->begin();
-	GraphicRenderContextUtils::setRenderingTargets(m_context, 1, targets);
 
-	m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	m_context->setBindingLayout(m_drawingPassData.m_bindingLayout->getTypedObject());
-
-	m_context->setBindingParameterValue(0, 0, m_drawingPassData.m_cameraTransformCBV->getResourceView()->getBindingHeapOffset());
-
-	Matrix44* mappingObjectTransform = nullptr;
-	m_drawingPassData.m_perObjectTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingObjectTransform));
-
-	for (size_t meshDataIndex = 0; meshDataIndex < meshesCount; ++meshDataIndex)
-	{
-		const MeshRenderingDataNode& meshData = meshes[meshDataIndex];
-
-		//
-
-		IMesh* mesh = meshData.m_mesh->getMesh();
-		if (!mesh)
-		{
-			continue;
-		}
-
-		const MeshVertexData& vertexData = mesh->getVertexData();
-		const MeshIndexData& indexData = mesh->getIndexData();
-
-		PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(
-			pipelineStateInfo, m_drawingPassData.m_bindingLayout, vertexData.m_inputLayout);
-
-		//
-
-		COMPUTE_MATH::ComputeMatrix objectTransform = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(transforms[meshData.m_transformIndex]);
-		objectTransform = COMPUTE_MATH::matrixTranspose(objectTransform);
-		mappingObjectTransform[meshDataIndex] = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(objectTransform);
-
-		//
-
-		m_context->setBindingParameterValue(1, 0, m_drawingPassData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
-		m_context->setBindingParameterValue(1, 1, meshDataIndex);
-
-		m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
-		GraphicRenderContextUtils::setPipelineState(m_context, pipelineState);
-		GraphicRenderContextUtils::setVertexBuffers(m_context, vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
-		GraphicRenderContextUtils::setIndexBuffer(m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
-		m_context->drawIndexed(indexData.m_indexCount);
-	}
-
-	m_drawingPassData.m_perObjectTransformBuffer->getTypedResource()->unmapData();
+	m_gBufferPass.render({ m_context, m_renderingData, m_cameraData });
 
 	GraphicRenderContextUtils::prepareTextureResourceForPresenting(m_context, target);
 	m_context->end();

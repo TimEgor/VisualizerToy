@@ -16,6 +16,7 @@ namespace VT
 
 	using ShaderResourceViewHandleID = uint32_t;
 	using RenderTargetViewHandleID = uint16_t;
+	using DepthStencilViewHandleID = uint16_t;
 
 	using VertexShaderHandleID = uint32_t;
 	using PixelShaderHandleID = uint32_t;
@@ -25,6 +26,7 @@ namespace VT
 
 	GRAPHIC_RESOURCE_VIEW(Shader, ShaderResourceView, ShaderResourceViewHandleID);
 	GRAPHIC_RESOURCE_VIEW(RenderTarget, RenderTargetView, RenderTargetViewHandleID);
+	GRAPHIC_RESOURCE_VIEW(DepthStencil, DepthStencilView, DepthStencilViewHandleID);
 
 	GRAPHIC_TYPED_RESOURCE(GPUBuffer, IGPUBuffer);
 

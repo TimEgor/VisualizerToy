@@ -5,6 +5,7 @@
 namespace VT
 {
 	MANAGED_GRAPHIC_OBJECT_VIEW_DESTROY_RELEASE_IMPL(ShaderGraphicResourceViewHandle, deleteShaderResourceViewInternal, deleteShaderResourceViewReference)
+	MANAGED_GRAPHIC_OBJECT_VIEW_DESTROY_RELEASE_IMPL(RenderTargetGraphicResourceViewHandle, deleteRenderTargetViewInternal, deleteRenderTargetViewReference)
 
 	MANAGED_GRAPHIC_OBJECT_DESTROY_RELEASE_IMPL(GPUBufferGraphicResourceHandle, deleteGPUBufferInternal, deleteGPUBufferReference)
 
