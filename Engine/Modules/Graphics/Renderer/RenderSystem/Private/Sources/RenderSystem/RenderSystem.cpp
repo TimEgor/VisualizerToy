@@ -21,6 +21,7 @@
 #include "Math/ComputeMatrix.h"
 #include "Math/ComputeVector.h"
 #include "Math/Consts.h"
+#include "RenderPasses/GBuffer.h"
 
 bool VT::RenderSystem::initCameraData()
 {
@@ -77,7 +78,15 @@ bool VT::RenderSystem::init()
 	VT_CHECK_INITIALIZATION(initCameraData());
 
 	//
-	VT_CHECK_INITIALIZATION(m_gBufferPass.init());
+	m_passEnvironment = new RenderPassEnvironment();
+	VT_CHECK_INITIALIZATION(m_passEnvironment);
+
+	m_gBuffer = new GBuffer();
+	VT_CHECK_INITIALIZATION(m_gBuffer && m_gBuffer->init({ 500, 500 }));
+	m_gBuffer->fillEnvironment(*m_passEnvironment);
+
+	m_gBufferPass = new GBufferPass();
+	VT_CHECK_INITIALIZATION(m_gBufferPass && m_gBufferPass->init());
 
 	return true;
 }
@@ -92,7 +101,9 @@ void VT::RenderSystem::release()
 		m_frameFence = nullptr;
 	}
 
-	m_gBufferPass.release();
+	VT_SAFE_DESTROY_WITH_RELEASING(m_gBufferPass);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_gBuffer);
+	VT_SAFE_DESTROY(m_passEnvironment);
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_context);
 }
@@ -110,7 +121,7 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 	m_context->begin();
 
-	m_gBufferPass.render({ m_context, m_renderingData, m_cameraData });
+	m_gBufferPass->render({ m_context, m_renderingData, m_cameraData }, *m_passEnvironment);
 
 	GraphicRenderContextUtils::prepareTextureResourceForPresenting(m_context, target);
 	m_context->end();

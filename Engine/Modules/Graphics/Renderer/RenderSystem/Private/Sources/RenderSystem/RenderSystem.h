@@ -1,8 +1,9 @@
 #pragma once
 
-#include "IRenderPass.h"
 #include "RenderSystem/IRenderSystem.h"
 #include "GraphicSynchronization/IFence.h"
+
+#include "RenderPassEnvironment.h"
 #include "RenderingData.h"
 #include "RenderPasses/GBufferPass.h"
 
@@ -11,6 +12,8 @@ namespace VT
 	class IFence;
 	class IRenderContext;
 	class IPipelineBindingLayout;
+
+	struct GBuffer;
 
 	class RenderSystem final : public IRenderSystem
 	{
@@ -23,7 +26,10 @@ namespace VT
 		CameraRenderingData m_cameraData;
 		RenderingData m_renderingData;
 
-		GBufferPass m_gBufferPass;
+		RenderPassEnvironment* m_passEnvironment = nullptr;
+
+		GBuffer* m_gBuffer = nullptr;
+		GBufferPass* m_gBufferPass = nullptr;
 
 		bool initCameraData();
 

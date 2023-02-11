@@ -13,57 +13,9 @@
 #include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
 #include "RenderSystem/GraphicRenderContext.h"
 #include "RenderSystem/RenderingData.h"
+#include "RenderSystem/RenderPassEnvironment.h"
 #include "Textures/ITexture2D.h"
 
-bool VT::GBuffer::init(const Vector2UInt16& bufferResolution)
-{
-	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
-	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
-
-	Texture2DDesc bufferTextureDesc{};
-	bufferTextureDesc.m_format = Format::R32G32B32A32_SFLOAT;
-	bufferTextureDesc.m_width = bufferResolution.m_x;
-	bufferTextureDesc.m_height = bufferResolution.m_y;
-	bufferTextureDesc.m_usage = TEXTURE_USAGE_RENDER_TARGET;
-
-	m_color = resManager->createTexture2D(bufferTextureDesc, RENDER_TARGET);
-	m_normal = resManager->createTexture2D(bufferTextureDesc, RENDER_TARGET);
-	m_position = resManager->createTexture2D(bufferTextureDesc, RENDER_TARGET);
-
-	//bufferTextureDesc.m_format = Format::D24_UNORM_S8_UINT;
-	//bufferTextureDesc.m_usage = TEXTURE_USAGE_DEPTH_STENCIL;
-	//m_depth = resManager->createTexture2D(bufferTextureDesc, DEPTH_STENCIL);
-
-	m_colorRTV = resManager->createRenderTargetDescriptor(m_color.getObject());
-	m_normalRTV = resManager->createRenderTargetDescriptor(m_normal.getObject());
-	m_positionRTV = resManager->createRenderTargetDescriptor(m_position.getObject());
-	//m_depthDSV = resManager->createDepthStencilDescriptor(m_depth.getObject());
-
-	m_colorSRV = resManager->createShaderResourceDescriptor(m_color.getObject());
-	m_normalSRV = resManager->createShaderResourceDescriptor(m_normal.getObject());
-	m_positionSRV = resManager->createShaderResourceDescriptor(m_position.getObject());
-	//m_depthSRV = resManager->createShaderResourceDescriptor(m_depth.getObject());
-
-	return true;
-}
-
-void VT::GBuffer::release()
-{
-	m_color = nullptr;
-	m_normal = nullptr;
-	m_position = nullptr;
-	m_depth = nullptr;
-
-	m_colorRTV = nullptr;
-	m_normalRTV = nullptr;
-	m_positionRTV = nullptr;
-	m_depthDSV = nullptr;
-
-	m_colorSRV = nullptr;
-	m_normalSRV = nullptr;
-	m_positionSRV = nullptr;
-	m_depthSRV = nullptr;
-}
 
 bool VT::GBufferPass::initRenderingData()
 {
@@ -107,18 +59,17 @@ bool VT::GBufferPass::initMaterial()
 
 bool VT::GBufferPass::init()
 {
-	VT_CHECK_INITIALIZATION(m_gBuffer.init({500, 500}));
 	VT_CHECK_INITIALIZATION(initRenderingData());
 	VT_CHECK_INITIALIZATION(initMaterial());
+
 	return true;
 }
 
 void VT::GBufferPass::release()
 {
-	m_gBuffer.release();
 }
 
-void VT::GBufferPass::render(const RenderPassContext& passContext)
+void VT::GBufferPass::render(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
 {
 	assert(passContext.context);
 
@@ -128,33 +79,53 @@ void VT::GBufferPass::render(const RenderPassContext& passContext)
 	pipelineStateInfo.m_vertexShader = m_materialDrawingData.m_vertShader->getTypedObject();
 	pipelineStateInfo.m_pixelShader = m_materialDrawingData.m_pixelShader->getTypedObject();
 
-	const Texture2DDesc& targetDesc = m_gBuffer.m_color->getTypedTexture()->getDesc();
+	TextureReference colorTexture = passEnvironment.getTexture("gb_color_texture");
+	TextureReference normalTexture = passEnvironment.getTexture("gb_normal_texture");
+	TextureReference positionTexture = passEnvironment.getTexture("gb_position_texture");
 
-	pipelineStateInfo.m_formats.push_back(targetDesc.m_format);
-	pipelineStateInfo.m_formats.push_back(targetDesc.m_format);
-	pipelineStateInfo.m_formats.push_back(targetDesc.m_format);
+	RenderTargetViewReference colorRTV = passEnvironment.getRenderTargetView("gb_color_rtv");
+	RenderTargetViewReference normalRTV = passEnvironment.getRenderTargetView("gb_normal_rtv");
+	RenderTargetViewReference positionRTV = passEnvironment.getRenderTargetView("gb_position_rtv");
 
-	RenderContextTarget targets[] = {
+	assert(colorTexture && colorTexture->getTexture()->getDimension() == TextureDimensionType::DIMENSION_2D);
+	ITexture2D* colorNativeTexture = colorTexture->getTextureCast<ITexture2D>();
+	const Texture2DDesc& colorTextureDesc = colorNativeTexture->getDesc();
+
+	assert(normalTexture && normalTexture->getTexture()->getDimension() == TextureDimensionType::DIMENSION_2D);
+	ITexture2D* normalNativeTexture = normalTexture->getTextureCast<ITexture2D>();
+	const Texture2DDesc& normalTextureDesc = normalNativeTexture->getDesc();
+
+	assert(positionTexture && positionTexture->getTexture()->getDimension() == TextureDimensionType::DIMENSION_2D);
+	ITexture2D* positionNativeTexture = positionTexture->getTextureCast<ITexture2D>();
+	const Texture2DDesc& positionTextureDesc = positionNativeTexture->getDesc();
+
+	assert(colorRTV && normalRTV && positionRTV);
+
+	pipelineStateInfo.m_formats.push_back(colorTextureDesc.m_format);
+	pipelineStateInfo.m_formats.push_back(normalTextureDesc.m_format);
+	pipelineStateInfo.m_formats.push_back(positionTextureDesc.m_format);
+
+	GraphicRenderContextTarget targets[] = {
 		{
-			m_gBuffer.m_color.getObject()->getTypedTexture(),
-			m_gBuffer.m_colorRTV.getObject()->getResourceView(),
-			Viewport(targetDesc.m_width, targetDesc.m_height),
-			Scissors(targetDesc.m_width, targetDesc.m_height),
-			{0.0f, 0.0f, 0.0f, 1.0f}
+			colorNativeTexture,
+			colorRTV.getObject()->getResourceView(),
+			Viewport(colorTextureDesc.m_width, colorTextureDesc.m_height),
+			Scissors(colorTextureDesc.m_width, colorTextureDesc.m_height),
+			{ 0.0f, 0.0f, 0.0f, 1.0f }
 		},
 		{
-			m_gBuffer.m_normal.getObject()->getTypedTexture(),
-			m_gBuffer.m_normalRTV.getObject()->getResourceView(),
-			Viewport(targetDesc.m_width, targetDesc.m_height),
-			Scissors(targetDesc.m_width, targetDesc.m_height),
-			{0.0f, 0.0f, 0.0f, 1.0f}
+			normalNativeTexture,
+			normalRTV.getObject()->getResourceView(),
+			Viewport(normalTextureDesc.m_width, normalTextureDesc.m_height),
+			Scissors(normalTextureDesc.m_width, normalTextureDesc.m_height),
+			{ 0.0f, 0.0f, 0.0f, 1.0f }
 		},
 		{
-			m_gBuffer.m_position.getObject()->getTypedTexture(),
-			m_gBuffer.m_positionRTV.getObject()->getResourceView(),
-			Viewport(targetDesc.m_width, targetDesc.m_height),
-			Scissors(targetDesc.m_width, targetDesc.m_height),
-			{0.0f, 0.0f, 0.0f, 1.0f}
+			positionNativeTexture,
+			positionRTV.getObject()->getResourceView(),
+			Viewport(positionTextureDesc.m_width, positionTextureDesc.m_height),
+			Scissors(positionTextureDesc.m_width, positionTextureDesc.m_height),
+			{ 0.0f, 0.0f, 0.0f, 1.0f }
 		}
 	};
 

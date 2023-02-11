@@ -6,6 +6,7 @@ namespace VT
 {
 	class IRenderContext;
 	class RenderingData;
+	class RenderPassEnvironment;
 
 	struct CameraRenderingData final
 	{
@@ -30,6 +31,6 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
-		virtual void render(const RenderPassContext& passContext) = 0;
+		virtual void render(const RenderPassContext& passContext, const RenderPassEnvironment& environment) = 0;
 	};
 }

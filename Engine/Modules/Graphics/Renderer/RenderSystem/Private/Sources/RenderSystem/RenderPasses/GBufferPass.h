@@ -6,27 +6,6 @@
 
 namespace VT
 {
-	struct GBuffer final
-	{
-		Texture2DReference m_color;
-		Texture2DReference m_normal;
-		Texture2DReference m_position;
-		Texture2DReference m_depth;
-
-		RenderTargetViewReference m_colorRTV;
-		RenderTargetViewReference m_normalRTV;
-		RenderTargetViewReference m_positionRTV;
-		DepthStencilViewReference m_depthDSV;
-
-		ShaderResourceViewReference m_colorSRV;
-		ShaderResourceViewReference m_normalSRV;
-		ShaderResourceViewReference m_positionSRV;
-		ShaderResourceViewReference m_depthSRV;
-
-		bool init(const Vector2UInt16& bufferResolution);
-		void release();
-	};
-
 	class GBufferPass final : public IRenderPass
 	{
 		struct PassRenderingData final
@@ -43,7 +22,6 @@ namespace VT
 		};
 
 	private:
-		GBuffer m_gBuffer;
 		PassRenderingData m_passData;
 		TestMaterialDrawingData m_materialDrawingData;
 
@@ -55,8 +33,6 @@ namespace VT
 
 		virtual bool init() override;
 		virtual void release() override;
-		virtual void render(const RenderPassContext& passContext) override;
-
-		const GBuffer& getGPUBuffer() const { return m_gBuffer; }
+		virtual void render(const RenderPassContext& passContext, const RenderPassEnvironment& environment) override;
 	};
 }

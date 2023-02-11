@@ -34,8 +34,6 @@ void VT_DEMO_TEST::TestDemoGameModule::onLoaded()
 
 	getEngineEnvironment()->m_levelSystem->setCurrentLevel(level);
 
-	getEngineEnvironment()->m_resourceSystem->getResource("TestCube.fbx");
-
 	level->init();
 	VT::VT_Entity testEntity = level->createEntity();
 	level->getEntityComponentSystem()->addComponent<VT::MeshComponent>(testEntity,

@@ -6,7 +6,7 @@
 #include <cassert>
 
 void VT::GraphicRenderContextUtils::setRenderingTargets(IRenderContext* context, uint32_t targetsCount,
-	const RenderContextTarget* targets)
+	const GraphicRenderContextTarget* targets)
 {
 	assert(context);
 
@@ -16,7 +16,7 @@ void VT::GraphicRenderContextUtils::setRenderingTargets(IRenderContext* context,
 
 	for (uint32_t i = 0; i < targetsCount; ++i)
 	{
-		const RenderContextTarget& target = targets[i];
+		const GraphicRenderContextTarget& target = targets[i];
 
 		prepareTextureResourceForRendering(context, target.m_targetTexture);
 
@@ -31,7 +31,7 @@ void VT::GraphicRenderContextUtils::setRenderingTargets(IRenderContext* context,
 
 	for (uint32_t i = 0; i < targetsCount; ++i)
 	{
-		const RenderContextTarget& target = targets[i];
+		const GraphicRenderContextTarget& target = targets[i];
 		context->clearRenderTarget(target.m_targetView, target.clearValue);
 	}
 }

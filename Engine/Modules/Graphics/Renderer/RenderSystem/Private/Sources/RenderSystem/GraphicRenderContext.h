@@ -5,7 +5,7 @@
 
 namespace VT
 {
-	struct RenderContextTarget final
+	struct GraphicRenderContextTarget final
 	{
 		ITexture2D* m_targetTexture = nullptr;
 		IGraphicResourceDescriptor* m_targetView = nullptr;
@@ -18,7 +18,7 @@ namespace VT
 
 	namespace GraphicRenderContextUtils
 	{
-		void setRenderingTargets(IRenderContext* context, uint32_t targetsCount, const RenderContextTarget* targets);
+		void setRenderingTargets(IRenderContext* context, uint32_t targetsCount, const GraphicRenderContextTarget* targets);
 
 		void prepareTextureForRendering(IRenderContext* context, Texture2DReference texture);
 		void prepareTextureResourceForPresenting(IRenderContext* context, ITexture2D* texture);
