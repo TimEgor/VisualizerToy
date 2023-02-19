@@ -17,49 +17,7 @@
 #include "PreparingRenderingDataSystem.h"
 #include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
 
-#include "Math/ComputeMath.h"
-#include "Math/ComputeMatrix.h"
-#include "Math/ComputeVector.h"
-#include "Math/Consts.h"
 #include "RenderPasses/GBuffer.h"
-
-bool VT::RenderSystem::initCameraData()
-{
-	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
-	IGraphicDevice* device = environment->m_graphicDevice;
-	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
-
-	GPUBufferDesc transformBufferDesc{};
-
-	transformBufferDesc.m_byteSize = sizeof(CameraTransforms);
-	transformBufferDesc.isHostVisible = true;
-	m_cameraData.m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
-
-	CameraTransforms cameraTransforms;
-	COMPUTE_MATH::ComputeMatrix viewTransform = COMPUTE_MATH::matrixLookToLH(
-		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3(0.0f, 0.0f, -6.0f)),
-		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3UnitZ),
-		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3UnitY)
-	);
-	viewTransform = COMPUTE_MATH::matrixTranspose(viewTransform);
-
-	COMPUTE_MATH::ComputeMatrix projectionTransform = COMPUTE_MATH::matrixPerspectiveFovLH(45.0f * VT_DEG_TO_RAD, 1.0f, 0.1f, 1000.0f);
-	projectionTransform = COMPUTE_MATH::matrixTranspose(projectionTransform);
-
-	cameraTransforms.m_viewTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(viewTransform);
-	cameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
-
-	CameraTransforms* mappingCameraTransforms = nullptr;
-	m_cameraData.m_cameraTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingCameraTransforms));
-	memcpy(mappingCameraTransforms, &cameraTransforms, sizeof(CameraTransforms));
-	m_cameraData.m_cameraTransformBuffer->getTypedResource()->unmapData();
-
-	device->setResourceName(m_cameraData.m_cameraTransformBuffer->getResource(), "CameraTransform");
-
-	m_cameraData.m_cameraTransformCBV = resManager->createBufferResourceDescriptor(m_cameraData.m_cameraTransformBuffer);
-
-	return true;
-}
 
 bool VT::RenderSystem::init()
 {
@@ -75,7 +33,8 @@ bool VT::RenderSystem::init()
 	VT_CHECK_INITIALIZATION(m_frameFence);
 
 	//
-	VT_CHECK_INITIALIZATION(initCameraData());
+	m_renderingData = new RenderingData();
+	VT_CHECK_INITIALIZATION(m_renderingData && m_renderingData->init());
 
 	//
 	m_passEnvironment = new RenderPassEnvironment();
@@ -110,7 +69,7 @@ void VT::RenderSystem::release()
 
 void VT::RenderSystem::collectRenderingData(const ILevel& level)
 {
-	PreparingRenderingDataSystem::prepareData(level, m_renderingData);
+	PreparingRenderingDataSystem::prepareData(level, *m_renderingData);
 }
 
 void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* targetView)
@@ -121,7 +80,7 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 
 	m_context->begin();
 
-	m_gBufferPass->render({ m_context, m_renderingData, m_cameraData }, *m_passEnvironment);
+	m_gBufferPass->render({ m_context, *m_renderingData }, *m_passEnvironment);
 
 	GraphicRenderContextUtils::prepareTextureResourceForPresenting(m_context, target);
 	m_context->end();

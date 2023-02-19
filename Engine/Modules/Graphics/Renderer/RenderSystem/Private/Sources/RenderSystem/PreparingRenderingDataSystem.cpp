@@ -4,15 +4,13 @@
 #include "Scene/IScene.h"
 #include "LevelSystem/ILevel.h"
 #include "EntityComponentSystem/EntityComponentSystem.h"
-#include "MeshSystem/MeshComponent.h"
+
 #include "Scene/SceneNodeIDComponent.h"
+#include "MeshSystem/MeshComponent.h"
+#include "LightSystem/PointLightComponent.h"
 
-void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, RenderingData& renderingData)
+void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, const EntityComponentSystem* ecs, RenderingData& renderingData)
 {
-	renderingData.clear();
-
-	const IScene* scene = level.getScene();
-	const EntityComponentSystem* ecs = level.getEntityComponentSystem();
 	auto ecsView = ecs->getView<SceneNodeIDComponent, MeshComponent>();
 
 	for (const auto& [entity, sceneNodeIDComponent, meshComponent] : ecsView.each())
@@ -27,4 +25,30 @@ void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, Renderin
 
 		renderingData.addMesh(meshComponent.m_mesh, nodeTransforms->m_globalTransform);
 	}
+}
+
+void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, const EntityComponentSystem* ecs, RenderingData& renderingData)
+{
+	auto ecsView = ecs->getView<SceneNodeIDComponent, PointLightComponent>();
+
+	for (const auto& [entity, sceneNodeIDComponent, pointLightComponent] : ecsView.each())
+	{
+		const NodeTransforms* nodeTransforms = scene->getNodeTransforms(sceneNodeIDComponent.getNodeID());
+		assert(nodeTransforms);
+
+		renderingData.addPointLight(pointLightComponent.m_color, TransformMatrixUtils::getOrigin(nodeTransforms->m_globalTransform));
+	}
+}
+
+void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, RenderingData& renderingData)
+{
+	renderingData.clear();
+
+	const IScene* scene = level.getScene();
+	const EntityComponentSystem* ecs = level.getEntityComponentSystem();
+
+	renderingData.setCameraTransforms();
+
+	prepareMeshData(scene, ecs, renderingData);
+	prepareLightData(scene, ecs, renderingData);
 }

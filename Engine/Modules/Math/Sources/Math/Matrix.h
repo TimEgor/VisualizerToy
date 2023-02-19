@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include "Vector.h"
 
 namespace VT
 {
@@ -9,10 +9,19 @@ namespace VT
 	struct Matrix22Base final
 	{
 		static constexpr Type InitialVal = Type();
+		using VectorType = Vector2Base<Type>;
 
 		union
 		{
 			Type m_vals[2][2];
+
+			VectorType m_rows[2];
+
+			struct
+			{
+				VectorType m_row1;
+				VectorType m_row2;
+			};
 
 			struct
 			{
@@ -40,10 +49,20 @@ namespace VT
 	struct Matrix33Base final
 	{
 		static constexpr Type InitialVal = Type();
+		using VectorType = Vector3Base<Type>;
 
 		union
 		{
 			Type m_vals[3][3];
+
+			VectorType m_rows[3];
+
+			struct
+			{
+				VectorType m_row1;
+				VectorType m_row2;
+				VectorType m_row3;
+			};
 
 			struct
 			{
@@ -93,10 +112,21 @@ namespace VT
 	struct Matrix44Base final
 	{
 		static constexpr Type InitialVal = Type();
+		using VectorType = Vector4Base<Type>;
 
 		union
 		{
 			Type m_vals[4][4];
+
+			VectorType m_rows[4];
+
+			struct
+			{
+				VectorType m_row1;
+				VectorType m_row2;
+				VectorType m_row3;
+				VectorType m_row4;
+			};
 
 			struct
 			{

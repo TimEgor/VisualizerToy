@@ -1,3 +1,5 @@
+#pragma once
+
 #include "GraphicResourceManager/ObjectHandles.h"
 #include "Math/Vector.h"
 

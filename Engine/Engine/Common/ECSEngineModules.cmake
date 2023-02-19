@@ -1,4 +1,5 @@
 set(MODULES_SET
-    MeshSystem_ECS          Graphics/Renderer/MeshSystem/ECS
-	Scene_ECS			    Scene/ECS
+	LightSystem_ECS		Graphics/Renderer/LightSystem/ECS
+	MeshSystem_ECS		Graphics/Renderer/MeshSystem/ECS
+	Scene_ECS			Scene/ECS
 )

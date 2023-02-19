@@ -1,6 +1,7 @@
 set(MODULES_SET
-	MaterialSystem	MaterialSystem/Private
-	MeshSystem		MeshSystem/Private
-	RenderContext	RenderContext
-	RenderSystem	RenderSystem/Private
+	LightSystem_ECS		LightSystem/ECS
+	MaterialSystem		MaterialSystem/Private
+	MeshSystem			MeshSystem/Private
+	RenderContext		RenderContext
+	RenderSystem		RenderSystem/Private
 )

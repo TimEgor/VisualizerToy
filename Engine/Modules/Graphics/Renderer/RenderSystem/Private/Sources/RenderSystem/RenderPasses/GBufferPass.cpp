@@ -138,7 +138,7 @@ void VT::GBufferPass::render(const RenderPassContext& passContext, const RenderP
 	passContext.context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
 	passContext.context->setBindingLayout(m_passData.m_bindingLayout->getTypedObject());
 
-	passContext.context->setBindingParameterValue(0, 0, passContext.m_cameraData.m_cameraTransformCBV->getResourceView()->getBindingHeapOffset());
+	passContext.context->setBindingParameterValue(0, 0, passContext.m_renderingData.getCameraTransformBufferView()->getResourceView()->getBindingHeapOffset());
 
 	Matrix44* mappingObjectTransform = nullptr;
 	m_passData.m_perObjectTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingObjectTransform));

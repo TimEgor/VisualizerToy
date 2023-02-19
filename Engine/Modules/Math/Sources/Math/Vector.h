@@ -44,6 +44,8 @@ namespace VT
 		{
 			Type m_vals[3];
 
+			Vector2Base<Type> m_xy;
+
 			struct
 			{
 				Type m_x, m_y, m_z;
@@ -81,6 +83,14 @@ namespace VT
 		union
 		{
 			Type m_vals[4];
+
+			struct
+			{
+				Vector2Base<Type> m_xy;
+				Vector2Base<Type> m_zw;
+			};
+
+			Vector3Base<Type> m_xyz;
 
 			struct
 			{

@@ -2,7 +2,6 @@
 
 #include "GraphicResourceManager/ObjectHandles.h"
 #include "RenderSystem/IRenderPass.h"
-#include "Math/Vector.h"
 
 namespace VT
 {

@@ -15,7 +15,7 @@ bool VT::GBuffer::init(const Vector2UInt16& bufferResolution)
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
 
 	Texture2DDesc bufferTextureDesc{};
-	bufferTextureDesc.m_format = Format::R32G32B32A32_SFLOAT;
+	bufferTextureDesc.m_format = Format::R8G8B8A8_SNORM;
 	bufferTextureDesc.m_width = bufferResolution.m_x;
 	bufferTextureDesc.m_height = bufferResolution.m_y;
 	bufferTextureDesc.m_usage = TEXTURE_USAGE_RENDER_TARGET;

@@ -23,15 +23,12 @@ namespace VT
 		IFence* m_frameFence = nullptr;
 		FenceValueType m_lastSubmittedFenceValue = InitialFenceValue;
 
-		CameraRenderingData m_cameraData;
-		RenderingData m_renderingData;
+		RenderingData* m_renderingData;
 
 		RenderPassEnvironment* m_passEnvironment = nullptr;
 
 		GBuffer* m_gBuffer = nullptr;
 		GBufferPass* m_gBufferPass = nullptr;
-
-		bool initCameraData();
 
 	public:
 		RenderSystem() = default;

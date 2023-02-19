@@ -1,7 +1,9 @@
 #pragma once
 
 #include "MeshSystem/MeshHandle.h"
+#include "GraphicResourceManager/ObjectHandles.h"
 #include "Math/Matrix.h"
+#include "LightSources/PointLightData.h"
 
 #include <vector>
 
@@ -28,17 +30,38 @@ namespace VT
 		using MeshDataCollection = std::vector<MeshRenderingDataNode>;
 		using TransformDataCollection = std::vector<Matrix44>;
 
+		using PointLightDataCollection = std::vector<PointLightData>;
+
 	private:
 		MeshDataCollection m_meshes;
 		TransformDataCollection m_transforms;
 
+		PointLightDataCollection m_pointLights;
+
+		CameraTransforms m_cameraTransforms;
+
+		GPUBufferReference m_cameraTransformBuffer;
+		ShaderResourceViewReference m_cameraTransformCBV;
+
 	public:
 		RenderingData() = default;
+
+		void init();
 
 		void clear();
 		void addMesh(const MeshConstReference& mesh, const Matrix44& transform);
 
+		void addPointLight(const Vector3& color, float radius, const Vector3& position);
+
+		void setCameraTransforms();
+
 		const TransformDataCollection& getTransformDataCollection() const { return m_transforms; }
 		const MeshDataCollection& getMeshDataCollection() const { return m_meshes; }
+
+		const PointLightDataCollection& getPointLighDataCollection() const { return m_pointLights; }
+
+		const CameraTransforms& getCameraTransforms() const { return m_cameraTransforms; }
+		GPUBufferReference getCameraTransformBuffer() const { return m_cameraTransformBuffer; }
+		ShaderResourceViewReference getCameraTransformBufferView() const { return m_cameraTransformCBV; }
 	};
 }

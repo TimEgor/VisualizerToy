@@ -37,7 +37,6 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 
 	{
 		GPUBufferDesc vertexBufferDesc{};
-		vertexBufferDesc.m_usage = GPUBufferUsageType::VERTEX_BUFFER;
 
 		const uint32_t bindingsCount = inputLayoutDesc.m_bindings.size();
 		vertexData.m_bindings.reserve(bindingsCount);
@@ -67,7 +66,6 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 		indexData.m_indexFormat = meshHeader->m_indexSize == 2 ? InputLayoutElementType::UINT16 : InputLayoutElementType::UINT32;
 
 		GPUBufferDesc indexBufferDesc{};
-		indexBufferDesc.m_usage = GPUBufferUsageType::INDEX_BUFFER;
 		indexBufferDesc.m_byteSize = indexData.m_indexCount * meshHeader->m_indexSize;
 
 		InitialGPUBufferData bufferData

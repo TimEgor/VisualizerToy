@@ -12,8 +12,10 @@ target_link_libraries(RenderSystem
 	PRIVATE
 		Engine_COMMON
 		EntityComponentSystem
+
 		MeshSystem_ECS
 		Scene_ECS
+		LightSystem_ECS
 
 		RenderContext
 
