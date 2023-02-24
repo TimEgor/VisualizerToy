@@ -6,27 +6,31 @@
 
 #include <vector>
 
-LPWSTR VT_SHADER_RC::ShaderConverterHLSL::getEntryPoint(VT::ShaderStageType stage) const
+LPWSTR VT_SHADER_RC::ShaderConverterHLSL::getEntryPoint(VT::ShaderType stage) const
 {
 	switch (stage)
 	{
-	case VT::ShaderStageType::Vertex:
+	case VT::ShaderType::Vertex:
 		return L"VS";
-	case VT::ShaderStageType::Pixel:
+	case VT::ShaderType::Pixel:
 		return L"PS";
+	case VT::ShaderType::Compute:
+		return L"CS";
 	default:
 		return L"";
 	}
 }
 
-LPWSTR VT_SHADER_RC::ShaderConverterHLSL::getTarget(VT::ShaderStageType stage) const
+LPWSTR VT_SHADER_RC::ShaderConverterHLSL::getTarget(VT::ShaderType stage) const
 {
 	switch (stage)
 	{
-	case VT::ShaderStageType::Vertex:
+	case VT::ShaderType::Vertex:
 		return L"vs_6_6";
-	case VT::ShaderStageType::Pixel:
+	case VT::ShaderType::Pixel:
 		return L"ps_6_6";
+	case VT::ShaderType::Compute:
+		return L"cs_6_6";
 	default:
 		return L"";
 	}

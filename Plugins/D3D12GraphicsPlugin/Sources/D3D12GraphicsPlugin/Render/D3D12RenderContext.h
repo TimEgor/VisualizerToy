@@ -32,12 +32,14 @@ namespace VT_D3D12
 		virtual void setScissors(uint32_t count, const VT::Scissors* scissors) override;
 
 		virtual void changeResourceState(VT::IGraphicResource* resource,
-			VT::GraphicStateValueType currentState, VT::GraphicStateValueType targetState) override;
+			VT::GraphicResourceStateValueType currentState, VT::GraphicResourceStateValueType targetState) override;
 
 		virtual void setDescriptorHeap(VT::IGraphicResourceDescriptorHeap* heap) override;
 
-		virtual void setBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) override;
-		virtual void setBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) override;
+		virtual void setGraphicBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) override;
+		virtual void setGraphicBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) override;
+		virtual void setComputeBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) override;
+		virtual void setComputeBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) override;
 		virtual void setBindingLayout(const VT::IPipelineBindingLayout* bindingLayout) override;
 
 		virtual void setPipelineState(const VT::IPipelineState* pipelineState) override;
@@ -48,5 +50,7 @@ namespace VT_D3D12
 
 		virtual void draw(uint32_t vertCount) override;
 		virtual void drawIndexed(uint32_t indexCount) override;
+
+		virtual void dispatch(uint32_t threadGroupX, uint32_t threadGroupY, uint32_t threadGroupZ) override;
 	};
 }

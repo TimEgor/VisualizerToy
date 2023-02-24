@@ -9,10 +9,16 @@ namespace VT::ManagedGraphicDevice
 	using ManagedPipelineStateHandle = ObjectPoolHandle32;
 	using ManagedPipelineStateObject = ManagedGraphicObject<ManagedPipelineStateHandle>;
 
-	class ManagedPipelineStateBase : public IPipelineState, public ManagedPipelineStateObject
+	class ManagedGraphicPipelineStateBase : public IGraphicPipelineState, public ManagedPipelineStateObject
 	{
 	public:
-		ManagedPipelineStateBase() = default;
+		ManagedGraphicPipelineStateBase() = default;
+	};
+
+	class ManagedComputePipelineStateBase : public IComputePipelineState, public ManagedPipelineStateObject
+	{
+	public:
+		ManagedComputePipelineStateBase() = default;
 	};
 
 	using ManagedPipelineBindingLayoutHandle = ObjectPoolHandle16;

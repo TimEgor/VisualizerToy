@@ -4,10 +4,12 @@
 
 namespace VT
 {
-	enum class ShaderStageType
+	enum class ShaderType
 	{
 		Vertex,
-		Pixel
+		Pixel,
+
+		Compute
 	};
 
 	class IShader : public IGraphicObject
@@ -16,7 +18,7 @@ namespace VT
 		IShader() = default;
 		virtual ~IShader() {}
 
-		virtual ShaderStageType getStageType() const = 0;
+		virtual ShaderType getShaderType() const = 0;
 	};
 
 	class IVertexShader : public IShader
@@ -24,7 +26,7 @@ namespace VT
 	public:
 		IVertexShader() = default;
 
-		virtual ShaderStageType getStageType() const override { return ShaderStageType::Vertex; }
+		virtual ShaderType getShaderType() const override { return ShaderType::Vertex; }
 	};
 
 	class IPixelShader : public IShader
@@ -32,6 +34,14 @@ namespace VT
 	public:
 		IPixelShader() = default;
 
-		virtual ShaderStageType getStageType() const override { return ShaderStageType::Pixel; }
+		virtual ShaderType getShaderType() const override { return ShaderType::Pixel; }
+	};
+
+	class IComputeShader : public IShader
+	{
+	public:
+		IComputeShader() = default;
+
+		virtual ShaderType getShaderType() const override { return ShaderType::Compute; }
 	};
 }

@@ -18,8 +18,14 @@ bool VT::ManagedGraphicDevice::ManagedGraphicDevice::init(bool isSwapChainEnable
 	m_pixelShaderStorage = createPixelShaderStorage();
 	VT_CHECK_INITIALIZATION(m_pixelShaderStorage && m_pixelShaderStorage->init(128, 1, 16));
 
-	m_pipelineStateStorage = createPipelineStateStorage();
-	VT_CHECK_INITIALIZATION(m_pipelineStateStorage && m_pipelineStateStorage->init(256, 1, 64));
+	m_computeShaderStorage = createComputeShaderStorage();
+	VT_CHECK_INITIALIZATION(m_computeShaderStorage && m_computeShaderStorage->init(64, 1, 16));
+
+	m_graphicPipelineStateStorage = createGraphicPipelineStateStorage();
+	VT_CHECK_INITIALIZATION(m_graphicPipelineStateStorage && m_graphicPipelineStateStorage->init(64, 1, 32));
+
+	m_computePipelineStateStorage = createComputePipelineStateStorage();
+	VT_CHECK_INITIALIZATION(m_computePipelineStateStorage && m_computePipelineStateStorage->init(64, 1, 32));
 
 	m_pipelineBindingLayoutStorage = createPipelineBindingLayoutStorage();
 	VT_CHECK_INITIALIZATION(m_pipelineBindingLayoutStorage && m_pipelineBindingLayoutStorage->init(64, 0, 32));
@@ -44,8 +50,10 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::release()
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_vertexShaderStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pixelShaderStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_computeShaderStorage);
 
-	VT_SAFE_DESTROY_WITH_RELEASING(m_pipelineStateStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_graphicPipelineStateStorage);
+	VT_SAFE_DESTROY_WITH_RELEASING(m_computePipelineStateStorage);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_pipelineBindingLayoutStorage);
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_commandListStorage);
@@ -86,8 +94,37 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyShaderResourceDescri
 	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
 }
 
+VT::IGraphicResourceDescriptor* VT::ManagedGraphicDevice::ManagedGraphicDevice::createUnorderedAccessResourceDescriptor(
+	IGraphicResource* resource)
+{
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorStorageInfoBase::NewObjectInfo newObjectInfo = m_descriptorStorage->addNewObject();
+	if (!createUnorderedAccessResourceDescriptor(newObjectInfo.m_objectPtr, resource))
+	{
+		m_descriptorStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyUnorderedAccessResourceDescriptor(
+	IGraphicResourceDescriptor* descriptor)
+{
+	assert(descriptor);
+	assert(m_descriptorStorage);
+
+	ManagedGraphicResourceDescriptorBase* managedDescriptor = reinterpret_cast<ManagedGraphicResourceDescriptorBase*>(descriptor);
+
+	destroyRenderTargetDescriptor(managedDescriptor);
+	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
+}
+
 VT::IGPUBuffer* VT::ManagedGraphicDevice::ManagedGraphicDevice::createBuffer(const GPUBufferDesc& desc,
-	GraphicStateValueType initialState, const InitialGPUBufferData* initialData)
+                                                                             GraphicResourceStateValueType initialState, const InitialGPUBufferData* initialData)
 {
 	assert(m_bufferStorage);
 
@@ -141,7 +178,7 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyBufferResourceDescri
 	m_descriptorStorage->removeObject(managedDescriptor->getHandle());
 }
 
-VT::ITexture2D* VT::ManagedGraphicDevice::ManagedGraphicDevice::createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState)
+VT::ITexture2D* VT::ManagedGraphicDevice::ManagedGraphicDevice::createTexture2D(const Texture2DDesc& desc, GraphicResourceStateValueType initialState)
 {
 	assert(m_descriptorStorage);
 
@@ -276,15 +313,14 @@ void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPixelShader(IPixelSh
 	m_pixelShaderStorage->removeObject(managedShader->getHandle());
 }
 
-VT::IPipelineState* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPipelineState(const PipelineStateInfo& pipelineStateInfo,
-	const IPipelineBindingLayout* bindingLayout, const InputLayoutDesc* inputLayoutDesc)
+VT::IComputeShader* VT::ManagedGraphicDevice::ManagedGraphicDevice::createComputeShader(const void* code, size_t codeSize)
 {
-	assert(m_pipelineStateStorage);
+	assert(m_computeShaderStorage);
 
-	ManagedPipelineStateStorageInfoBase::NewObjectInfo newObjectInfo = m_pipelineStateStorage->addNewObject();
-	if (!createPipelineState(newObjectInfo.m_objectPtr, pipelineStateInfo, bindingLayout, inputLayoutDesc))
+	ManagedComputeShaderStorageInfoBase::NewObjectInfo newObjectInfo = m_computeShaderStorage->addNewObject();
+	if (!createComputeShader(newObjectInfo.m_objectPtr, code, codeSize))
 	{
-		m_pipelineStateStorage->removeObject(newObjectInfo.m_objectHandle);
+		m_computeShaderStorage->removeObject(newObjectInfo.m_objectHandle);
 		return nullptr;
 	}
 
@@ -293,15 +329,71 @@ VT::IPipelineState* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPipeli
 	return newObjectInfo.m_objectPtr;
 }
 
-void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyPipelineState(IPipelineState* state)
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyComputeShader(IComputeShader* shader)
+{
+	assert(shader);
+	assert(m_computeShaderStorage);
+
+	ManagedComputeShaderBase* managedShader = reinterpret_cast<ManagedComputeShaderBase*>(shader);
+
+	destroyComputeShader(managedShader);
+	m_computeShaderStorage->removeObject(managedShader->getHandle());
+}
+
+VT::IGraphicPipelineState* VT::ManagedGraphicDevice::ManagedGraphicDevice::createGraphicPipelineState(
+	const GraphicPipelineStateInfo& pipelineStateInfo, const IPipelineBindingLayout* bindingLayout, const InputLayoutDesc* inputLayoutDesc)
+{
+	assert(m_graphicPipelineStateStorage);
+
+	ManagedGraphicPipelineStateStorageInfoBase::NewObjectInfo newObjectInfo = m_graphicPipelineStateStorage->addNewObject();
+	if (!createGraphicPipelineState(newObjectInfo.m_objectPtr, pipelineStateInfo, bindingLayout, inputLayoutDesc))
+	{
+		m_graphicPipelineStateStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyGraphicPipelineState(IGraphicPipelineState* state)
 {
 	assert(state);
-	assert(m_pipelineStateStorage);
+	assert(m_graphicPipelineStateStorage);
 
-	ManagedPipelineStateBase* managedState = reinterpret_cast<ManagedPipelineStateBase*>(state);
+	ManagedGraphicPipelineStateBase* managedState = reinterpret_cast<ManagedGraphicPipelineStateBase*>(state);
 
-	destroyPipelineState(managedState);
-	m_pipelineStateStorage->removeObject(managedState->getHandle());
+	destroyGraphicPipelineState(managedState);
+	m_graphicPipelineStateStorage->removeObject(managedState->getHandle());
+}
+
+VT::IComputePipelineState* VT::ManagedGraphicDevice::ManagedGraphicDevice::createComputePipelineState(
+	const ComputePipelineStateInfo& info, const IPipelineBindingLayout* bindingLayout)
+{
+	assert(m_computePipelineStateStorage);
+
+	ManagedComputePipelineStateStorageInfoBase::NewObjectInfo newObjectInfo = m_computePipelineStateStorage->addNewObject();
+	if (!createComputePipelineState(newObjectInfo.m_objectPtr, info, bindingLayout))
+	{
+		m_computePipelineStateStorage->removeObject(newObjectInfo.m_objectHandle);
+		return nullptr;
+	}
+
+	newObjectInfo.m_objectPtr->m_handle = newObjectInfo.m_objectHandle;
+
+	return newObjectInfo.m_objectPtr;
+}
+
+void VT::ManagedGraphicDevice::ManagedGraphicDevice::destroyComputePipelineState(IComputePipelineState* state)
+{
+	assert(state);
+	assert(m_computePipelineStateStorage);
+
+	ManagedComputePipelineStateBase* managedState = reinterpret_cast<ManagedComputePipelineStateBase*>(state);
+
+	destroyComputePipelineState(managedState);
+	m_computePipelineStateStorage->removeObject(managedState->getHandle());
 }
 
 VT::IPipelineBindingLayout* VT::ManagedGraphicDevice::ManagedGraphicDevice::createPipelineBindingLayout(const PipelineBindingLayoutDesc& desc)

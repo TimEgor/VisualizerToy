@@ -29,7 +29,7 @@ bool VT::GBufferPass::initRenderingData()
 	transformBufferDesc.m_byteStride = sizeof(Matrix44);
 	transformBufferDesc.m_flag = GPUBufferFlag::STRUCTURED;
 	transformBufferDesc.isHostVisible = true;
-	m_passData.m_perObjectTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
+	m_passData.m_perObjectTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicResourceState::GRAPHIC_STATE_COMMON_READ);
 
 	device->setResourceName(m_passData.m_perObjectTransformBuffer->getResource(), "PerObjectTransform");
 
@@ -69,13 +69,13 @@ void VT::GBufferPass::release()
 {
 }
 
-void VT::GBufferPass::render(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
+void VT::GBufferPass::execute(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
 {
-	assert(passContext.context);
+	assert(passContext.m_context);
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
-	PipelineStateInfo pipelineStateInfo{};
+	GraphicPipelineStateInfo pipelineStateInfo{};
 	pipelineStateInfo.m_vertexShader = m_materialDrawingData.m_vertShader->getTypedObject();
 	pipelineStateInfo.m_pixelShader = m_materialDrawingData.m_pixelShader->getTypedObject();
 
@@ -129,16 +129,16 @@ void VT::GBufferPass::render(const RenderPassContext& passContext, const RenderP
 		}
 	};
 
+	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 3, targets);
+
 	const RenderingData::TransformDataCollection& transforms = passContext.m_renderingData.getTransformDataCollection();
 	const RenderingData::MeshDataCollection& meshes = passContext.m_renderingData.getMeshDataCollection();
 	const size_t meshesCount = meshes.size();
 
-	GraphicRenderContextUtils::setRenderingTargets(passContext.context, 3, targets);
+	passContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
+	passContext.m_context->setBindingLayout(m_passData.m_bindingLayout->getTypedObject());
 
-	passContext.context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	passContext.context->setBindingLayout(m_passData.m_bindingLayout->getTypedObject());
-
-	passContext.context->setBindingParameterValue(0, 0, passContext.m_renderingData.getCameraTransformBufferView()->getResourceView()->getBindingHeapOffset());
+	passContext.m_context->setGraphicBindingParameterValue(0, 0, passContext.m_renderingData.getCameraTransformBufferView()->getResourceView()->getBindingHeapOffset());
 
 	Matrix44* mappingObjectTransform = nullptr;
 	m_passData.m_perObjectTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingObjectTransform));
@@ -158,7 +158,7 @@ void VT::GBufferPass::render(const RenderPassContext& passContext, const RenderP
 		const MeshVertexData& vertexData = mesh->getVertexData();
 		const MeshIndexData& indexData = mesh->getIndexData();
 
-		PipelineStateReference pipelineState = environment->m_graphicResourceManager->getPipelineState(
+		GraphicPipelineStateReference pipelineState = environment->m_graphicResourceManager->getGraphicPipelineState(
 			pipelineStateInfo, m_passData.m_bindingLayout, vertexData.m_inputLayout);
 
 		//
@@ -169,14 +169,14 @@ void VT::GBufferPass::render(const RenderPassContext& passContext, const RenderP
 
 		//
 
-		passContext.context->setBindingParameterValue(1, 0, m_passData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
-		passContext.context->setBindingParameterValue(1, 1, meshDataIndex);
+		passContext.m_context->setGraphicBindingParameterValue(1, 0, m_passData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
+		passContext.m_context->setGraphicBindingParameterValue(1, 1, meshDataIndex);
 
-		passContext.context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
-		GraphicRenderContextUtils::setPipelineState(passContext.context, pipelineState);
-		GraphicRenderContextUtils::setVertexBuffers(passContext.context, vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
-		GraphicRenderContextUtils::setIndexBuffer(passContext.context, indexData.m_indexBuffer, indexData.m_indexFormat);
-		passContext.context->drawIndexed(indexData.m_indexCount);
+		passContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
+		GraphicRenderContextUtils::setPipelineState(passContext.m_context, pipelineState);
+		GraphicRenderContextUtils::setVertexBuffers(passContext.m_context, vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
+		GraphicRenderContextUtils::setIndexBuffer(passContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
+		passContext.m_context->drawIndexed(indexData.m_indexCount);
 	}
 
 	m_passData.m_perObjectTransformBuffer->getTypedResource()->unmapData();

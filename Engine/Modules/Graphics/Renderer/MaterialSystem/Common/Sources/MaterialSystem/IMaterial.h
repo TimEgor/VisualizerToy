@@ -10,6 +10,6 @@ namespace VT
 		IMaterial() = default;
 		virtual ~IMaterial() = default;
 
-		virtual PipelineStateConstReference getPipelineState() const = 0;
+		virtual GraphicPipelineStateReference getPipelineState() const = 0;
 	};
 }

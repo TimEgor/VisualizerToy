@@ -10,14 +10,14 @@ namespace VT
 	class ShaderResourceConverterArgs : public IResourceConverterArgs
 	{
 	private:
-		ShaderStageType m_stage;
+		ShaderType m_stage;
 
 	public:
-		ShaderResourceConverterArgs(ShaderStageType stage)
+		ShaderResourceConverterArgs(ShaderType stage)
 			: m_stage(stage) {}
 
 		virtual ResourceConverterArgsHash getHash() const override { return static_cast<ResourceConverterArgsHash>(m_stage); }
-		ShaderStageType getStageType() const { return m_stage; }
+		ShaderType getStageType() const { return m_stage; }
 
 		VT_RESOURCE_CONVERTER_ARGS_TYPE(VT_SHADER_RESOURCE_CONVERTER_ARGS_TYPE)
 	};

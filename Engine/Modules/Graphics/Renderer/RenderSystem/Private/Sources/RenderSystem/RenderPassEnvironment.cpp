@@ -16,6 +16,22 @@ VT::TextureReference VT::RenderPassEnvironment::getTexture(const RenderPassEnvir
 	return nullptr;
 }
 
+void VT::RenderPassEnvironment::addBuffer(const RenderPassEnvironmentResourceName& name, GPUBufferReference buffer)
+{
+	m_buffers.insert(std::make_pair(name.hash(), buffer));
+}
+
+VT::GPUBufferReference VT::RenderPassEnvironment::getBuffer(const RenderPassEnvironmentResourceName& name) const
+{
+	auto findIter = m_buffers.find(name.hash());
+	if (findIter != m_buffers.end())
+	{
+		return findIter->second;
+	}
+
+	return nullptr;
+}
+
 void VT::RenderPassEnvironment::addShaderResourceView(const RenderPassEnvironmentResourceName& name, ShaderResourceViewReference srv)
 {
 	m_SRVs.insert(std::make_pair(name.hash(), srv));

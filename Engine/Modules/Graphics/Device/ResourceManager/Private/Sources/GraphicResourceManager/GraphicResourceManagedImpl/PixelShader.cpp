@@ -1,7 +1,5 @@
 #include "Common.h"
 
-#include "ShaderConverter/ShaderConverterArgs.h"
-
 void VT::GraphicResourceManager::deletePixelShaderInternal(IPixelShader* shader)
 {
 	getGraphicDevice()->destroyPixelShader(shader);

@@ -259,11 +259,11 @@ void VT::Scene::recalculateTransforms()
 			}
 
 			
-			COMPUTE_MATH::ComputeMatrix parentGlobalTransform = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(parentTransforms->m_globalTransform);
-			COMPUTE_MATH::ComputeMatrix localTransform = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(transforms->m_localTransform);
+			COMPUTE_MATH::ComputeMatrix parentGlobalTransform = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(parentTransforms->m_globalTransform.m_matrix);
+			COMPUTE_MATH::ComputeMatrix localTransform = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(transforms->m_localTransform.m_matrix);
 			COMPUTE_MATH::ComputeMatrix globalTransform = COMPUTE_MATH::matrixMultiply(parentGlobalTransform, localTransform);
 
-			transforms->m_globalTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(globalTransform);
+			transforms->m_globalTransform.m_matrix = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(globalTransform);
 		}
 	}
 }

@@ -6,14 +6,6 @@
 
 namespace VT
 {
-	enum class GPUBufferUsageType
-	{
-		UNDEFINED = 0,
-
-		INDEX_BUFFER = 1,
-		VERTEX_BUFFER = 2
-	};
-
 	enum class GPUBufferFlag
 	{
 		NONE,
@@ -22,12 +14,12 @@ namespace VT
 		RAW
 	};
 
-	enum GPUBufferState : GraphicStateValueType
+	enum GPUBufferState : GraphicResourceStateValueType
 	{
-		VERTEX_BUFFER = MAX_COMMON_STATE << 1,
-		INDEX_BUFFER = MAX_COMMON_STATE << 2,
-		CONSTANT_BUFFER = MAX_COMMON_STATE << 3,
-		INDIRECT_ARGUMENT = MAX_COMMON_STATE << 4
+		GPU_BUFFER_STATE_VERTEX_BUFFER = GRAPHIC_MAX_COMMON_STATE << 1,
+		GPU_BUFFER_STATE_INDEX_BUFFER = GRAPHIC_MAX_COMMON_STATE << 2,
+		GPU_BUFFER_STATE_CONSTANT_BUFFER = GRAPHIC_MAX_COMMON_STATE << 3,
+		GPU_BUFFER_STATE_INDIRECT_ARGUMENT = GRAPHIC_MAX_COMMON_STATE << 4
 	};
 
 	struct GPUBufferDesc final

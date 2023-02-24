@@ -6,18 +6,30 @@
 
 namespace VT
 {
-	using GraphicStateValueType = uint32_t;
-	enum CommonGraphicState : GraphicStateValueType
+	using GraphicResourceUsageValueType = uint32_t;
+	enum CommonGraphicResourceUsage : GraphicResourceUsageValueType
 	{
-		UNDEFINED = 0,
-		SHADER_RESOURCE = 1,
-		SHADER_RESOURCE_COMPUTE = 1 << 1,
-		UNORDERED_ACCESS = 1 << 2,
-		COMMON_READ = 1 << 3,
-		COPY_SRC = 1 << 4,
-		COPY_DEST = 1 << 5,
+		GRAPHIC_USAGE_UNDEFINED = 0,
 
-		MAX_COMMON_STATE = COPY_DEST
+		GRAPHIC_USAGE_ALLOW_UNORDERED_ACCESS = 1,
+		GRAPHIC_USAGE_SHADER_RESOURCE = 1 << 1,
+
+		GRAPHIC_MAX_USAGE = GRAPHIC_USAGE_SHADER_RESOURCE
+	};
+
+	using GraphicResourceStateValueType = uint32_t;
+	enum CommonGraphicResourceState : GraphicResourceStateValueType
+	{
+		GRAPHIC_STATE_UNDEFINED = 0,
+
+		GRAPHIC_STATE_SHADER_RESOURCE = 1,
+		GRAPHIC_STATE_SHADER_RESOURCE_COMPUTE = 1 << 1,
+		GRAPHIC_STATE_UNORDERED_ACCESS = 1 << 2,
+		GRAPHIC_STATE_COMMON_READ = 1 << 3,
+		GRAPHIC_STATE_COPY_SRC = 1 << 4,
+		GRAPHIC_STATE_COPY_DEST = 1 << 5,
+
+		GRAPHIC_MAX_COMMON_STATE = GRAPHIC_STATE_COPY_DEST
 	};
 
 	enum class GraphicResourceUsingMarkType : uint32_t
@@ -39,8 +51,8 @@ namespace VT
 		virtual bool isUsing(GraphicResourceUsingMarkType markType, FenceValueType fenceVal) const = 0;
 		virtual void markUsage(GraphicResourceUsingMarkType markType, FenceValueType fenceVal) = 0;
 
-		virtual GraphicStateValueType getState() const = 0;
-		virtual void setState(GraphicStateValueType state) = 0;
+		virtual GraphicResourceStateValueType getState() const = 0;
+		virtual void setState(GraphicResourceStateValueType state) = 0;
 
 		virtual GraphicResourceType getType() const = 0;
 	};

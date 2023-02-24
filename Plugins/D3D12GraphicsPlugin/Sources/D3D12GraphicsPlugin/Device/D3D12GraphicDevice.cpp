@@ -13,8 +13,8 @@
 #include "D3D12GraphicsPlugin/Commands/D3D12GraphicsCommandList.h"
 #include "D3D12GraphicsPlugin/Resource/D3D12ResourceDescriptorHeap.h"
 #include "D3D12GraphicsPlugin/Shaders/D3D12Shaders.h"
-#include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineState.h"
 #include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineBindingLayout.h"
+#include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineState.h"
 #include "D3D12GraphicsPlugin/Synchronization/D3D12Fence.h"
 
 #include "D3D12GraphicsPlugin/Utilities/FormatConverter.h"
@@ -56,7 +56,7 @@ VT_D3D12::D3D12UploadingContext* VT_D3D12::D3D12GraphicDevice::createUploadingCo
 		VT_IID(d3d12Allocator), VT_PPV(d3d12Allocator));
 	if (FAILED(creationResult))
 	{
-		return false;
+		return nullptr;
 	}
 
 	ID3D12GraphicsCommandList* d3d12List = nullptr;
@@ -65,7 +65,7 @@ VT_D3D12::D3D12UploadingContext* VT_D3D12::D3D12GraphicDevice::createUploadingCo
 	if (FAILED(creationResult))
 	{
 		d3d12Allocator->Release();
-		return false;
+		return nullptr;
 	}
 
 	d3d12List->Close();
@@ -147,17 +147,17 @@ D3D12_RESOURCE_STATES VT_D3D12::D3D12GraphicDevice::chooseInitialD3D12ResourceSt
 	return targetInitialState;
 }
 
-VT::GraphicStateValueType VT_D3D12::D3D12GraphicDevice::chooseInitialVTResourceState(bool isHostVisible,
-	bool havingInitialData, VT::GraphicStateValueType targetInitialState)
+VT::GraphicResourceStateValueType VT_D3D12::D3D12GraphicDevice::chooseInitialVTResourceState(bool isHostVisible,
+	bool havingInitialData, VT::GraphicResourceStateValueType targetInitialState)
 {
 	if (isHostVisible)
 	{
-		return VT::CommonGraphicState::COMMON_READ;
+		return VT::CommonGraphicResourceState::GRAPHIC_STATE_COMMON_READ;
 	}
 
 	if (havingInitialData)
 	{
-		return VT::CommonGraphicState::COPY_DEST;
+		return VT::CommonGraphicResourceState::GRAPHIC_STATE_COPY_DEST;
 	}
 
 	return targetInitialState;
@@ -295,6 +295,7 @@ bool VT_D3D12::D3D12GraphicDevice::initDevice(bool isSwapChainEnabled)
 
 	//
 	m_uploadingContext = createUploadingContext();
+	VT_CHECK_RETURN_FALSE(m_uploadingContext);
 
 	return true;
 }
@@ -369,6 +370,30 @@ void VT_D3D12::D3D12GraphicDevice::destroyShaderResourceDescriptor(
 	m_srvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
 }
 
+bool VT_D3D12::D3D12GraphicDevice::createUnorderedAccessResourceDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource)
+{
+	assert(resource);
+
+	ID3D12Resource* d3d12Resource = resource->getNativeHandleCast<ID3D12Resource>();
+
+	VT::DescriptorBindingHeapOffsetType offset = m_srvDescriptorHeap->allocateDescriptor();
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_srvDescriptorHeap->getCPUHandle(offset);
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_srvDescriptorHeap->getGPUHandle(offset);
+
+	m_d3d12Device->CreateUnorderedAccessView(d3d12Resource, nullptr, nullptr, cpuHandle);
+
+	new (descriptor) D3D12ResourceDescriptor(VT::GraphicResourceDescriptorType::UAV, offset, cpuHandle, gpuHandle);
+
+	return true;
+}
+
+void VT_D3D12::D3D12GraphicDevice::destroyUnorderedAccessResourceDescriptor(
+	VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor)
+{
+	m_srvDescriptorHeap->deallocateDescriptor(descriptor->getBindingHeapOffset());
+}
+
 void VT_D3D12::D3D12GraphicDevice::update()
 {
 }
@@ -428,7 +453,7 @@ VT::ISwapChain* VT_D3D12::D3D12GraphicDevice::createSwapChain(const VT::SwapChai
 	}
 
 	D3D12Texture2D* textures = VT_ALLOCATE_RAW(D3D12Texture2D, sizeof(D3D12Texture2D) * desc.m_imageCount);
-	D3D12ResourceDescriptor* descriptors = VT_ALLOCATE_RAW(D3D12ResourceDescriptor, sizeof(D3D12ResourceDescriptor) * desc.m_imageCount);
+	D3D12ResourceDescriptor* rtvs = VT_ALLOCATE_RAW(D3D12ResourceDescriptor, sizeof(D3D12ResourceDescriptor) * desc.m_imageCount);
 
 	VT::Texture2DDesc textureDesc{};
 	textureDesc.m_format = desc.m_format;
@@ -441,11 +466,11 @@ VT::ISwapChain* VT_D3D12::D3D12GraphicDevice::createSwapChain(const VT::SwapChai
 
 		d3d12SwapChain->GetBuffer(i, VT_IID(d3d12TextureResource), VT_PPV(d3d12TextureResource));
 		D3D12Texture2D* d3d12Texture = new (&textures[i]) D3D12Texture2D(textureDesc, d3d12TextureResource);
-		d3d12Texture->setState(VT::TextureState::PRESENTING);
-		createRenderTargetDescriptor(&descriptors[i], d3d12Texture);
+		d3d12Texture->setState(VT::TextureState::TEXTURE_STATE_PRESENTING);
+		createRenderTargetDescriptor(&rtvs[i], d3d12Texture);
 	}
 
-	D3D12SwapChain* swapChain = new D3D12SwapChain(desc, m_d3d12Device, d3d12SwapChain, textures, descriptors, desc.m_imageCount);
+	D3D12SwapChain* swapChain = new D3D12SwapChain(desc, m_d3d12Device, d3d12SwapChain, textures, rtvs, desc.m_imageCount);
 
 	return swapChain;
 }
@@ -464,7 +489,7 @@ void VT_D3D12::D3D12GraphicDevice::destroySwapChain(VT::ISwapChain* swapChain)
 }
 
 bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc,
-	VT::GraphicStateValueType initialState, const VT::InitialGPUBufferData* initialData)
+	VT::GraphicResourceStateValueType initialState, const VT::InitialGPUBufferData* initialData)
 {
 	D3D12_RESOURCE_DESC d3d12ResourceDesc{};
 	d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -541,7 +566,7 @@ void VT_D3D12::D3D12GraphicDevice::destroyBufferResourceDescriptor(
 }
 
 bool VT_D3D12::D3D12GraphicDevice::createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture,
-	const VT::Texture2DDesc& desc, VT::GraphicStateValueType initialState)
+	const VT::Texture2DDesc& desc, VT::GraphicResourceStateValueType initialState)
 {
 	D3D12_RESOURCE_DESC d3d12ResourceDesc{};
 	d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -678,12 +703,36 @@ void VT_D3D12::D3D12GraphicDevice::destroyPixelShader(VT::ManagedGraphicDevice::
 	assert(shader);
 }
 
-bool VT_D3D12::D3D12GraphicDevice::createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
-	const VT::PipelineStateInfo& info, const VT::IPipelineBindingLayout* bindingLayout, const VT::InputLayoutDesc* inputLayoutDesc)
+bool VT_D3D12::D3D12GraphicDevice::createComputeShader(VT::ManagedGraphicDevice::ManagedComputeShaderBase* shader,
+	const void* code, size_t codeSize)
+{
+	assert(shader);
+
+	ID3DBlob* codeBlob = nullptr;
+	HRESULT creationResult = D3DCreateBlob(codeSize, &codeBlob);
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	memcpy(codeBlob->GetBufferPointer(), code, codeSize);
+
+	new (shader) D3D12ComputeShader(codeBlob);
+
+	return true;
+}
+
+void VT_D3D12::D3D12GraphicDevice::destroyComputeShader(VT::ManagedGraphicDevice::ManagedComputeShaderBase* shader)
+{
+	assert(shader);
+}
+
+bool VT_D3D12::D3D12GraphicDevice::createGraphicPipelineState(VT::ManagedGraphicDevice::ManagedGraphicPipelineStateBase* state,
+	const VT::GraphicPipelineStateInfo& info, const VT::IPipelineBindingLayout* bindingLayout, const VT::InputLayoutDesc* inputLayoutDesc)
 {
 	if (!bindingLayout)
 	{
-		assert(false && "D3D12GraphicDevice::createPipelineState(): bindingLayout is null.");
+		assert(false && "D3D12GraphicDevice::createGraphicPipelineState(): bindingLayout is null.");
 		return false;
 	}
 
@@ -778,12 +827,53 @@ bool VT_D3D12::D3D12GraphicDevice::createPipelineState(VT::ManagedGraphicDevice:
 		return false;
 	}
 
-	new (state) D3D12PipelineState(d3d12PipelineState, info.getHash(), bindingLayout->getHash());
+	new (state) D3D12GraphicPipelineState(d3d12PipelineState, info.getHash(), bindingLayout->getHash());
 
 	return true;
 }
 
-void VT_D3D12::D3D12GraphicDevice::destroyPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state)
+void VT_D3D12::D3D12GraphicDevice::destroyGraphicPipelineState(VT::ManagedGraphicDevice::ManagedGraphicPipelineStateBase* state)
+{
+	assert(state);
+}
+
+bool VT_D3D12::D3D12GraphicDevice::createComputePipelineState(
+	VT::ManagedGraphicDevice::ManagedComputePipelineStateBase* state, const VT::ComputePipelineStateInfo& info,
+	const VT::IPipelineBindingLayout* bindingLayout)
+{
+	D3D12_COMPUTE_PIPELINE_STATE_DESC d3d12PipelineDesc{};
+
+	//
+
+	D3D12ComputeShader* computeShader = reinterpret_cast<D3D12ComputeShader*>(info.m_computeShader);
+	if (computeShader)
+	{
+		ID3DBlob* d3d12VertexShaderCode = computeShader->getDXCShaderCodeBlob().Get();
+		d3d12PipelineDesc.CS.BytecodeLength = d3d12VertexShaderCode->GetBufferSize();
+		d3d12PipelineDesc.CS.pShaderBytecode = d3d12VertexShaderCode->GetBufferPointer();
+	}
+
+	//
+
+	const D3D12PipelineBindingLayout* d3d12PipelineBindingLayout = reinterpret_cast<const D3D12PipelineBindingLayout*>(bindingLayout);
+	d3d12PipelineDesc.pRootSignature = d3d12PipelineBindingLayout->getD3D12RootSignature().Get();
+
+	//
+	ID3D12PipelineState* d3d12PipelineState = nullptr;
+
+	HRESULT creationResult = m_d3d12Device->CreateComputePipelineState(&d3d12PipelineDesc, VT_IID(d3d12PipelineState), VT_PPV(d3d12PipelineState));
+	if (FAILED(creationResult))
+	{
+		return false;
+	}
+
+	new (state) D3D12ComputePipelineState(d3d12PipelineState, info.getHash(), bindingLayout->getHash());
+
+	return true;
+}
+
+void VT_D3D12::D3D12GraphicDevice::destroyComputePipelineState(
+	VT::ManagedGraphicDevice::ManagedComputePipelineStateBase* state)
 {
 	assert(state);
 }
@@ -989,9 +1079,19 @@ VT::ManagedGraphicDevice::ManagedGraphicDevice::PixelShaderStorage* VT_D3D12::D3
 	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPixelShaderStorageInfo<D3D12PixelShader>>();
 }
 
-VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineStateStorage* VT_D3D12::D3D12GraphicDevice::createPipelineStateStorage() const
+VT::ManagedGraphicDevice::ManagedGraphicDevice::ComputeShaderStorage* VT_D3D12::D3D12GraphicDevice::createComputeShaderStorage() const
 {
-	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedPipelineStateStorageInfo<D3D12PipelineState>>();
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedComputeShaderStorageInfo<D3D12ComputeShader>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::GraphicPipelineStateStorage* VT_D3D12::D3D12GraphicDevice::createGraphicPipelineStateStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedGraphicPipelineStateStorageInfo<D3D12GraphicPipelineState>>();
+}
+
+VT::ManagedGraphicDevice::ManagedGraphicDevice::ComputePipelineStateStorage* VT_D3D12::D3D12GraphicDevice::createComputePipelineStateStorage() const
+{
+	return new VT::ManagedGraphicDevice::ManagedObjectStorage<VT::ManagedGraphicDevice::ManagedComputePipelineStateStorageInfo<D3D12ComputePipelineState>>();
 }
 
 VT::ManagedGraphicDevice::ManagedGraphicDevice::PipelineBindingLayoutStorage* VT_D3D12::D3D12GraphicDevice::createPipelineBindingLayoutStorage() const

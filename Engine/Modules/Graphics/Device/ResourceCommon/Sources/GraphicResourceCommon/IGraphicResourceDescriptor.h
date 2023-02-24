@@ -12,8 +12,10 @@ namespace VT
 
 		RTV,
 		DSV,
+
 		SRV,
-		CBV
+		CBV,
+		UAV
 	};
 
 	class IGraphicResourceDescriptor

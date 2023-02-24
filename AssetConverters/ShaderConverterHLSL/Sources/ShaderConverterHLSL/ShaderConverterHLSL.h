@@ -27,8 +27,8 @@ namespace VT_SHADER_RC
 
 		OutputILType m_ilType;
 
-		LPWSTR getEntryPoint(VT::ShaderStageType stage) const;
-		LPWSTR getTarget(VT::ShaderStageType stage) const;
+		LPWSTR getEntryPoint(VT::ShaderType stage) const;
+		LPWSTR getTarget(VT::ShaderType stage) const;
 
 		const char* getTargertResourceFileExtension() const;
 

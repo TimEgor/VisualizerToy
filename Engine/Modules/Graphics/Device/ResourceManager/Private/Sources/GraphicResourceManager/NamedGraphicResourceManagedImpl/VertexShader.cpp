@@ -54,7 +54,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 		IResourceSystem* resourceSystem = getResourceSystem();
 		assert(resourceSystem);
 
-		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Vertex);
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderType::Vertex);
 		ResourceDataReference resourceData = resourceSystem->getResource(shaderPath, args);
 
 		if (resourceData && resourceData->getState() != ResourceState::INVALID)
@@ -67,7 +67,6 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 				IVertexShader* shader = getGraphicDevice()->createVertexShader(data, dataSize);
 				if (!shader)
 				{
-					m_namedVertexShaderPool.removeElement(nameID);
 					return nullptr;
 				}
 
@@ -77,7 +76,6 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShader(const
 
 		if (!shaderAccessor.m_element->getTypedObject())
 		{
-			deleteVertexShaderReference(nameID);
 			return nullptr;
 		}
 	}
@@ -101,7 +99,7 @@ VT::VertexShaderReference VT::NamedGraphicResourceSystem::loadVertexShaderAsync(
 		IResourceSystem* resourceSystem = getResourceSystem();
 		assert(resourceSystem);
 
-		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Vertex);
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderType::Vertex);
 		resourceSystem->getResourceAsync(shaderPath,
 			[shaderHandleReference = shaderAccessor.m_element, onLoadedCallback = callback](const ResourceDataReference& resourceData)
 			{

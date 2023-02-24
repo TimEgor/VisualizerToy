@@ -19,4 +19,10 @@ namespace VT::ManagedGraphicDevice
 	public:
 		ManagedPixelShaderBase() = default;
 	};
+
+	class ManagedComputeShaderBase : public IComputeShader, public ManagedShaderObject
+	{
+	public:
+		ManagedComputeShaderBase() = default;
+	};
 }

@@ -45,24 +45,24 @@ void VT::GraphicRenderContextUtils::prepareTextureResourceForRendering(IRenderCo
 {
 	assert(context);
 
-	context->changeResourceState(texture, texture->getState(), TextureState::RENDER_TARGET);
-	texture->setState(TextureState::RENDER_TARGET);
+	context->changeResourceState(texture, texture->getState(), TextureState::TEXTURE_STATE_RENDER_TARGET);
+	texture->setState(TextureState::TEXTURE_STATE_RENDER_TARGET);
 }
 
 void VT::GraphicRenderContextUtils::prepareTextureResourceForPresenting(IRenderContext* context, ITexture2D* texture)
 {
 	assert(context);
 
-	context->changeResourceState(texture, texture->getState(), TextureState::PRESENTING);
-	texture->setState(TextureState::PRESENTING);
+	context->changeResourceState(texture, texture->getState(), TextureState::TEXTURE_STATE_PRESENTING);
+	texture->setState(TextureState::TEXTURE_STATE_PRESENTING);
 }
 
 void VT::GraphicRenderContextUtils::prepareResourceForBinding(IRenderContext* context,
-	GraphicResourceReference resource, GraphicStateValueType targetState)
+	GraphicResourceReference resource, GraphicResourceStateValueType targetState)
 {
 }
 
-void VT::GraphicRenderContextUtils::setPipelineState(IRenderContext* context, PipelineStateReference pipelineState)
+void VT::GraphicRenderContextUtils::setPipelineState(IRenderContext* context, GraphicPipelineStateReference pipelineState)
 {
 	assert(context);
 	context->setPipelineState(pipelineState->getTypedObject());
@@ -78,7 +78,7 @@ void VT::GraphicRenderContextUtils::setVertexBuffers(IRenderContext* context, ui
 	for (uint32_t i = 0; i < buffersCount; ++i)
 	{
 		bufferResources[i] = buffers[i]->getTypedResource();
-		context->changeResourceState(bufferResources[i], bufferResources[i]->getState(), GPUBufferState::VERTEX_BUFFER);
+		context->changeResourceState(bufferResources[i], bufferResources[i]->getState(), GPUBufferState::GPU_BUFFER_STATE_VERTEX_BUFFER);
 	}
 
 	context->setVertexBuffers(buffersCount, bufferResources, inputLayoutDesc);
@@ -89,6 +89,6 @@ void VT::GraphicRenderContextUtils::setIndexBuffer(IRenderContext* context, GPUB
 {
 	assert(context);
 	IGPUBuffer* indexBuffer = buffer->getTypedResource();
-	context->changeResourceState(indexBuffer, indexBuffer->getState(), GPUBufferState::INDEX_BUFFER);
+	context->changeResourceState(indexBuffer, indexBuffer->getState(), GPUBufferState::GPU_BUFFER_STATE_INDEX_BUFFER);
 	context->setIndexBuffer(indexBuffer, indexType);
 }

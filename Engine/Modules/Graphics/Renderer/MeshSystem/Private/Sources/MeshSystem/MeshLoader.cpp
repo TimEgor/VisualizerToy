@@ -53,7 +53,7 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 			};
 
 			GPUBufferReference vertexBuffer = graphicResourceManager->createGPUBuffer(vertexBufferDesc,
-				GPUBufferState::VERTEX_BUFFER, &bufferData);
+				GPUBufferState::GPU_BUFFER_STATE_VERTEX_BUFFER, &bufferData);
 
 			vertexData.m_bindings.emplace_back(vertexBuffer);
 
@@ -75,6 +75,6 @@ void VT::MeshLoader::loadMesh(const void* meshResourceData, size_t meshResourceD
 		};
 
 		indexData.m_indexBuffer = graphicResourceManager->createGPUBuffer(indexBufferDesc,
-			GPUBufferState::INDEX_BUFFER, &bufferData);
+			GPUBufferState::GPU_BUFFER_STATE_INDEX_BUFFER, &bufferData);
 	}
 }

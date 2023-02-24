@@ -8,8 +8,11 @@ namespace VT
 
 	struct RenderPassContext final
 	{
-		IRenderContext* context = nullptr;
+		IRenderContext* m_context = nullptr;
 		const RenderingData& m_renderingData;
+
+		ITexture2D* m_target = nullptr;
+		IGraphicResourceDescriptor* m_targetView = nullptr;
 	};
 
 	class IRenderPass
@@ -21,6 +24,6 @@ namespace VT
 		virtual bool init() = 0;
 		virtual void release() = 0;
 
-		virtual void render(const RenderPassContext& passContext, const RenderPassEnvironment& environment) = 0;
+		virtual void execute(const RenderPassContext& passContext, const RenderPassEnvironment& environment) = 0;
 	};
 }

@@ -106,7 +106,7 @@ void VT_D3D12::D3D12RenderContext::setScissors(uint32_t count, const VT::Scissor
 }
 
 void VT_D3D12::D3D12RenderContext::changeResourceState(VT::IGraphicResource* resource,
-	VT::GraphicStateValueType currentState, VT::GraphicStateValueType targetState)
+	VT::GraphicResourceStateValueType currentState, VT::GraphicResourceStateValueType targetState)
 {
 	if (currentState == targetState)
 	{
@@ -142,14 +142,24 @@ void VT_D3D12::D3D12RenderContext::setDescriptorHeap(VT::IGraphicResourceDescrip
 	m_commandList->getD3D12CommandList()->SetDescriptorHeaps(1, d3d12Heap->getD3D12DescriptorHeap().GetAddressOf());
 }
 
-void VT_D3D12::D3D12RenderContext::setBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value)
+void VT_D3D12::D3D12RenderContext::setGraphicBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value)
 {
 	m_commandList->getD3D12CommandList()->SetGraphicsRoot32BitConstant(index, value, offset);
 }
 
-void VT_D3D12::D3D12RenderContext::setBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values)
+void VT_D3D12::D3D12RenderContext::setGraphicBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values)
 {
 	m_commandList->getD3D12CommandList()->SetGraphicsRoot32BitConstants(index, valuesCount, values, offset);
+}
+
+void VT_D3D12::D3D12RenderContext::setComputeBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value)
+{
+	m_commandList->getD3D12CommandList()->SetComputeRoot32BitConstant(index, value, offset);
+}
+
+void VT_D3D12::D3D12RenderContext::setComputeBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values)
+{
+	m_commandList->getD3D12CommandList()->SetComputeRoot32BitConstants(index, valuesCount, values, offset);
 }
 
 void VT_D3D12::D3D12RenderContext::setBindingLayout(const VT::IPipelineBindingLayout* bindingLayout)
@@ -164,7 +174,7 @@ void VT_D3D12::D3D12RenderContext::setPipelineState(const VT::IPipelineState* pi
 {
 	assert(pipelineState);
 
-	const D3D12PipelineState* d3d12PipelineState = reinterpret_cast<const D3D12PipelineState*>(pipelineState);
+	const D3D12GraphicPipelineState* d3d12PipelineState = reinterpret_cast<const D3D12GraphicPipelineState*>(pipelineState);
 	m_commandList->getD3D12CommandList()->SetPipelineState(d3d12PipelineState->getD3D12Pipeline().Get());
 }
 
@@ -216,4 +226,9 @@ void VT_D3D12::D3D12RenderContext::drawIndexed(uint32_t indexCount)
 {
 	m_barrierCache.flush(m_commandList->getD3D12CommandList());
 	m_commandList->getD3D12CommandList()->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
+}
+
+void VT_D3D12::D3D12RenderContext::dispatch(uint32_t threadGroupX, uint32_t threadGroupY, uint32_t threadGroupZ)
+{
+	m_commandList->getD3D12CommandList()->Dispatch(threadGroupX, threadGroupY, threadGroupZ);
 }

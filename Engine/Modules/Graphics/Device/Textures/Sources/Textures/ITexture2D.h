@@ -10,7 +10,7 @@ namespace VT
 		TextureDimension m_width = 0;
 		TextureDimension m_height = 0;
 		Format m_format = Format::UNDEFINED;
-		TextureUsage m_usage = TEXTURE_USAGE_UNKNOWN;
+		GraphicResourceUsageValueType m_usage = GRAPHIC_USAGE_UNDEFINED;
 		bool isHostVisible = false;
 	};
 

@@ -18,11 +18,11 @@ bool VT::GBuffer::init(const Vector2UInt16& bufferResolution)
 	bufferTextureDesc.m_format = Format::R8G8B8A8_SNORM;
 	bufferTextureDesc.m_width = bufferResolution.m_x;
 	bufferTextureDesc.m_height = bufferResolution.m_y;
-	bufferTextureDesc.m_usage = TEXTURE_USAGE_RENDER_TARGET;
+	bufferTextureDesc.m_usage = TEXTURE_USAGE_RENDER_TARGET | GRAPHIC_USAGE_SHADER_RESOURCE;
 
-	m_color = resManager->createTexture2D(bufferTextureDesc, RENDER_TARGET);
-	m_normal = resManager->createTexture2D(bufferTextureDesc, RENDER_TARGET);
-	m_position = resManager->createTexture2D(bufferTextureDesc, RENDER_TARGET);
+	m_color = resManager->createTexture2D(bufferTextureDesc, TEXTURE_STATE_RENDER_TARGET);
+	m_normal = resManager->createTexture2D(bufferTextureDesc, TEXTURE_STATE_RENDER_TARGET);
+	m_position = resManager->createTexture2D(bufferTextureDesc, TEXTURE_STATE_RENDER_TARGET);
 
 	//bufferTextureDesc.m_format = Format::D24_UNORM_S8_UINT;
 	//bufferTextureDesc.m_usage = TEXTURE_USAGE_DEPTH_STENCIL;

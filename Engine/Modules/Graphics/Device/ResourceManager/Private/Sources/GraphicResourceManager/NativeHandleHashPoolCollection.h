@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GraphicPipeline/IPipelineState.h"
 #include "ObjectPool/ObjectPool.h"
 #include "Multithreading/Mutex.h"
 #include "Multithreading/LockGuard.h"

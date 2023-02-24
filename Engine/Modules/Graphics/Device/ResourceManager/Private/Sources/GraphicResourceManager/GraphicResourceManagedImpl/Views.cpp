@@ -16,6 +16,10 @@ void VT::GraphicResourceManager::deleteShaderResourceViewInternal(IGraphicResour
 	{
 		getGraphicDevice()->destroyShaderResourceDescriptor(descriptor);
 	}
+	else if (descriptorType == GraphicResourceDescriptorType::UAV)
+	{
+		getGraphicDevice()->destroyUnorderedAccessResourceDescriptor(descriptor);
+	}
 	else
 	{
 		assert(false && "Invalid descriptor type.");
@@ -75,10 +79,49 @@ VT::ShaderResourceViewReference VT::GraphicResourceManager::createBufferResource
 	return nullptr;
 }
 
+VT::ShaderResourceViewReference VT::GraphicResourceManager::createUnorderedAccessResourceDescriptor(
+	GraphicResourceReference resource)
+{
+	IGraphicResource* deviceResource = resource ? resource->getResource() : nullptr;
+
+	if (deviceResource)
+	{
+		IGraphicResourceDescriptor* deviceDescriptor = getGraphicDevice()->createUnorderedAccessResourceDescriptor(deviceResource);
+
+		if (deviceDescriptor)
+		{
+			ShaderResourceViewPool::NewElementInfo newDescriptorInfo = m_shaderResourceViews.addElementRaw();
+			ManagedShaderGraphicResourceViewHandle* newDescriptorHandle =
+				new (newDescriptorInfo.m_elementPtr) ManagedShaderGraphicResourceViewHandle(
+					deviceDescriptor, newDescriptorInfo.m_elementHandle.getKey(),
+					resource->getID(), deviceResource->getType()
+				);
+
+			return newDescriptorHandle;
+		}
+	}
+
+	return nullptr;
+}
+
 void VT::GraphicResourceManager::deleteRenderTargetViewInternal(IGraphicResourceDescriptor* descriptor)
 {
 	assert(descriptor);
-	getGraphicDevice()->destroyRenderTargetDescriptor(descriptor);
+
+	GraphicResourceDescriptorType descriptorType = descriptor->getType();
+
+	if (descriptorType == GraphicResourceDescriptorType::RTV)
+	{
+		getGraphicDevice()->destroyRenderTargetDescriptor(descriptor);
+	}
+	else if (descriptorType == GraphicResourceDescriptorType::DSV)
+	{
+		getGraphicDevice()->destroyDepthStencilDescriptor(descriptor);
+	}
+	else
+	{
+		assert(false && "Invalid descriptor type.");
+	}
 }
 
 void VT::GraphicResourceManager::deleteRenderTargetViewReference(RenderTargetViewHandleID handleID)

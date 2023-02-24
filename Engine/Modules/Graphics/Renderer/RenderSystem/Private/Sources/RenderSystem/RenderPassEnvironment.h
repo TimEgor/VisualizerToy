@@ -13,11 +13,13 @@ namespace VT
 	class RenderPassEnvironment final
 	{
 		using TextureCollection = std::unordered_map<RenderPassEnvironmentResourceID, TextureReference>;
+		using BufferCollection = std::unordered_map<RenderPassEnvironmentResourceID, GPUBufferReference>;
 		using ShaderResourceViewCollection = std::unordered_map<RenderPassEnvironmentResourceID, ShaderResourceViewReference>;
 		using RenderTargetViewCollection = std::unordered_map<RenderPassEnvironmentResourceID, RenderTargetViewReference>;
 
 	private:
 		TextureCollection m_textures;
+		BufferCollection m_buffers;
 		ShaderResourceViewCollection m_SRVs;
 		RenderTargetViewCollection m_RTVs;
 
@@ -26,6 +28,9 @@ namespace VT
 
 		void addTexture(const RenderPassEnvironmentResourceName& name, TextureReference texture);
 		TextureReference getTexture(const RenderPassEnvironmentResourceName& name) const;
+
+		void addBuffer(const RenderPassEnvironmentResourceName& name, GPUBufferReference buffer);
+		GPUBufferReference getBuffer(const RenderPassEnvironmentResourceName& name) const;
 
 		void addShaderResourceView(const RenderPassEnvironmentResourceName& name, ShaderResourceViewReference srv);
 		ShaderResourceViewReference getShaderResourceView(const RenderPassEnvironmentResourceName& name) const;

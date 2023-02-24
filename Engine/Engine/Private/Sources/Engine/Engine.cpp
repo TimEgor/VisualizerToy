@@ -51,6 +51,8 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_graphicDevice
 		&& m_engineEnvironment->m_graphicDevice->init(initParam.m_swapChainEnabled));
 
+	m_engineEnvironment->m_graphicDevice->resetContexts();
+
 	for (uint32_t converterIndex = 0; converterIndex < initParam.m_converterPathsCount; ++converterIndex)
 	{
 		m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_converterPaths[converterIndex]);
@@ -77,6 +79,9 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	m_engineEnvironment->m_levelSystem = new LevelSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_levelSystem
 		&& m_engineEnvironment->m_levelSystem->init());
+
+	m_engineEnvironment->m_graphicDevice->submitContexts();
+	m_engineEnvironment->m_graphicDevice->waitContexts();
 
 	return true;
 }

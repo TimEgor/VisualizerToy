@@ -22,8 +22,10 @@ namespace VT
 
 		friend ManagedVertexShaderGraphicObjectHandle;
 		friend ManagedPixelShaderGraphicObjectHandle;
+		friend ManagedComputeShaderGraphicObjectHandle;
 
-		friend ManagedPipelineStateGraphicObjectHandle;
+		friend ManagedGraphicPipelineStateGraphicObjectHandle;
+		friend ManagedComputePipelineStateGraphicObjectHandle;
 		friend ManagedPipelineBindingLayoutGraphicObjectHandle;
 
 		friend class ManagedInputLayoutHandle;
@@ -37,9 +39,12 @@ namespace VT
 
 		using VertexShaderPool = ThreadSafeObjectPool<ManagedVertexShaderGraphicObjectHandle, NamedObjectPoolHandle32>;
 		using PixelShaderPool = ThreadSafeObjectPool<ManagedPixelShaderGraphicObjectHandle, NamedObjectPoolHandle32>;
+		using ComputeShaderPool = ThreadSafeObjectPool<ManagedComputeShaderGraphicObjectHandle, NamedObjectPoolHandle32>;
 
-		using PipelineStateCollection = NativeHandleHashPoolCollection<ManagedPipelineStateGraphicObjectHandle,
-			PipelineStateReference, PipelineStateConstReference, PipelineStateHash, ObjectPoolHandle16>;
+		using GraphicPipelineStateCollection = NativeHandleHashPoolCollection<ManagedGraphicPipelineStateGraphicObjectHandle,
+			GraphicPipelineStateReference, GraphicPipelineStateConstReference, PipelineStateHash, ObjectPoolHandle16>;
+		using ComputePipelineStateCollection = NativeHandleHashPoolCollection<ManagedComputePipelineStateGraphicObjectHandle,
+			ComputePipelineStateReference, ComputePipelineStateConstReference, PipelineStateHash, ObjectPoolHandle16>;
 		using PipelineBindingLayoutCollection = NativeHandleHashPoolCollection<ManagedPipelineBindingLayoutGraphicObjectHandle,
 			PipelineBindingLayoutReference, PipelineBindingLayoutConstReference, PipelineBindingLayoutHash, ObjectPoolHandle16>;
 
@@ -53,8 +58,10 @@ namespace VT
 
 		VertexShaderPool m_vertexShaders;
 		PixelShaderPool m_pixelShaders;
+		ComputeShaderPool m_computeShaders;
 
-		PipelineStateCollection m_pipelineStateCollection;
+		GraphicPipelineStateCollection m_graphicPipelineStateCollection;
+		ComputePipelineStateCollection m_computePipelineStateCollection;
 		PipelineBindingLayoutCollection m_pipelineBindingLayoutCollection;
 		InputLayoutCollection m_inputLayoutCollection;
 
@@ -69,8 +76,10 @@ namespace VT
 
 		void deleteVertexShaderInternal(IVertexShader* shader);
 		void deletePixelShaderInternal(IPixelShader* shader);
+		void deleteComputeShaderInternal(IComputeShader* shader);
 
-		void deletePipelineStateInternal(IPipelineState* state);
+		void deleteGraphicPipelineStateInternal(IGraphicPipelineState* state);
+		void deleteComputePipelineStateInternal(IComputePipelineState* state);
 		void deletePipelineBindingLayoutInternal(IPipelineBindingLayout* bindingLayout);
 
 		//Reference deleting
@@ -83,6 +92,7 @@ namespace VT
 
 		void deleteVertexShaderReference(VertexShaderHandleID handleID);
 		void deletePixelShaderReference(PixelShaderHandleID handleID);
+		void deleteComputeShaderReference(ComputeShaderHandleID handleID);
 
 		void deleteInputLayoutReference(InputLayoutHandleID handleID);
 
@@ -95,11 +105,13 @@ namespace VT
 
 		//
 		virtual ShaderResourceViewReference createShaderResourceDescriptor(GraphicResourceReference resource) override;
+		virtual ShaderResourceViewReference createUnorderedAccessResourceDescriptor(GraphicResourceReference resource) override;
+
 		virtual RenderTargetViewReference createRenderTargetDescriptor(TextureReference texture) override;
 		virtual DepthStencilViewReference createDepthStencilDescriptor(TextureReference texture) override;
 
 		//Buffer
-		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc, GraphicStateValueType initialState,
+		virtual GPUBufferReference createGPUBuffer(const GPUBufferDesc& desc, GraphicResourceStateValueType initialState,
 			const InitialGPUBufferData* initialData = nullptr) override;
 		virtual GPUBufferReference getGPUBuffer(GPUBufferHandleID handle) override;
 		virtual bool isValidGPUBuffer(GPUBufferHandleID handle) override;
@@ -107,23 +119,30 @@ namespace VT
 		virtual ShaderResourceViewReference createBufferResourceDescriptor(GPUBufferReference buffer) override;
 
 		//Texture
-		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState) override;
+		virtual Texture2DReference createTexture2D(const Texture2DDesc& desc, GraphicResourceStateValueType initialState) override;
 		virtual Texture2DReference getTexture2D(TextureHandleID handle) override;
 		virtual bool isValidTexture2D(TextureHandleID handle) const override;
 
-		// Vertex Shader
+		//Vertex Shader
 		virtual VertexShaderReference createVertexShader(const void* code, size_t codeSize) override;
 		virtual VertexShaderReference getVertexShader(VertexShaderHandleID handle) override;
 		virtual bool isValidVertexShader(VertexShaderHandleID handle) const override;
 
-		// Pixel Shader
+		//Pixel Shader
 		virtual PixelShaderReference createPixelShader(const void* code, size_t codeSize) override;
 		virtual PixelShaderReference getPixelShader(PixelShaderHandleID handle) override;
 		virtual bool isValidPixelShader(PixelShaderHandleID handle) const override;
 
+		//Compute Shader
+		virtual ComputeShaderReference createComputeShader(const void* code, size_t codeSize) override;
+		virtual ComputeShaderReference getComputeShader(ComputeShaderHandleID handle) override;
+		virtual bool isValidComputeShader(ComputeShaderHandleID handle) const override;
+
 		//PipelineState
-		virtual PipelineStateReference getPipelineState(const PipelineStateInfo& desc,
+		virtual GraphicPipelineStateReference getGraphicPipelineState(const GraphicPipelineStateInfo& desc,
 			PipelineBindingLayoutConstReference bindingLayout, InputLayoutConstReference inputlayout) override;
+		virtual ComputePipelineStateReference getComputePipelineState(const ComputePipelineStateInfo& desc,
+			PipelineBindingLayoutConstReference bindingLayout) override;
 
 		virtual PipelineBindingLayoutReference getPipelineBindingLayout(const PipelineBindingLayoutDesc& desc) override;
 

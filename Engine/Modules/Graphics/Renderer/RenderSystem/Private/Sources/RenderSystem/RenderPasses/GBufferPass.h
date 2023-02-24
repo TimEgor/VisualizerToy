@@ -32,6 +32,7 @@ namespace VT
 
 		virtual bool init() override;
 		virtual void release() override;
-		virtual void render(const RenderPassContext& passContext, const RenderPassEnvironment& environment) override;
+
+		virtual void execute(const RenderPassContext& passContext, const RenderPassEnvironment& environment) override;
 	};
 }

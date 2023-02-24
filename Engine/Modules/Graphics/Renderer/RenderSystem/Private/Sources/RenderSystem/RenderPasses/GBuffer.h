@@ -7,8 +7,9 @@ namespace VT
 {
 	class RenderPassEnvironment;
 
-	struct GBuffer final
+	class GBuffer final
 	{
+	private:
 		Texture2DReference m_color;
 		Texture2DReference m_normal;
 		Texture2DReference m_position;
@@ -23,6 +24,9 @@ namespace VT
 		ShaderResourceViewReference m_normalSRV;
 		ShaderResourceViewReference m_positionSRV;
 		ShaderResourceViewReference m_depthSRV;
+
+	public:
+		GBuffer() = default;
 
 		bool init(const Vector2UInt16& bufferResolution);
 		void release();

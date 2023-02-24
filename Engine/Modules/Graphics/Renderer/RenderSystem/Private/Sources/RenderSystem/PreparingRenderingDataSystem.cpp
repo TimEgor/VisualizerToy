@@ -23,7 +23,7 @@ void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, cons
 		const NodeTransforms* nodeTransforms = scene->getNodeTransforms(sceneNodeIDComponent.getNodeID());
 		assert(nodeTransforms);
 
-		renderingData.addMesh(meshComponent.m_mesh, nodeTransforms->m_globalTransform);
+		renderingData.addMesh(meshComponent.m_mesh, nodeTransforms->m_globalTransform.m_matrix);
 	}
 }
 
@@ -36,7 +36,7 @@ void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, con
 		const NodeTransforms* nodeTransforms = scene->getNodeTransforms(sceneNodeIDComponent.getNodeID());
 		assert(nodeTransforms);
 
-		renderingData.addPointLight(pointLightComponent.m_color, TransformMatrixUtils::getOrigin(nodeTransforms->m_globalTransform));
+		renderingData.addPointLight(pointLightComponent.m_color, pointLightComponent.m_radius, nodeTransforms->m_globalTransform.getOrigin());
 	}
 }
 

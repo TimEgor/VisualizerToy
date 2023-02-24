@@ -1,7 +1,6 @@
 #pragma once
 
 #include "D3D12GraphicsPlugin/D3D12Core.h"
-#include "D3D12GraphicsPlugin/Pipeline/D3D12PipelineState.h"
 
 namespace VT_D3D12
 {

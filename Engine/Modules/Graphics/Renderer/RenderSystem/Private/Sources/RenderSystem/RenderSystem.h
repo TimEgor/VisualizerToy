@@ -9,11 +9,14 @@
 
 namespace VT
 {
+	class PresentPass;
+	class LightPass;
 	class IFence;
 	class IRenderContext;
 	class IPipelineBindingLayout;
 
 	struct GBuffer;
+	class LightVolumeData;
 
 	class RenderSystem final : public IRenderSystem
 	{
@@ -28,7 +31,11 @@ namespace VT
 		RenderPassEnvironment* m_passEnvironment = nullptr;
 
 		GBuffer* m_gBuffer = nullptr;
+		LightVolumeData* m_lightVolume = nullptr;
+
 		GBufferPass* m_gBufferPass = nullptr;
+		LightPass* m_lightPass = nullptr;
+		PresentPass* m_presentPass = nullptr;
 
 	public:
 		RenderSystem() = default;

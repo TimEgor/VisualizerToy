@@ -48,6 +48,6 @@ void VT_DEMO_TEST::TestDemoGameModule::onUnloaded()
 
 void VT_DEMO_TEST::TestDemoGameModule::update(float deltaTime)
 {
-	m_transforms->m_globalTransform.m_41 = sinf(m_time) * 3.0f;
+	m_transforms->m_globalTransform.m_matrix.m_41 = sinf(m_time) * 3.0f;
 	m_time += deltaTime;
 }

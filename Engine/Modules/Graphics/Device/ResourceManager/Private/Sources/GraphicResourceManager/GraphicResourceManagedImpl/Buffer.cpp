@@ -11,7 +11,7 @@ void VT::GraphicResourceManager::deleteGPUBufferReference(GPUBufferHandleID hand
 }
 
 VT::GPUBufferReference VT::GraphicResourceManager::createGPUBuffer(const GPUBufferDesc& desc,
-	GraphicStateValueType initialState, const InitialGPUBufferData* initialData)
+	GraphicResourceStateValueType initialState, const InitialGPUBufferData* initialData)
 {
 	IGPUBuffer* buffer = getGraphicDevice()->createBuffer(desc, initialState, initialData);
 	if (!buffer)

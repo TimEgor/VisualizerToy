@@ -17,8 +17,10 @@ namespace VT::ManagedGraphicDevice
 
 	MANAGED_OBJECT_STORAGE_INFO(ManagedVertexShader, ManagedVertexShaderBase)
 	MANAGED_OBJECT_STORAGE_INFO(ManagedPixelShader, ManagedPixelShaderBase)
+	MANAGED_OBJECT_STORAGE_INFO(ManagedComputeShader, ManagedComputeShaderBase)
 
-	MANAGED_OBJECT_STORAGE_INFO(ManagedPipelineState, ManagedPipelineStateBase)
+	MANAGED_OBJECT_STORAGE_INFO(ManagedGraphicPipelineState, ManagedGraphicPipelineStateBase)
+	MANAGED_OBJECT_STORAGE_INFO(ManagedComputePipelineState, ManagedComputePipelineStateBase)
 	MANAGED_OBJECT_STORAGE_INFO(ManagedPipelineBindingLayout, ManagedPipelineBindingLayoutBase)
 
 	MANAGED_OBJECT_STORAGE_INFO(ManagedCommandList, ManagedCommandListBase)

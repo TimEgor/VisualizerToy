@@ -16,8 +16,10 @@ namespace VT::ManagedGraphicDevice
 
 		using VertexShaderStorage = ManagedObjectStorageBase<ManagedVertexShaderStorageInfoBase>;
 		using PixelShaderStorage = ManagedObjectStorageBase<ManagedPixelShaderStorageInfoBase>;
+		using ComputeShaderStorage = ManagedObjectStorageBase<ManagedComputeShaderStorageInfoBase>;
 
-		using PipelineStateStorage = ManagedObjectStorageBase<ManagedPipelineStateStorageInfoBase>;
+		using GraphicPipelineStateStorage = ManagedObjectStorageBase<ManagedGraphicPipelineStateStorageInfoBase>;
+		using ComputePipelineStateStorage = ManagedObjectStorageBase<ManagedComputePipelineStateStorageInfoBase>;
 		using PipelineBindingLayoutStorage = ManagedObjectStorageBase<ManagedPipelineBindingLayoutStorageInfoBase>;
 
 		using CommandListStorage = ManagedObjectStorageBase<ManagedCommandListStorageInfoBase>;
@@ -33,8 +35,10 @@ namespace VT::ManagedGraphicDevice
 
 		VertexShaderStorage* m_vertexShaderStorage = nullptr;
 		PixelShaderStorage* m_pixelShaderStorage = nullptr;
+		ComputeShaderStorage* m_computeShaderStorage = nullptr;
 
-		PipelineStateStorage* m_pipelineStateStorage = nullptr;
+		GraphicPipelineStateStorage* m_graphicPipelineStateStorage = nullptr;
+		ComputePipelineStateStorage* m_computePipelineStateStorage = nullptr;
 		PipelineBindingLayoutStorage* m_pipelineBindingLayoutStorage = nullptr;
 
 		CommandListStorage* m_commandListStorage = nullptr;
@@ -51,16 +55,19 @@ namespace VT::ManagedGraphicDevice
 		virtual bool createShaderResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, IGraphicResource* resource) = 0;
 		virtual void destroyShaderResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
 
+		virtual bool createUnorderedAccessResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, IGraphicResource* resource) = 0;
+		virtual void destroyUnorderedAccessResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
+
 		//Buffer
 		virtual bool createBuffer(ManagedGPUBufferBase* buffer, const GPUBufferDesc& desc,
-			GraphicStateValueType initialState, const InitialGPUBufferData* initialData) = 0;
+			GraphicResourceStateValueType initialState, const InitialGPUBufferData* initialData) = 0;
 		virtual void destroyBuffer(ManagedGPUBufferBase* buffer) = 0;
 
 		virtual bool createBufferResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, IGPUBuffer* buffer) = 0;
 		virtual void destroyBufferResourceDescriptor(ManagedGraphicResourceDescriptorBase* descriptor) = 0;
 
 		//Textures
-		virtual bool createTexture2D(ManagedTexture2DBase* texture, const Texture2DDesc& desc, GraphicStateValueType initialState) = 0;
+		virtual bool createTexture2D(ManagedTexture2DBase* texture, const Texture2DDesc& desc, GraphicResourceStateValueType initialState) = 0;
 		virtual void destroyTexture2D(ManagedTexture2DBase* texture) = 0;
 
 		virtual bool createRenderTargetDescriptor(ManagedGraphicResourceDescriptorBase* descriptor, ITexture* texture) = 0;
@@ -76,10 +83,18 @@ namespace VT::ManagedGraphicDevice
 		virtual bool createPixelShader(ManagedPixelShaderBase* shader, const void* code, size_t codeSize) = 0;
 		virtual void destroyPixelShader(ManagedPixelShaderBase* shader) = 0;
 
+		virtual bool createComputeShader(ManagedComputeShaderBase* shader, const void* code, size_t codeSize) = 0;
+		virtual void destroyComputeShader(ManagedComputeShaderBase* shader) = 0;
+
 		//Pipeline
-		virtual bool createPipelineState(ManagedPipelineStateBase* state,
-			const PipelineStateInfo& info, const IPipelineBindingLayout* bindingLayout, const InputLayoutDesc* inputLayoutDesc) = 0;
-		virtual void destroyPipelineState(ManagedPipelineStateBase* state) = 0;
+		virtual bool createGraphicPipelineState(ManagedGraphicPipelineStateBase* state,
+			const GraphicPipelineStateInfo& info, const IPipelineBindingLayout* bindingLayout,
+			const InputLayoutDesc* inputLayoutDesc) = 0;
+		virtual void destroyGraphicPipelineState(ManagedGraphicPipelineStateBase* state) = 0;
+
+		virtual bool createComputePipelineState(ManagedComputePipelineStateBase* state,
+			const ComputePipelineStateInfo& info, const IPipelineBindingLayout* bindingLayout) = 0;
+		virtual void destroyComputePipelineState(ManagedComputePipelineStateBase* state) = 0;
 
 		virtual bool createPipelineBindingLayout(ManagedPipelineBindingLayoutBase* layout,
 			const PipelineBindingLayoutDesc& desc) = 0;
@@ -99,8 +114,10 @@ namespace VT::ManagedGraphicDevice
 
 		virtual VertexShaderStorage* createVertexShaderStorage() const = 0;
 		virtual PixelShaderStorage* createPixelShaderStorage() const = 0;
+		virtual ComputeShaderStorage* createComputeShaderStorage() const = 0;
 
-		virtual PipelineStateStorage* createPipelineStateStorage() const = 0;
+		virtual GraphicPipelineStateStorage* createGraphicPipelineStateStorage() const = 0;
+		virtual ComputePipelineStateStorage* createComputePipelineStateStorage() const = 0;
 		virtual PipelineBindingLayoutStorage* createPipelineBindingLayoutStorage() const = 0;
 
 		virtual CommandListStorage* createCommandListStorage() const = 0;
@@ -118,16 +135,19 @@ namespace VT::ManagedGraphicDevice
 		virtual IGraphicResourceDescriptor* createShaderResourceDescriptor(IGraphicResource* resource) override;
 		virtual void destroyShaderResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
 
+		virtual IGraphicResourceDescriptor* createUnorderedAccessResourceDescriptor(IGraphicResource* resource) override;
+		virtual void destroyUnorderedAccessResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
+
 		//Buffer
 		virtual IGPUBuffer* createBuffer(const GPUBufferDesc& desc,
-			GraphicStateValueType initialState, const InitialGPUBufferData* initialData) override;
+			GraphicResourceStateValueType initialState, const InitialGPUBufferData* initialData) override;
 		virtual void destroyBuffer(IGPUBuffer* buffer) override;
 
 		virtual IGraphicResourceDescriptor* createBufferResourceDescriptor(IGPUBuffer* buffer) override;
 		virtual void destroyBufferResourceDescriptor(IGraphicResourceDescriptor* descriptor) override;
 
 		//Textures
-		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState) override;
+		virtual ITexture2D* createTexture2D(const Texture2DDesc& desc, GraphicResourceStateValueType initialState) override;
 		virtual void destroyTexture2D(ITexture2D* texture) override;
 
 		virtual IGraphicResourceDescriptor* createRenderTargetDescriptor(ITexture* texture) override;
@@ -143,10 +163,17 @@ namespace VT::ManagedGraphicDevice
 		virtual IPixelShader* createPixelShader(const void* code, size_t codeSize) override;
 		virtual void destroyPixelShader(IPixelShader* shader) override;
 
+		virtual IComputeShader* createComputeShader(const void* code, size_t codeSize) override;
+		virtual void destroyComputeShader(IComputeShader* shader) override;
+
 		//Pipeline
-		virtual IPipelineState* createPipelineState(const PipelineStateInfo& info,
+		virtual IGraphicPipelineState* createGraphicPipelineState(const GraphicPipelineStateInfo& info,
 			const IPipelineBindingLayout* bindingLayout, const InputLayoutDesc* inputLayoutDesc) override;
-		virtual void destroyPipelineState(IPipelineState* state) override;
+		virtual void destroyGraphicPipelineState(IGraphicPipelineState* state) override;
+
+		virtual IComputePipelineState* createComputePipelineState(const ComputePipelineStateInfo& info,
+			const IPipelineBindingLayout* bindingLayout) override;
+		virtual void destroyComputePipelineState(IComputePipelineState* state) override;
 
 		virtual IPipelineBindingLayout* createPipelineBindingLayout(const PipelineBindingLayoutDesc& desc) override;
 		virtual void destroyPipelineBindingLayout(IPipelineBindingLayout* layout) override;

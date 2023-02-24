@@ -7,13 +7,13 @@ namespace VT
 	class Material : public IMaterial
 	{
 	private:
-		PipelineStateConstReference m_pipelineState = nullptr;
+		GraphicPipelineStateReference m_pipelineState = nullptr;
 
 	public:
-		Material(PipelineStateConstReference pipelineState)
+		Material(GraphicPipelineStateReference pipelineState)
 			: m_pipelineState(pipelineState) {}
 
-		virtual PipelineStateConstReference getPipelineState() const override { return m_pipelineState; }
+		virtual GraphicPipelineStateReference getPipelineState() const override { return m_pipelineState; }
 	};
 
 	class ManagedMaterial final : public Material
@@ -22,7 +22,7 @@ namespace VT
 		MaterialID m_id;
 
 	public:
-		ManagedMaterial(PipelineStateConstReference pipelineState, MaterialID id)
+		ManagedMaterial(GraphicPipelineStateReference pipelineState, MaterialID id)
 			: Material(pipelineState), m_id(id) {}
 		~ManagedMaterial();
 

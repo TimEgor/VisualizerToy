@@ -2,6 +2,8 @@
 
 #include "D3D12GraphicsPlugin/Resource/D3D12Resource.h"
 
+#include <cassert>
+
 VT_D3D12::D3D12UploadingContext::D3D12UploadingContext(D3D12CommandQueueComPtr d3d12UploadingCommandQueue,
 	D3D12GraphicsCommandListComPtr d3d12CommandList, D3D12CommandAllocatorComPtr d3d12CommandAllocator, D3D12Fence syncFence)
 	: m_uploadingCommandQueue(d3d12UploadingCommandQueue),

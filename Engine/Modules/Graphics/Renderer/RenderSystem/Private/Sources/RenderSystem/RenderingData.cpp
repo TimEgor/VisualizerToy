@@ -12,7 +12,7 @@
 #include "Math/Consts.h"
 
 
-void VT::RenderingData::init()
+bool VT::RenderingData::init()
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
@@ -21,8 +21,11 @@ void VT::RenderingData::init()
 
 	transformBufferDesc.m_byteSize = sizeof(CameraTransforms);
 	transformBufferDesc.isHostVisible = true;
-	m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicState::COMMON_READ);
+	m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicResourceState::GRAPHIC_STATE_COMMON_READ);
 	m_cameraTransformCBV = resManager->createBufferResourceDescriptor(m_cameraTransformBuffer);
+
+	return true;
+
 }
 
 void VT::RenderingData::clear()

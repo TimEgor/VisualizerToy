@@ -11,8 +11,10 @@ bool VT::GraphicResourceManager::init()
 
 	VT_CHECK_INITIALIZATION(m_pixelShaders.init(32, 0, 16))
 	VT_CHECK_INITIALIZATION(m_vertexShaders.init(32, 0, 16))
+	VT_CHECK_INITIALIZATION(m_computeShaders.init(32, 0, 16))
 
-	VT_CHECK_INITIALIZATION(m_pipelineStateCollection.init(128, 1, 64))
+	VT_CHECK_INITIALIZATION(m_graphicPipelineStateCollection.init(64, 1, 32))
+	VT_CHECK_INITIALIZATION(m_computePipelineStateCollection.init(64, 1, 32))
 	VT_CHECK_INITIALIZATION(m_pipelineBindingLayoutCollection.init(32, 1, 16))
 
 	VT_CHECK_INITIALIZATION(m_inputLayoutCollection.init(16, 0, 8))
@@ -31,8 +33,10 @@ void VT::GraphicResourceManager::release()
 
 	m_vertexShaders.release();
 	m_pixelShaders.release();
+	m_computeShaders.release();
 
-	m_pipelineStateCollection.release();
+	m_graphicPipelineStateCollection.release();
+	m_computePipelineStateCollection.release();
 	m_pipelineBindingLayoutCollection.release();
 
 	m_inputLayoutCollection.release();

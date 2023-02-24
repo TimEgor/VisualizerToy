@@ -46,7 +46,7 @@ namespace VT
 	public:
 		RenderingData() = default;
 
-		void init();
+		bool init();
 
 		void clear();
 		void addMesh(const MeshConstReference& mesh, const Matrix44& transform);

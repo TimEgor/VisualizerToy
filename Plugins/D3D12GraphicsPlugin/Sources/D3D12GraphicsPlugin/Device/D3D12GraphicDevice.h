@@ -48,7 +48,7 @@ namespace VT_D3D12
 			const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc);
 
 		D3D12_RESOURCE_STATES chooseInitialD3D12ResourceState(bool isHostVisible, bool havingInitialData, D3D12_RESOURCE_STATES targetInitialState);
-		VT::GraphicStateValueType chooseInitialVTResourceState(bool isHostVisible, bool havingInitialData, VT::GraphicStateValueType targetInitialState);
+		VT::GraphicResourceStateValueType chooseInitialVTResourceState(bool isHostVisible, bool havingInitialData, VT::GraphicResourceStateValueType targetInitialState);
 		void uploadBufferResourceData(bool useUploadingContext, D3D12GPUBuffer* dstResource, const VT::InitialGPUBufferData& data);
 
 	protected:
@@ -59,20 +59,23 @@ namespace VT_D3D12
 		virtual bool createShaderResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource) override;
 		virtual void destroyShaderResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
 
+		virtual bool createUnorderedAccessResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGraphicResource* resource) override;
+		virtual void destroyUnorderedAccessResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
+
 		//SwapChain
 		virtual VT::ISwapChain* createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
 		virtual void destroySwapChain(VT::ISwapChain* swapChain) override;
 
 		//Buffer
 		virtual bool createBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer, const VT::GPUBufferDesc& desc,
-			VT::GraphicStateValueType initialState, const VT::InitialGPUBufferData* initialData) override;
+			VT::GraphicResourceStateValueType initialState, const VT::InitialGPUBufferData* initialData) override;
 		virtual void destroyBuffer(VT::ManagedGraphicDevice::ManagedGPUBufferBase* buffer) override;
 
 		virtual bool createBufferResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::IGPUBuffer* buffer) override;
 		virtual void destroyBufferResourceDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor) override;
 
 		//Textures
-		virtual bool createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture, const VT::Texture2DDesc& desc, VT::GraphicStateValueType initialState) override;
+		virtual bool createTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture, const VT::Texture2DDesc& desc, VT::GraphicResourceStateValueType initialState) override;
 		virtual void destroyTexture2D(VT::ManagedGraphicDevice::ManagedTexture2DBase* texture) override;
 
 		virtual bool createRenderTargetDescriptor(VT::ManagedGraphicDevice::ManagedGraphicResourceDescriptorBase* descriptor, VT::ITexture* texture) override;
@@ -88,10 +91,17 @@ namespace VT_D3D12
 		virtual bool createPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader, const void* code, size_t codeSize) override;
 		virtual void destroyPixelShader(VT::ManagedGraphicDevice::ManagedPixelShaderBase* shader) override;
 
+		virtual bool createComputeShader(VT::ManagedGraphicDevice::ManagedComputeShaderBase* shader, const void* code, size_t codeSize) override;
+		virtual void destroyComputeShader(VT::ManagedGraphicDevice::ManagedComputeShaderBase* shader) override;
+
 		//Pipeline
-		virtual bool createPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state,
-			const VT::PipelineStateInfo& info, const VT::IPipelineBindingLayout* bindingLayout, const VT::InputLayoutDesc* inputLayoutDesc) override;
-		virtual void destroyPipelineState(VT::ManagedGraphicDevice::ManagedPipelineStateBase* state) override;
+		virtual bool createGraphicPipelineState(VT::ManagedGraphicDevice::ManagedGraphicPipelineStateBase* state,
+			const VT::GraphicPipelineStateInfo& info, const VT::IPipelineBindingLayout* bindingLayout, const VT::InputLayoutDesc* inputLayoutDesc) override;
+		virtual void destroyGraphicPipelineState(VT::ManagedGraphicDevice::ManagedGraphicPipelineStateBase* state) override;
+
+		virtual bool createComputePipelineState(VT::ManagedGraphicDevice::ManagedComputePipelineStateBase* state,
+			const VT::ComputePipelineStateInfo& info, const VT::IPipelineBindingLayout* bindingLayout) override;
+		virtual void destroyComputePipelineState(VT::ManagedGraphicDevice::ManagedComputePipelineStateBase* state) override;
 
 		virtual bool createPipelineBindingLayout(VT::ManagedGraphicDevice::ManagedPipelineBindingLayoutBase* layout,
 		    const VT::PipelineBindingLayoutDesc& desc) override;
@@ -121,8 +131,10 @@ namespace VT_D3D12
 
 		virtual VertexShaderStorage* createVertexShaderStorage() const override;
 		virtual PixelShaderStorage* createPixelShaderStorage() const override;
+		virtual ComputeShaderStorage* createComputeShaderStorage() const override;
 
-		virtual PipelineStateStorage* createPipelineStateStorage() const override;
+		virtual GraphicPipelineStateStorage* createGraphicPipelineStateStorage() const override;
+		virtual ComputePipelineStateStorage* createComputePipelineStateStorage() const override;
 		virtual PipelineBindingLayoutStorage* createPipelineBindingLayoutStorage() const override;
 
 		virtual CommandListStorage* createCommandListStorage() const override;

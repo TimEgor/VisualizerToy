@@ -62,12 +62,14 @@ namespace VT
 		virtual void setScissors(uint32_t count, const Scissors* scissors) = 0;
 
 		virtual void changeResourceState(IGraphicResource* resource,
-			GraphicStateValueType currentState, GraphicStateValueType targetState) = 0;
+			GraphicResourceStateValueType currentState, GraphicResourceStateValueType targetState) = 0;
 
 		virtual void setDescriptorHeap(IGraphicResourceDescriptorHeap* heap) = 0;
 
-		virtual void setBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) = 0;
-		virtual void setBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) = 0;
+		virtual void setGraphicBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) = 0;
+		virtual void setGraphicBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) = 0;
+		virtual void setComputeBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) = 0;
+		virtual void setComputeBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) = 0;
 		virtual void setBindingLayout(const IPipelineBindingLayout* bindingLayout) = 0;
 
 		virtual void setPipelineState(const IPipelineState* pipelineState) = 0;
@@ -78,5 +80,7 @@ namespace VT
 
 		virtual void draw(uint32_t vertCount) = 0;
 		virtual void drawIndexed(uint32_t indexCount) = 0;
+
+		virtual void dispatch(uint32_t threadGroupX, uint32_t threadGroupY, uint32_t threadGroupZ) = 0;
 	};
 }

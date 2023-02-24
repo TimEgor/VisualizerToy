@@ -38,4 +38,13 @@ namespace VT_D3D12
 
 		virtual void* getNativeHandle() const override { return getDXCShaderCodeBlob().Get(); }
 	};
+
+	class D3D12ComputeShader final : public VT::ManagedGraphicDevice::ManagedComputeShaderBase, public D3D12ShaderBase
+	{
+	public:
+		D3D12ComputeShader(CodeBlobComPtr codeBlob)
+			: D3D12ShaderBase(codeBlob) {}
+
+		virtual void* getNativeHandle() const override { return getDXCShaderCodeBlob().Get(); }
+	};
 }

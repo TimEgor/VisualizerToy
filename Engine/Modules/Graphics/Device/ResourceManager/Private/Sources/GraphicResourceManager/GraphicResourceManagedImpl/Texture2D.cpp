@@ -10,7 +10,7 @@ void VT::GraphicResourceManager::deleteTexture2DReference(TextureHandleID handle
 	m_textures2D.removeElement(handleID);
 }
 
-VT::Texture2DReference VT::GraphicResourceManager::createTexture2D(const Texture2DDesc& desc, GraphicStateValueType initialState)
+VT::Texture2DReference VT::GraphicResourceManager::createTexture2D(const Texture2DDesc& desc, GraphicResourceStateValueType initialState)
 {
 	ITexture2D* texture = getGraphicDevice()->createTexture2D(desc, initialState);
 	if (!texture)

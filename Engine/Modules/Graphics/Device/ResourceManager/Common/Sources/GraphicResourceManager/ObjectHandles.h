@@ -20,6 +20,7 @@ namespace VT
 
 	using VertexShaderHandleID = uint32_t;
 	using PixelShaderHandleID = uint32_t;
+	using ComputeShaderHandleID = uint32_t;
 
 	using PipelineStateHandleID = uint16_t;
 	using PipelineBindingLayoutHandleID = uint16_t;
@@ -34,7 +35,9 @@ namespace VT
 
 	GRAPHIC_TYPED_OBJECT(VertexShader, IVertexShader, VertexShaderHandleID);
 	GRAPHIC_TYPED_OBJECT(PixelShader, IPixelShader, PixelShaderHandleID);
+	GRAPHIC_TYPED_OBJECT(ComputeShader, IComputeShader, ComputeShaderHandleID);
 
-	GRAPHIC_TYPED_OBJECT(PipelineState, IPipelineState, PipelineStateHandleID);
+	GRAPHIC_TYPED_OBJECT(GraphicPipelineState, IGraphicPipelineState, PipelineStateHandleID);
+	GRAPHIC_TYPED_OBJECT(ComputePipelineState, IComputePipelineState, PipelineStateHandleID);
 	GRAPHIC_TYPED_OBJECT(PipelineBindingLayout, IPipelineBindingLayout, PipelineBindingLayoutHandleID);
 }

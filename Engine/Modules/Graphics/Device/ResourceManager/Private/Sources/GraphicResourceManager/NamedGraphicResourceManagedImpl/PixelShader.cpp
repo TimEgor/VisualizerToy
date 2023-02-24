@@ -54,7 +54,7 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const F
 		IResourceSystem* resourceSystem = getResourceSystem();
 		assert(resourceSystem);
 
-		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Pixel);
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderType::Pixel);
 		ResourceDataReference resourceData = resourceSystem->getResource(shaderPath, args);
 
 		if (resourceData && resourceData->getState() != ResourceState::INVALID)
@@ -67,7 +67,6 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const F
 				IPixelShader* shader = getGraphicDevice()->createPixelShader(data, dataSize);
 				if (!shader)
 				{
-					m_namedPixelShaderPool.removeElement(nameID);
 					return nullptr;
 				}
 
@@ -78,7 +77,6 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShader(const F
 
 		if (!shaderAccessor.m_element->getTypedObject())
 		{
-			deletePixelShaderReference(nameID);
 			return nullptr;
 		}
 	}
@@ -102,7 +100,7 @@ VT::PixelShaderReference VT::NamedGraphicResourceSystem::loadPixelShaderAsync(
 		IResourceSystem* resourceSystem = getResourceSystem();
 		assert(resourceSystem);
 
-		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderStageType::Pixel);
+		ResourceSystemConverterArgsReference args = resourceSystem->createResourceConverterArgs<ShaderResourceConverterArgs>(ShaderType::Pixel);
 		resourceSystem->getResourceAsync(shaderPath,
 			[shaderHandleReference = shaderAccessor.m_element, onLoadedCallback = callback](const ResourceDataReference& resourceData)
 			{

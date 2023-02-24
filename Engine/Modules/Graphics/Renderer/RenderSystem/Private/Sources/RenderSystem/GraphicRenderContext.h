@@ -23,9 +23,9 @@ namespace VT
 		void prepareTextureForRendering(IRenderContext* context, Texture2DReference texture);
 		void prepareTextureResourceForPresenting(IRenderContext* context, ITexture2D* texture);
 		void prepareTextureResourceForRendering(IRenderContext* context, ITexture2D* texture);
-		void prepareResourceForBinding(IRenderContext* context, GraphicResourceReference resource, GraphicStateValueType targetState);
+		void prepareResourceForBinding(IRenderContext* context, GraphicResourceReference resource, GraphicResourceStateValueType targetState);
 
-		void setPipelineState(IRenderContext* context, PipelineStateReference pipelineState);
+		void setPipelineState(IRenderContext* context, GraphicPipelineStateReference pipelineState);
 		void setVertexBuffers(IRenderContext* context, uint32_t buffersCount, const GPUBufferReference* buffers, const InputLayoutDesc& inputLayoutDesc);
 		void setIndexBuffer(IRenderContext* context, GPUBufferReference buffer, InputLayoutElementType indexType);
 	}

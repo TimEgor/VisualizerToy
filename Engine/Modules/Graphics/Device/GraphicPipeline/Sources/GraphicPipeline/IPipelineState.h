@@ -9,10 +9,11 @@ namespace VT
 	enum class Format;
 	class IVertexShader;
 	class IPixelShader;
+	class IComputeShader;
 
 	using PipelineStateHash = uint32_t;
 
-	struct PipelineStateInfo final
+	struct GraphicPipelineStateInfo final
 	{
 		using TargetFormats = std::vector<Format>;
 		TargetFormats m_formats;
@@ -35,13 +36,49 @@ namespace VT
 		}
 	};
 
+	struct ComputePipelineStateInfo final
+	{
+		IComputeShader* m_computeShader = nullptr;
+
+		PipelineStateHash getHash() const
+		{
+			PipelineStateHash result = 0;
+			hashCombine(result, m_computeShader);
+
+			return result;
+		}
+	};
+
+	enum class PipelineStateType
+	{
+		GRAPHIC,
+		COMPUTE
+	};
+
 	class IPipelineState : public IGraphicObject
 	{
 	public:
 		IPipelineState() = default;
-		virtual ~IPipelineState() = default;
 
 		virtual PipelineStateHash getHash() const = 0;
 		virtual PipelineBindingLayoutHash getBindingLayoutHash() const = 0;
+
+		virtual PipelineStateType getType() const = 0;
+	};
+
+	class IGraphicPipelineState : public IPipelineState
+	{
+	public:
+		IGraphicPipelineState() = default;
+
+		virtual PipelineStateType getType() const override { return PipelineStateType::GRAPHIC; }
+	};
+
+	class IComputePipelineState : public IPipelineState
+	{
+	public:
+		IComputePipelineState() = default;
+
+		virtual PipelineStateType getType() const override { return PipelineStateType::COMPUTE; }
 	};
 }
