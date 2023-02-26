@@ -8,7 +8,7 @@ namespace VT_D3D12
 	class D3D12PipelineState
 	{
 	protected:
-		D3D12PipelineStateComPtr m_d3d12PipelineState = 0;
+		D3D12PipelineStateComPtr m_d3d12PipelineState;
 
 		const VT::PipelineStateHash m_hash = 0;
 		const VT::PipelineBindingLayoutHash m_bindingLayoutHash = 0;
@@ -23,7 +23,7 @@ namespace VT_D3D12
 		D3D12PipelineStateComPtr getD3D12Pipeline() const { return m_d3d12PipelineState; }
 	};
 
-	class D3D12GraphicPipelineState final : public D3D12PipelineState, public VT::ManagedGraphicDevice::ManagedGraphicPipelineStateBase
+	class D3D12GraphicPipelineState final : public VT::ManagedGraphicDevice::ManagedGraphicPipelineStateBase, public D3D12PipelineState
 	{
 	public:
 		D3D12GraphicPipelineState(D3D12PipelineStateComPtr d3d12PipelineState, VT::PipelineStateHash hash,
@@ -36,7 +36,7 @@ namespace VT_D3D12
 		virtual void* getNativeHandle() const override { return getD3D12Pipeline().Get(); }
 	};
 
-	class D3D12ComputePipelineState final : public D3D12PipelineState, public VT::ManagedGraphicDevice::ManagedComputePipelineStateBase
+	class D3D12ComputePipelineState final : public VT::ManagedGraphicDevice::ManagedComputePipelineStateBase, public D3D12PipelineState
 	{
 	public:
 		D3D12ComputePipelineState(D3D12PipelineStateComPtr d3d12PipelineState, VT::PipelineStateHash hash,
