@@ -6,7 +6,7 @@ namespace VT
 {
 	struct PointLightComponent final
 	{
-		Vector3 m_color = Vector3Zero;
+		Vector3 m_color = Vector3Identity;
 		float m_radius = 0.0f;
 	};
 }

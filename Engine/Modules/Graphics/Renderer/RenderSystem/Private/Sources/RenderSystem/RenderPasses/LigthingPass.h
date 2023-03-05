@@ -2,30 +2,33 @@
 
 #include "GraphicResourceManager/ObjectHandles.h"
 #include "RenderSystem/IRenderPass.h"
-#include "Math/Vector.h"
+#include "MeshSystem/MeshHandle.h"
 
 namespace VT
 {
-	class LightBuffer final
-	{
-	private:
-		Texture2DReference m_lightTexture;
-		GraphicResourceReference m_lightTextureUAV;
+	class IGraphicResourceManager;
 
-	public:
-		LightBuffer() = default;
-
-		bool init(const Vector2UInt16& bufferResolution);
-		void release();
-
-		void fillEnvironment(RenderPassEnvironment& environment) const;
-	};
+	struct MeshVertexData;
+	struct MeshIndexData;
 
 	class LightPass final : public IRenderPass
 	{
+		struct PassPipelineData final
+		{
+			VertexShaderReference m_presentVertexShader;
+			PixelShaderReference m_presentPixelShader;
+			PipelineBindingLayoutReference m_bindingLayout;
+		};
+
 	private:
-		ComputeShaderReference m_presenterShader;
-		PipelineBindingLayoutReference m_bindingLayout;
+		PassPipelineData m_pipelineData;
+		MeshReference m_screenRectGeom;
+
+		bool initPipelineData();
+		bool initScreenRect();
+
+		bool initScreenRectVertexData(MeshVertexData& data, IGraphicResourceManager* resManager) const;
+		bool initScreenRectIndexData(MeshIndexData& data, IGraphicResourceManager* resManager) const;
 
 	public:
 		LightPass() = default;

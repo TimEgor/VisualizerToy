@@ -320,6 +320,15 @@ namespace VT
 		{
 			return DirectX::XMMatrixTranslationFromVector(offsets);
 		}
+
+		ComputeVector transformPoint(const ComputeVector& point, const ComputeMatrix& transform)
+		{
+			return DirectX::XMVector3TransformCoord(point, transform);
+		}
+		ComputeVector transformVector(const ComputeVector& vector, const ComputeMatrix& transform)
+		{
+			return DirectX::XMVector3TransformNormal(vector, transform);
+		}
 #pragma endregion
 	}
 }

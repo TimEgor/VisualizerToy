@@ -20,6 +20,10 @@ struct CameraTransforms
 {
 	float4x4 viewTransformMatrix;
 	float4x4 projTransformMatrix;
+
+	float3 position;
+	float nearPlane;
+	float farPlane;
 };
 
 #endif //__SHADER_COMMON_BINDINGS__

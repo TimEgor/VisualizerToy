@@ -1,7 +1,6 @@
 #pragma once
 
-#if defined(WIN32) || defined(WIN64)	\
-	|| defined(_WIN32) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32)
 #include <Windows.h>
 
 #define VT_WIN_PLATFORM
@@ -25,10 +24,10 @@ namespace VT
 {
 	constexpr char* getPlatformName()
 	{
-#if defined(WIN32) || defined(_WIN32)
-		return "Win32";
-#elif defined(WIN64) || defined(_WIN64)
+#if defined(WIN64) || defined(_WIN64)
 		return "x64";
+#elif defined(WIN32) || defined(_WIN32)
+		return "Win32";
 #else
 		return "";
 #endif

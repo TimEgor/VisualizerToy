@@ -15,8 +15,10 @@
 #include "MeshSystem/IMeshSystem.h"
 #include "MeshSystem/MeshComponent.h"
 
-#include "Math/Matrix.h"
 #include "ResourceSystem/IResourceSystem.h"
+#include "LightSystem/PointLightComponent.h"
+
+#include "Math/Matrix.h"
 
 VT_PLUGIN(VT_DEMO_TEST::TestDemoGameModule)
 
@@ -35,11 +37,20 @@ void VT_DEMO_TEST::TestDemoGameModule::onLoaded()
 	getEngineEnvironment()->m_levelSystem->setCurrentLevel(level);
 
 	level->init();
-	VT::VT_Entity testEntity = level->createEntity();
-	level->getEntityComponentSystem()->addComponent<VT::MeshComponent>(testEntity,
+	VT::VT_Entity cubeEntity = level->createEntity();
+	level->getEntityComponentSystem()->addComponent<VT::MeshComponent>(cubeEntity,
 		getEngineEnvironment()->m_meshSystem->loadMesh("Cube.mesh"));
-	VT::NodeID testNodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(testEntity).getNodeID();
+	VT::NodeID testNodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(cubeEntity).getNodeID();
 	m_transforms = level->getScene()->getNodeTransforms(testNodeID);
+	m_transforms->m_globalTransform.getOrigin().m_x = 3.0f;
+
+	VT::VT_Entity lightEntity = level->createEntity();
+	VT::PointLightComponent& light = level->getEntityComponentSystem()->addComponent<VT::PointLightComponent>(lightEntity);
+	VT::NodeID lightNodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(lightEntity).getNodeID();
+
+	light.m_radius = 3.0f;
+	light.m_color = VT::Vector3Identity;
+	level->getScene()->getNodeTransforms(lightNodeID)->m_globalTransform.getOrigin().m_z = -1.5f;
 }
 
 void VT_DEMO_TEST::TestDemoGameModule::onUnloaded()

@@ -76,5 +76,8 @@ namespace VT
 		ComputeMatrix matrixTranslation(float offsetX, float offsetY, float offsetZ);
 		ComputeMatrix matrixTranslation(const Vector3& pos);
 		ComputeMatrix matrixTranslation(const ComputeVector& offsets);
+
+		ComputeVector transformPoint(const ComputeVector& point, const ComputeMatrix& transform);
+		ComputeVector transformVector(const ComputeVector& vector, const ComputeMatrix& transform);
 	}
 }

@@ -27,7 +27,10 @@ namespace VT_D3D12
 		virtual void end() override;
 
 		virtual void clearRenderTarget(const VT::IGraphicResourceDescriptor* renderTargetView, const float* clearValues) override;
-		virtual void setRenderTargets(uint32_t count, VT::IGraphicResourceDescriptor* const* renderTargetViews) override;
+		virtual void clearDepthStencilTarget(const VT::IGraphicResourceDescriptor* depthStencilView,
+			float depthClearValue, uint32_t stencilClearValue) override;
+		virtual void setRenderTargets(uint32_t count, VT::IGraphicResourceDescriptor* const* renderTargetViews,
+			const VT::IGraphicResourceDescriptor* depthStencilView) override;
 		virtual void setViewports(uint32_t count, const VT::Viewport* viewports) override;
 		virtual void setScissors(uint32_t count, const VT::Scissors* scissors) override;
 
@@ -40,7 +43,9 @@ namespace VT_D3D12
 		virtual void setGraphicBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) override;
 		virtual void setComputeBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) override;
 		virtual void setComputeBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) override;
-		virtual void setBindingLayout(const VT::IPipelineBindingLayout* bindingLayout) override;
+
+		virtual void setGraphicBindingLayout(const VT::IPipelineBindingLayout* bindingLayout) override;
+		virtual void setComputeBindingLayout(const VT::IPipelineBindingLayout* bindingLayout) override;
 
 		virtual void setPipelineState(const VT::IPipelineState* pipelineState) override;
 		virtual void setVertexBuffers(uint32_t buffersCount, VT::IGPUBuffer** buffers, const VT::InputLayoutDesc& inputLayoutDesc) override;

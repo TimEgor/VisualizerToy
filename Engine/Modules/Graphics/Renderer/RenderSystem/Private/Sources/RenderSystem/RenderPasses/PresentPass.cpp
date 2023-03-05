@@ -166,7 +166,7 @@ void VT::PresentPass::execute(const RenderPassContext& passContext, const Render
 	pipelineStateInfo.m_pixelShader = m_pipelineData.m_presentPixelShader->getTypedObject();
 
 	const Texture2DDesc& targetTextureDesc = passContext.m_target->getDesc();
-	pipelineStateInfo.m_formats.push_back(targetTextureDesc.m_format);
+	pipelineStateInfo.m_targetFormats.push_back(targetTextureDesc.m_format);
 
 	GraphicRenderContextTarget targets[] = {
 		{
@@ -178,7 +178,7 @@ void VT::PresentPass::execute(const RenderPassContext& passContext, const Render
 		}
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 1, targets);
+	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 1, targets, nullptr);
 
 	IMesh* screenGeom = m_screenRectGeom->getMesh();
 	const MeshVertexData& vertexData = screenGeom->getVertexData();
@@ -190,7 +190,7 @@ void VT::PresentPass::execute(const RenderPassContext& passContext, const Render
 	ShaderResourceViewReference colorSRV = passEnvironment.getShaderResourceView("gb_color_srv");
 
 	passContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	passContext.m_context->setBindingLayout(m_pipelineData.m_bindingLayout->getTypedObject());
+	passContext.m_context->setGraphicBindingLayout(m_pipelineData.m_bindingLayout->getTypedObject());
 
 	passContext.m_context->setGraphicBindingParameterValue(0, 0, colorSRV->getResourceView()->getBindingHeapOffset());
 

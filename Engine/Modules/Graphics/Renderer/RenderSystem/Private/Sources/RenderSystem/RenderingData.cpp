@@ -52,22 +52,36 @@ void VT::RenderingData::setCameraTransforms()
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicDevice* device = environment->m_graphicDevice;
 
+	const Vector3 cameraPos(0.0f, 0.0f, -6.0f);
+
 	COMPUTE_MATH::ComputeMatrix viewTransform = COMPUTE_MATH::matrixLookToLH(
-		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3(0.0f, 0.0f, -6.0f)),
+		COMPUTE_MATH::loadComputeVectorFromVector3(cameraPos),
 		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3UnitZ),
 		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3UnitY)
 	);
-	viewTransform = COMPUTE_MATH::matrixTranspose(viewTransform);
 
-	COMPUTE_MATH::ComputeMatrix projectionTransform = COMPUTE_MATH::matrixPerspectiveFovLH(45.0f * VT_DEG_TO_RAD, 1.0f, 0.1f, 1000.0f);
-	projectionTransform = COMPUTE_MATH::matrixTranspose(projectionTransform);
+	m_cameraTransforms.m_cameraPosition = cameraPos;
+
+	m_cameraTransforms.nearPlane = 0.1f;
+	m_cameraTransforms.farPlane = 1000.0f;
+
+	COMPUTE_MATH::ComputeMatrix projectionTransform = COMPUTE_MATH::matrixPerspectiveFovLH(45.0f * VT_DEG_TO_RAD,
+		1.0f, m_cameraTransforms.nearPlane, m_cameraTransforms.farPlane);
 
 	m_cameraTransforms.m_viewTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(viewTransform);
 	m_cameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
 
+
+	viewTransform = COMPUTE_MATH::matrixTranspose(viewTransform);
+	projectionTransform = COMPUTE_MATH::matrixTranspose(projectionTransform);
+
+	CameraTransforms renderingCameraTransforms = m_cameraTransforms;
+	renderingCameraTransforms.m_viewTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(viewTransform);
+	renderingCameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
+
 	CameraTransforms* mappingCameraTransforms = nullptr;
 	m_cameraTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingCameraTransforms));
-	memcpy(mappingCameraTransforms, &m_cameraTransforms, sizeof(CameraTransforms));
+	memcpy(mappingCameraTransforms, &renderingCameraTransforms, sizeof(CameraTransforms));
 	m_cameraTransformBuffer->getTypedResource()->unmapData();
 
 	device->setResourceName(m_cameraTransformBuffer->getResource(), "CameraTransform");

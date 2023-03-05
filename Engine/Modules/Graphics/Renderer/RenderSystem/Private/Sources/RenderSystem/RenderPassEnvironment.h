@@ -16,12 +16,14 @@ namespace VT
 		using BufferCollection = std::unordered_map<RenderPassEnvironmentResourceID, GPUBufferReference>;
 		using ShaderResourceViewCollection = std::unordered_map<RenderPassEnvironmentResourceID, ShaderResourceViewReference>;
 		using RenderTargetViewCollection = std::unordered_map<RenderPassEnvironmentResourceID, RenderTargetViewReference>;
+		using DepthStencilViewCollection = std::unordered_map<RenderPassEnvironmentResourceID, DepthStencilViewReference>;
 
 	private:
 		TextureCollection m_textures;
 		BufferCollection m_buffers;
 		ShaderResourceViewCollection m_SRVs;
 		RenderTargetViewCollection m_RTVs;
+		DepthStencilViewCollection m_DSVs;
 
 	public:
 		RenderPassEnvironment() = default;
@@ -37,5 +39,8 @@ namespace VT
 
 		void addRenderTargetView(const RenderPassEnvironmentResourceName& name, RenderTargetViewReference rtv);
 		RenderTargetViewReference getRenderTargetView(const RenderPassEnvironmentResourceName& name) const;
+
+		void addDepthStencilView(const RenderPassEnvironmentResourceName& name, DepthStencilViewReference dsv);
+		DepthStencilViewReference getDepthStencilView(const RenderPassEnvironmentResourceName& name) const;
 	};
 }

@@ -5,7 +5,7 @@
 
 namespace VT_D3D12
 {
-	D3D12_DESCRIPTOR_HEAP_TYPE convertDescriptorTypeVTtoD3D12(VT::GraphicResourceDescriptorType type)
+	inline D3D12_DESCRIPTOR_HEAP_TYPE convertDescriptorTypeVTtoD3D12(VT::GraphicResourceDescriptorType type)
 	{
 		switch (type)
 		{
@@ -13,7 +13,9 @@ namespace VT_D3D12
 			return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		case VT::GraphicResourceDescriptorType::DSV:
 			return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+		case VT::GraphicResourceDescriptorType::CBV:
 		case VT::GraphicResourceDescriptorType::SRV:
+		case VT::GraphicResourceDescriptorType::UAV:
 			return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
 		case VT::GraphicResourceDescriptorType::UNDEFINED:

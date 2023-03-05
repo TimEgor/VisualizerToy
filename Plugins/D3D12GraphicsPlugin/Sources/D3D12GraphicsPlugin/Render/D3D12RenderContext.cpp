@@ -51,8 +51,18 @@ void VT_D3D12::D3D12RenderContext::clearRenderTarget(const VT::IGraphicResourceD
 	m_commandList->getD3D12CommandList()->ClearRenderTargetView(d3d12Descriptor->getCPUHandle(), clearValues, 0, nullptr);
 }
 
+void VT_D3D12::D3D12RenderContext::clearDepthStencilTarget(const VT::IGraphicResourceDescriptor* depthStencilView,
+	float depthClearValue, uint32_t stencilClearValue)
+{
+	m_barrierCache.flush(m_commandList->getD3D12CommandList());
+
+	const D3D12ResourceDescriptor* d3d12Descriptor = reinterpret_cast<const D3D12ResourceDescriptor*>(depthStencilView);
+	m_commandList->getD3D12CommandList()->ClearDepthStencilView(d3d12Descriptor->getCPUHandle(), D3D12_CLEAR_FLAG_DEPTH,
+		depthClearValue, stencilClearValue, 0, nullptr);
+}
+
 void VT_D3D12::D3D12RenderContext::setRenderTargets(uint32_t count,
-	VT::IGraphicResourceDescriptor* const* renderTargetViews)
+                                                    VT::IGraphicResourceDescriptor* const* renderTargetViews, const VT::IGraphicResourceDescriptor* depthStencilView)
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE d3d12RTVHandles[MAX_RENDER_TARGETS_COUNT];
 
@@ -60,11 +70,19 @@ void VT_D3D12::D3D12RenderContext::setRenderTargets(uint32_t count,
 	{
 		const VT::IGraphicResourceDescriptor* rtvDescriptor = renderTargetViews[i];
 
-		const D3D12ResourceDescriptor* d3d12Descriptor = reinterpret_cast<const D3D12ResourceDescriptor*>(rtvDescriptor);
-		d3d12RTVHandles[i] = d3d12Descriptor->getCPUHandle();
+		const D3D12ResourceDescriptor* d3d12RTDescriptor = reinterpret_cast<const D3D12ResourceDescriptor*>(rtvDescriptor);
+		d3d12RTVHandles[i] = d3d12RTDescriptor->getCPUHandle();
 	}
 
-	m_commandList->getD3D12CommandList()->OMSetRenderTargets(static_cast<UINT>(count), d3d12RTVHandles, false, nullptr);
+	D3D12_CPU_DESCRIPTOR_HANDLE d3d12DSVHandle{0};
+	if (depthStencilView)
+	{
+		const D3D12ResourceDescriptor* d3d12DSDescriptor = reinterpret_cast<const D3D12ResourceDescriptor*>(depthStencilView);
+		d3d12DSVHandle = d3d12DSDescriptor->getCPUHandle();
+	}
+
+	m_commandList->getD3D12CommandList()->OMSetRenderTargets(static_cast<UINT>(count), d3d12RTVHandles,
+		false, depthStencilView ? &d3d12DSVHandle : nullptr);
 }
 
 void VT_D3D12::D3D12RenderContext::setViewports(uint32_t count, const VT::Viewport* viewports)
@@ -80,8 +98,8 @@ void VT_D3D12::D3D12RenderContext::setViewports(uint32_t count, const VT::Viewpo
 		d3d12Viewport.TopLeftY = static_cast<float>(viewport.m_y);
 		d3d12Viewport.Width = static_cast<float>(viewport.m_width);
 		d3d12Viewport.Height = static_cast<float>(viewport.m_height);
-		d3d12Viewport.MaxDepth = 1.0f;
-		d3d12Viewport.MinDepth = 0.0f;
+		d3d12Viewport.MaxDepth = D3D12_MAX_DEPTH;
+		d3d12Viewport.MinDepth = D3D12_MIN_DEPTH;
 	}
 
 	m_commandList->getD3D12CommandList()->RSSetViewports(count, d3d12Viewports);
@@ -162,12 +180,20 @@ void VT_D3D12::D3D12RenderContext::setComputeBindingParameterValues(uint32_t ind
 	m_commandList->getD3D12CommandList()->SetComputeRoot32BitConstants(index, valuesCount, values, offset);
 }
 
-void VT_D3D12::D3D12RenderContext::setBindingLayout(const VT::IPipelineBindingLayout* bindingLayout)
+void VT_D3D12::D3D12RenderContext::setGraphicBindingLayout(const VT::IPipelineBindingLayout* bindingLayout)
 {
 	assert(bindingLayout);
 
 	const D3D12PipelineBindingLayout* d3d12PipelineBindingLayout = reinterpret_cast<const D3D12PipelineBindingLayout*>(bindingLayout);
 	m_commandList->getD3D12CommandList()->SetGraphicsRootSignature(d3d12PipelineBindingLayout->getD3D12RootSignature().Get());
+}
+
+void VT_D3D12::D3D12RenderContext::setComputeBindingLayout(const VT::IPipelineBindingLayout* bindingLayout)
+{
+	assert(bindingLayout);
+
+	const D3D12PipelineBindingLayout* d3d12PipelineBindingLayout = reinterpret_cast<const D3D12PipelineBindingLayout*>(bindingLayout);
+	m_commandList->getD3D12CommandList()->SetComputeRootSignature(d3d12PipelineBindingLayout->getD3D12RootSignature().Get());
 }
 
 void VT_D3D12::D3D12RenderContext::setPipelineState(const VT::IPipelineState* pipelineState)

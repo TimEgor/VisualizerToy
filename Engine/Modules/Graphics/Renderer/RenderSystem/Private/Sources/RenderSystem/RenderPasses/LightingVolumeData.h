@@ -5,46 +5,52 @@
 
 namespace VT
 {
-	constexpr uint32_t MAX_POINT_LIGHT_NUM = 1024;
-	constexpr uint32_t MAX_POINT_LIGHT_NUM_PER_CLUSTER = 16;
+	constexpr uint32_t MAX_POINT_LIGHT_NUM = 256;
+	constexpr uint32_t POINT_LIGHT_MASK_SIZE = MAX_POINT_LIGHT_NUM / 8;
 
+	class IGraphicDevice;
 	class IGraphicResourceManager;
 	class RenderPassEnvironment;
-	struct AABB;
-
-	struct LightVolumeInfo final
-	{
-		uint32_t m_tileCountX;
-		uint32_t m_tileCountY;
-		uint32_t m_sliceCount;
-	};
 
 	class LightVolumeData final
 	{
-		using LightIndex = uint8_t;
+		struct LightVolumeInfo final
+		{
+			uint32_t m_tileCountX;
+			uint32_t m_tileCountY;
+			uint32_t m_sliceCount;
+		};
+
+	public:
+		struct ZSlice final
+		{
+			uint32_t m_minLightIndex;
+			uint32_t m_maxLightIndex;
+		};
 
 	private:
 		GPUBufferReference m_pointLightBuffer;
-		GPUBufferReference m_pointLightClusterBuffer;
+		GPUBufferReference m_pointLightTileMasksBuffer;
+		GPUBufferReference m_pointLightZSliceBuffer;
 
 		GPUBufferReference m_lightVolumeInfoBuffer;
-		GPUBufferReference m_lightVolumeBoundingBoxBuffer;
 
 		ShaderResourceViewReference m_pointLightBufferSRV;
-		ShaderResourceViewReference m_pointLightClusterBufferSRV;
+		ShaderResourceViewReference m_pointLightTileMasksBufferSRV;
+		ShaderResourceViewReference m_pointLightTileMasksBufferUAV;
+		ShaderResourceViewReference m_pointLightZSliceBufferSRV;
 
 		ShaderResourceViewReference m_lightVolumeInfoBufferSRV;
-		ShaderResourceViewReference m_lightVolumeBoundingBoxBufferSRV;
 
 		Vector3UInt16 m_tilesSlicesCount;
 		Vector2UInt16 m_targetSize;
 		Vector2UInt16 m_tileSize;
 
-		bool initPointLightBuffer(IGraphicResourceManager* resManager);
-		bool initPointLightClusterBuffer(IGraphicResourceManager* resManager);
+		bool initPointLightBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
+		bool initPointLightTileMaskBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
+		bool initPointLightZSliceBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
 
-		bool initVolumeInfoBuffer(IGraphicResourceManager* resManager);
-		bool initVolumeInfoBoundingBoxBuffer(IGraphicResourceManager* resManager);
+		bool initVolumeInfoBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
 
 	public:
 		LightVolumeData() = default;
@@ -53,5 +59,10 @@ namespace VT
 		void release();
 
 		void fillEnvironment(RenderPassEnvironment& environment) const;
+
+		const Vector2UInt16& getTilesCounts() const { return m_tilesSlicesCount.m_xy; }
+		uint16_t getSlicesCount() const { return m_tilesSlicesCount.m_z; }
+		const Vector2UInt16& getTargetSize() const { return m_targetSize; }
+		const Vector2UInt16& getTileSizes() const { return m_tileSize; }
 	};
 }

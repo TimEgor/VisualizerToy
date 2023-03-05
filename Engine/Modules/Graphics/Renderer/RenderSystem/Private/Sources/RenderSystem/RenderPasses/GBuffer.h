@@ -23,7 +23,6 @@ namespace VT
 		ShaderResourceViewReference m_colorSRV;
 		ShaderResourceViewReference m_normalSRV;
 		ShaderResourceViewReference m_positionSRV;
-		ShaderResourceViewReference m_depthSRV;
 
 	public:
 		GBuffer() = default;

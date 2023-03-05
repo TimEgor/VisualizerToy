@@ -66,6 +66,7 @@ void VT_SHADER_RC::ShaderConverterHLSL::compileShader(void* inData, size_t inDat
 	DxcBuffer source{ inData, inDataSize, CP_UTF8 };
 
 	std::vector<LPWSTR> dxcArguments;
+	dxcArguments.reserve(10);
 
 	dxcArguments.push_back(L"-E");
 	dxcArguments.push_back(getEntryPoint(shaderArgs->getStageType()));
@@ -78,6 +79,10 @@ void VT_SHADER_RC::ShaderConverterHLSL::compileShader(void* inData, size_t inDat
 		dxcArguments.push_back(L"-spirv");
 		dxcArguments.push_back(L"-D"); dxcArguments.push_back(L"SPIRV");
 	}
+
+	dxcArguments.push_back(L"-Zi");
+	dxcArguments.push_back(L"-Qembed_debug");
+	dxcArguments.push_back(L"-O0");
 
 	compilationResult = m_dxcShaderCompiler->Compile(&source, const_cast<LPCWSTR*>(dxcArguments.data()), static_cast<uint32_t>(dxcArguments.size()),
 		includeProvider, IID_COM(compilationDxcResult), PPV_COM(compilationDxcResult));

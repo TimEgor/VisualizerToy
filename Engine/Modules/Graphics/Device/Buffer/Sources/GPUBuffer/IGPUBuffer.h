@@ -27,6 +27,7 @@ namespace VT
 		uint32_t m_byteSize = 0;
 		uint32_t m_byteStride = 0;
 		GPUBufferFlag m_flag = GPUBufferFlag::NONE;
+		GraphicResourceUsageValueType m_usage = GRAPHIC_USAGE_UNDEFINED;
 		bool isHostVisible = false;
 	};
 

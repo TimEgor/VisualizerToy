@@ -18,6 +18,7 @@
 #include "D3D12GraphicsPlugin/Synchronization/D3D12Fence.h"
 
 #include "D3D12GraphicsPlugin/Utilities/FormatConverter.h"
+#include "D3D12GraphicsPlugin/Utilities/ComparisonFuncConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/DescriptorTypeConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/InputLayoutConverter.h"
 #include "D3D12GraphicsPlugin/Utilities/ResourceStateConverter.h"
@@ -381,7 +382,58 @@ bool VT_D3D12::D3D12GraphicDevice::createUnorderedAccessResourceDescriptor(
 	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_srvDescriptorHeap->getCPUHandle(offset);
 	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_srvDescriptorHeap->getGPUHandle(offset);
 
-	m_d3d12Device->CreateUnorderedAccessView(d3d12Resource, nullptr, nullptr, cpuHandle);
+	D3D12_UNORDERED_ACCESS_VIEW_DESC d3d12UAVDesc{};
+
+	const VT::GraphicResourceType resourceType = resource->getType();
+	if (resourceType == VT::IGPUBuffer::getGraphicResourceType())
+	{
+		VT::IGPUBuffer* buffer = reinterpret_cast<VT::IGPUBuffer*>(resource);
+		const VT::GPUBufferDesc& bufferDesc = buffer->getDesc();
+
+		d3d12UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+
+		if (bufferDesc.m_flag == VT::GPUBufferFlag::STRUCTURED)
+		{
+			assert(bufferDesc.m_byteStride);
+
+			d3d12UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
+			d3d12UAVDesc.Buffer.NumElements = bufferDesc.m_byteSize / bufferDesc.m_byteStride;
+			d3d12UAVDesc.Buffer.StructureByteStride = bufferDesc.m_byteStride;
+			d3d12UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+		}
+		else if (bufferDesc.m_flag == VT::GPUBufferFlag::RAW)
+		{
+			d3d12UAVDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+			d3d12UAVDesc.Buffer.NumElements = bufferDesc.m_byteSize / sizeof(uint32_t);
+			d3d12UAVDesc.Buffer.StructureByteStride = 0;
+			d3d12UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+		}
+		else
+		{
+			d3d12UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
+			d3d12UAVDesc.Buffer.NumElements = 1;
+			d3d12UAVDesc.Buffer.StructureByteStride = bufferDesc.m_byteSize;
+			d3d12UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+		}
+	}
+	else if (resourceType == VT::ITexture::getGraphicResourceType())
+	{
+		VT::ITexture* texture = reinterpret_cast<VT::ITexture*>(resource);
+		VT::TextureDimensionType textureDimension = texture->getDimension();
+
+		if (textureDimension == VT::TextureDimensionType::DIMENSION_2D)
+		{
+			VT::ITexture2D* texture2D = reinterpret_cast<VT::ITexture2D*>(texture);
+			const VT::Texture2DDesc& textureDesc = texture2D->getDesc();
+
+			d3d12UAVDesc.Format = convertFormatVTtoD3D12(textureDesc.m_format);
+			d3d12UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+			d3d12UAVDesc.Texture2D.MipSlice = 1;
+			d3d12UAVDesc.Texture2D.PlaneSlice = 1;
+		}
+	}
+
+	m_d3d12Device->CreateUnorderedAccessView(d3d12Resource, nullptr, &d3d12UAVDesc, cpuHandle);
 
 	new (descriptor) D3D12ResourceDescriptor(VT::GraphicResourceDescriptorType::UAV, offset, cpuHandle, gpuHandle);
 
@@ -501,6 +553,7 @@ bool VT_D3D12::D3D12GraphicDevice::createBuffer(VT::ManagedGraphicDevice::Manage
 	d3d12ResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
 	d3d12ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	d3d12ResourceDesc.SampleDesc.Count = 1;
+	d3d12ResourceDesc.Flags = convertBufferUsageVTtoD3D12(desc.m_usage);
 
 	D3D12MA::ALLOCATION_DESC allocationDesc{};
 	allocationDesc.HeapType = desc.isHostVisible ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
@@ -638,9 +691,9 @@ bool VT_D3D12::D3D12GraphicDevice::createDepthStencilDescriptor(
 
 	D3D12Texture2D* d3d12Texture = reinterpret_cast<D3D12Texture2D*>(texture);
 
-	VT::DescriptorBindingHeapOffsetType offset = m_rtvDescriptorHeap->allocateDescriptor();
-	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_rtvDescriptorHeap->getCPUHandle(offset);
-	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_rtvDescriptorHeap->getGPUHandle(offset);
+	VT::DescriptorBindingHeapOffsetType offset = m_dsvDescriptorHeap->allocateDescriptor();
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_dsvDescriptorHeap->getCPUHandle(offset);
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_dsvDescriptorHeap->getGPUHandle(offset);
 
 	m_d3d12Device->CreateDepthStencilView(d3d12Texture->getD3D12Resource().Get(), nullptr, cpuHandle);
 
@@ -790,7 +843,6 @@ bool VT_D3D12::D3D12GraphicDevice::createGraphicPipelineState(VT::ManagedGraphic
 
 	d3d12PipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 	d3d12PipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
-	d3d12PipelineDesc.RasterizerState.DepthClipEnable = false;
 	d3d12PipelineDesc.RasterizerState.FrontCounterClockwise = false;
 	d3d12PipelineDesc.RasterizerState.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
 	d3d12PipelineDesc.RasterizerState.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
@@ -799,20 +851,26 @@ bool VT_D3D12::D3D12GraphicDevice::createGraphicPipelineState(VT::ManagedGraphic
 	d3d12PipelineDesc.RasterizerState.AntialiasedLineEnable = false;
 	d3d12PipelineDesc.RasterizerState.ForcedSampleCount = 0;
 	d3d12PipelineDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-	d3d12PipelineDesc.RasterizerState.DepthClipEnable = true;
 	d3d12PipelineDesc.BlendState = blendDesc;
-	d3d12PipelineDesc.DepthStencilState.DepthEnable = false;
-	d3d12PipelineDesc.DepthStencilState.StencilEnable = false;
 	d3d12PipelineDesc.SampleMask = UINT_MAX;
 	d3d12PipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	d3d12PipelineDesc.NumRenderTargets = info.m_formats.size();
+	d3d12PipelineDesc.NumRenderTargets = info.m_targetFormats.size();
+
+	if (info.m_depthStencilTest.m_enabled)
+	{
+		d3d12PipelineDesc.DepthStencilState.DepthEnable = true;
+		d3d12PipelineDesc.DepthStencilState.DepthFunc = convertComparisonFuncVTtoD3D12(info.m_depthStencilTest.m_comparisonFunc);
+		d3d12PipelineDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+
+		d3d12PipelineDesc.DSVFormat = convertFormatVTtoD3D12(info.m_depthStencilTest.m_format);
+	}
 
 	const D3D12PipelineBindingLayout* d3d12PipelineBindingLayout = reinterpret_cast<const D3D12PipelineBindingLayout*>(bindingLayout);
 	d3d12PipelineDesc.pRootSignature = d3d12PipelineBindingLayout->getD3D12RootSignature().Get();
 
 	for (uint32_t i = 0; i < d3d12PipelineDesc.NumRenderTargets; ++i)
 	{
-		d3d12PipelineDesc.RTVFormats[i] = convertFormatVTtoD3D12(info.m_formats[i]);
+		d3d12PipelineDesc.RTVFormats[i] = convertFormatVTtoD3D12(info.m_targetFormats[i]);
 	}
 
 	d3d12PipelineDesc.SampleDesc.Count = 1;

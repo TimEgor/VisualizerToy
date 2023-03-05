@@ -31,4 +31,21 @@ namespace VT_D3D12
 
 		return flags;
 	}
+
+	inline D3D12_RESOURCE_FLAGS convertBufferUsageVTtoD3D12(VT::GraphicResourceUsageValueType usage)
+	{
+		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
+
+		if (usage & VT::CommonGraphicResourceUsage::GRAPHIC_USAGE_ALLOW_UNORDERED_ACCESS)
+		{
+			flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
+
+		if (!(usage & VT::CommonGraphicResourceUsage::GRAPHIC_USAGE_SHADER_RESOURCE))
+		{
+			flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+		}
+
+		return flags;
+	}
 }

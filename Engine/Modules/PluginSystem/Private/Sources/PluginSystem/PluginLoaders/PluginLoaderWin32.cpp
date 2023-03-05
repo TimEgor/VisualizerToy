@@ -1,5 +1,4 @@
-#if defined(WIN32) || defined(WIN64)	\
-	|| defined(_WIN32) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32)
 #include "PluginLoaderWin32.h"
 
 #include "Core/String/Format.h"

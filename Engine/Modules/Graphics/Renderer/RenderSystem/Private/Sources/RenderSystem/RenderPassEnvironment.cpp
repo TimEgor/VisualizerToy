@@ -63,3 +63,19 @@ VT::RenderTargetViewReference VT::RenderPassEnvironment::getRenderTargetView(con
 
 	return nullptr;
 }
+
+void VT::RenderPassEnvironment::addDepthStencilView(const RenderPassEnvironmentResourceName& name,DepthStencilViewReference dsv)
+{
+	m_DSVs.insert(std::make_pair(name.hash(), dsv));
+}
+
+VT::DepthStencilViewReference VT::RenderPassEnvironment::getDepthStencilView(const RenderPassEnvironmentResourceName& name) const
+{
+	auto findIter = m_DSVs.find(name.hash());
+	if (findIter != m_DSVs.end())
+	{
+		return findIter->second;
+	}
+
+	return nullptr;
+}

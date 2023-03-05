@@ -5,18 +5,20 @@
 
 #include "RenderPassEnvironment.h"
 #include "RenderingData.h"
-#include "RenderPasses/GBufferPass.h"
 
 namespace VT
 {
-	class PresentPass;
-	class LightPass;
 	class IFence;
 	class IRenderContext;
 	class IPipelineBindingLayout;
 
-	struct GBuffer;
+	class GBuffer;
 	class LightVolumeData;
+
+	class GBufferPass;
+	class LightPrepearingPass;
+	class LightPass;
+	class PresentPass;
 
 	class RenderSystem final : public IRenderSystem
 	{
@@ -34,8 +36,8 @@ namespace VT
 		LightVolumeData* m_lightVolume = nullptr;
 
 		GBufferPass* m_gBufferPass = nullptr;
+		LightPrepearingPass* m_lightPrepearingPass = nullptr;
 		LightPass* m_lightPass = nullptr;
-		PresentPass* m_presentPass = nullptr;
 
 	public:
 		RenderSystem() = default;

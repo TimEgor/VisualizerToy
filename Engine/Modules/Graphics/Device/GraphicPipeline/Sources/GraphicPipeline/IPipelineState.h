@@ -13,10 +13,33 @@ namespace VT
 
 	using PipelineStateHash = uint32_t;
 
+	enum class GraphicComparisonFunc
+	{
+		NEVER,
+		EQUAL,
+		NOT_EQUAL,
+		LESS,
+		LESS_EQUAL,
+		GREATER,
+		GREATER_EQUAL,
+		ALWAYS
+	};
+
 	struct GraphicPipelineStateInfo final
 	{
 		using TargetFormats = std::vector<Format>;
-		TargetFormats m_formats;
+
+		struct DepthStensilTestInfo final
+		{
+			Format m_format = Format::UNDEFINED;
+			GraphicComparisonFunc m_comparisonFunc = GraphicComparisonFunc::LESS;
+			bool m_enabled = false;
+		};
+
+
+		TargetFormats m_targetFormats;
+
+		DepthStensilTestInfo m_depthStencilTest;
 
 		IVertexShader* m_vertexShader = nullptr;
 		IPixelShader* m_pixelShader = nullptr;
@@ -27,7 +50,7 @@ namespace VT
 			hashCombine(result, m_vertexShader);
 			hashCombine(result, m_pixelShader);
 
-			for (Format format : m_formats)
+			for (Format format : m_targetFormats)
 			{
 				hashCombine(result, format);
 			}

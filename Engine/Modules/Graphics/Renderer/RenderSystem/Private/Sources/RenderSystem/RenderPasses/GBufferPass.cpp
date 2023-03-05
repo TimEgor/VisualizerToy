@@ -29,6 +29,7 @@ bool VT::GBufferPass::initRenderingData()
 	transformBufferDesc.m_byteStride = sizeof(Matrix44);
 	transformBufferDesc.m_flag = GPUBufferFlag::STRUCTURED;
 	transformBufferDesc.isHostVisible = true;
+	transformBufferDesc.m_usage = GRAPHIC_USAGE_SHADER_RESOURCE;
 	m_passData.m_perObjectTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicResourceState::GRAPHIC_STATE_COMMON_READ);
 
 	device->setResourceName(m_passData.m_perObjectTransformBuffer->getResource(), "PerObjectTransform");
@@ -67,6 +68,12 @@ bool VT::GBufferPass::init()
 
 void VT::GBufferPass::release()
 {
+	m_passData.m_perObjectTransformBuffer = nullptr;
+	m_passData.m_perObjectTransformSRV = nullptr;
+	m_passData.m_bindingLayout = nullptr;
+
+	m_materialDrawingData.m_vertShader = nullptr;
+	m_materialDrawingData.m_pixelShader = nullptr;
 }
 
 void VT::GBufferPass::execute(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
@@ -82,10 +89,12 @@ void VT::GBufferPass::execute(const RenderPassContext& passContext, const Render
 	TextureReference colorTexture = passEnvironment.getTexture("gb_color_texture");
 	TextureReference normalTexture = passEnvironment.getTexture("gb_normal_texture");
 	TextureReference positionTexture = passEnvironment.getTexture("gb_position_texture");
+	TextureReference depthTexture = passEnvironment.getTexture("gb_depth_texture");
 
 	RenderTargetViewReference colorRTV = passEnvironment.getRenderTargetView("gb_color_rtv");
 	RenderTargetViewReference normalRTV = passEnvironment.getRenderTargetView("gb_normal_rtv");
 	RenderTargetViewReference positionRTV = passEnvironment.getRenderTargetView("gb_position_rtv");
+	DepthStencilViewReference depthDSV = passEnvironment.getDepthStencilView("gb_depth_dsv");
 
 	assert(colorTexture && colorTexture->getTexture()->getDimension() == TextureDimensionType::DIMENSION_2D);
 	ITexture2D* colorNativeTexture = colorTexture->getTextureCast<ITexture2D>();
@@ -99,13 +108,17 @@ void VT::GBufferPass::execute(const RenderPassContext& passContext, const Render
 	ITexture2D* positionNativeTexture = positionTexture->getTextureCast<ITexture2D>();
 	const Texture2DDesc& positionTextureDesc = positionNativeTexture->getDesc();
 
-	assert(colorRTV && normalRTV && positionRTV);
+	assert(depthTexture && depthTexture->getTexture()->getDimension() == TextureDimensionType::DIMENSION_2D);
+	ITexture2D* depthNativeTexture = depthTexture->getTextureCast<ITexture2D>();
+	const Texture2DDesc& depthTextureDesc = depthNativeTexture->getDesc();
 
-	pipelineStateInfo.m_formats.push_back(colorTextureDesc.m_format);
-	pipelineStateInfo.m_formats.push_back(normalTextureDesc.m_format);
-	pipelineStateInfo.m_formats.push_back(positionTextureDesc.m_format);
+	assert(colorRTV && normalRTV && positionRTV && depthDSV);
 
-	GraphicRenderContextTarget targets[] = {
+	pipelineStateInfo.m_targetFormats.push_back(colorTextureDesc.m_format);
+	pipelineStateInfo.m_targetFormats.push_back(normalTextureDesc.m_format);
+	pipelineStateInfo.m_targetFormats.push_back(positionTextureDesc.m_format);
+
+	GraphicRenderContextTarget renderTargets[] = {
 		{
 			colorNativeTexture,
 			colorRTV.getObject()->getResourceView(),
@@ -129,14 +142,24 @@ void VT::GBufferPass::execute(const RenderPassContext& passContext, const Render
 		}
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 3, targets);
+	DepthStencilContextTarget depthStencilTarget{
+		depthNativeTexture,
+		depthDSV.getObject()->getResourceView(),
+		1.0f,
+		0
+	};
+
+	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 3, renderTargets, &depthStencilTarget);
+
+	pipelineStateInfo.m_depthStencilTest.m_enabled = true;
+	pipelineStateInfo.m_depthStencilTest.m_format = depthTextureDesc.m_format;
 
 	const RenderingData::TransformDataCollection& transforms = passContext.m_renderingData.getTransformDataCollection();
 	const RenderingData::MeshDataCollection& meshes = passContext.m_renderingData.getMeshDataCollection();
 	const size_t meshesCount = meshes.size();
 
 	passContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	passContext.m_context->setBindingLayout(m_passData.m_bindingLayout->getTypedObject());
+	passContext.m_context->setGraphicBindingLayout(m_passData.m_bindingLayout->getTypedObject());
 
 	passContext.m_context->setGraphicBindingParameterValue(0, 0, passContext.m_renderingData.getCameraTransformBufferView()->getResourceView()->getBindingHeapOffset());
 

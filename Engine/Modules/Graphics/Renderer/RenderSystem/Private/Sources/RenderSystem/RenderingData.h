@@ -9,10 +9,15 @@
 
 namespace VT
 {
-	struct alignas(16) CameraTransforms final
+	struct CameraTransforms final
 	{
 		Matrix44 m_viewTransform = Matrix44Identity;
 		Matrix44 m_projectionTransform = Matrix44Identity;
+
+		Vector3 m_cameraPosition = Vector3Zero;
+
+		float nearPlane = 0.0f;
+		float farPlane = 0.0f;
 	};
 
 	struct MeshRenderingDataNode final
@@ -60,7 +65,7 @@ namespace VT
 
 		const PointLightDataCollection& getPointLighDataCollection() const { return m_pointLights; }
 
-		const CameraTransforms& getCameraTransforms() const { return m_cameraTransforms; }
+		const CameraTransforms& getCameraTransform() const { return m_cameraTransforms; }
 		GPUBufferReference getCameraTransformBuffer() const { return m_cameraTransformBuffer; }
 		ShaderResourceViewReference getCameraTransformBufferView() const { return m_cameraTransformCBV; }
 	};

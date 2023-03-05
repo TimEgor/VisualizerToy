@@ -13,8 +13,12 @@ namespace VT
 		Transform() = default;
 
 		const Vector3& getAxisX() const { return m_matrix.m_row1.m_xyz; }
+		Vector3& getAxisX() { return m_matrix.m_row1.m_xyz; }
 		const Vector3& getAxisY() const { return m_matrix.m_row2.m_xyz; }
+		Vector3& getAxisY() { return m_matrix.m_row2.m_xyz; }
 		const Vector3& getAxisZ() const { return m_matrix.m_row3.m_xyz; }
+		Vector3& getAxisZ() { return m_matrix.m_row3.m_xyz; }
 		const Vector3& getOrigin() const { return m_matrix.m_row4.m_xyz; }
+		Vector3& getOrigin() { return m_matrix.m_row4.m_xyz; }
 	};
 }

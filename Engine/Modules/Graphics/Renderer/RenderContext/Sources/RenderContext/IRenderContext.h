@@ -57,7 +57,10 @@ namespace VT
 		virtual void end() = 0;
 
 		virtual void clearRenderTarget(const IGraphicResourceDescriptor* renderTargetView, const float* clearValues) = 0;
-		virtual void setRenderTargets(uint32_t count, IGraphicResourceDescriptor* const* renderTargetViews) = 0;
+		virtual void clearDepthStencilTarget(const IGraphicResourceDescriptor* depthStencilView,
+			float depthClearValue, uint32_t stencilClearValue) = 0;
+		virtual void setRenderTargets(uint32_t count, IGraphicResourceDescriptor* const* renderTargetViews,
+			const IGraphicResourceDescriptor* depthStencilView) = 0;
 		virtual void setViewports(uint32_t count, const Viewport* viewports) = 0;
 		virtual void setScissors(uint32_t count, const Scissors* scissors) = 0;
 
@@ -70,7 +73,9 @@ namespace VT
 		virtual void setGraphicBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) = 0;
 		virtual void setComputeBindingParameterValue(uint32_t index, uint32_t offset, uint32_t value) = 0;
 		virtual void setComputeBindingParameterValues(uint32_t index, uint32_t offset, uint32_t valuesCount, uint32_t* values) = 0;
-		virtual void setBindingLayout(const IPipelineBindingLayout* bindingLayout) = 0;
+
+		virtual void setGraphicBindingLayout(const IPipelineBindingLayout* bindingLayout) = 0;
+		virtual void setComputeBindingLayout(const IPipelineBindingLayout* bindingLayout) = 0;
 
 		virtual void setPipelineState(const IPipelineState* pipelineState) = 0;
 		virtual void setVertexBuffers(uint32_t buffersCount, IGPUBuffer** buffers, const InputLayoutDesc& inputLayoutDesc) = 0;
