@@ -22,7 +22,7 @@ namespace VT
 	private:
 		std::vector<SortedPointLight> m_sortedPointLights;
 
-		ComputeShaderReference m_cullingShader;
+		ComputeShaderReference m_pointLightCullingShader;
 		PipelineBindingLayoutReference m_bindingLayout;
 
 		const LightVolumeData* m_lightVolumeData = nullptr;

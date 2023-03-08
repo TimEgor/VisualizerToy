@@ -34,11 +34,11 @@ bool VT::LightPass::initPipelineData()
 
 	VT_CHECK_RETURN_FALSE(m_pipelineData.m_bindingLayout);
 
-	m_pipelineData.m_presentVertexShader = resManager->loadVertexShader("Shaders/LightPresentingVertexShader.hlsl");
-	m_pipelineData.m_presentPixelShader = resManager->loadPixelShader("Shaders/LightPresentingPixelShader.hlsl");
+	m_pipelineData.m_presentVertexShader = resManager->loadVertexShader("Shaders/Lighting/LightPresentingVertexShader.hlsl");
+	m_pipelineData.m_presentPointLightPixelShader = resManager->loadPixelShader("Shaders/Lighting/PointLightPresentingPixelShader.hlsl");
 
 	VT_CHECK_RETURN_FALSE(m_pipelineData.m_presentVertexShader);
-	VT_CHECK_RETURN_FALSE(m_pipelineData.m_presentPixelShader);
+	VT_CHECK_RETURN_FALSE(m_pipelineData.m_presentPointLightPixelShader);
 
 	return true;
 }
@@ -153,7 +153,7 @@ bool VT::LightPass::init()
 void VT::LightPass::release()
 {
 	m_pipelineData.m_presentVertexShader = nullptr;
-	m_pipelineData.m_presentPixelShader = nullptr;
+	m_pipelineData.m_presentPointLightPixelShader = nullptr;
 	m_pipelineData.m_bindingLayout = nullptr;
 
 	m_screenRectGeom = nullptr;
@@ -167,7 +167,7 @@ void VT::LightPass::execute(const RenderPassContext& passContext, const RenderPa
 
 	GraphicPipelineStateInfo pipelineStateInfo{};
 	pipelineStateInfo.m_vertexShader = m_pipelineData.m_presentVertexShader->getTypedObject();
-	pipelineStateInfo.m_pixelShader = m_pipelineData.m_presentPixelShader->getTypedObject();
+	pipelineStateInfo.m_pixelShader = m_pipelineData.m_presentPointLightPixelShader->getTypedObject();
 
 	const Texture2DDesc& targetTextureDesc = passContext.m_target->getDesc();
 	pipelineStateInfo.m_targetFormats.push_back(targetTextureDesc.m_format);

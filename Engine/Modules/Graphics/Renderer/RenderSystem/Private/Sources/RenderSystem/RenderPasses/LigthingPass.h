@@ -16,7 +16,7 @@ namespace VT
 		struct PassPipelineData final
 		{
 			VertexShaderReference m_presentVertexShader;
-			PixelShaderReference m_presentPixelShader;
+			PixelShaderReference m_presentPointLightPixelShader;
 			PipelineBindingLayoutReference m_bindingLayout;
 		};
 

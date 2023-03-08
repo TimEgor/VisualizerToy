@@ -137,7 +137,7 @@ void VT::LightPrepearingPass::computePointLightTileMasks(IRenderContext* context
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
 	ComputePipelineStateInfo pipelineStateInfo{};
-	pipelineStateInfo.m_computeShader = m_cullingShader->getTypedObject();
+	pipelineStateInfo.m_computeShader = m_pointLightCullingShader->getTypedObject();
 
 	ComputePipelineStateReference pipelineState = environment->m_graphicResourceManager->
 		getComputePipelineState(pipelineStateInfo, m_bindingLayout);
@@ -168,8 +168,8 @@ bool VT::LightPrepearingPass::init()
 	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES);
 	bindingDesc.m_descriptorBindings.emplace_back(3, 2, 0, ShaderStageVisibility::ALL_STAGES);
 
-	m_cullingShader = resManager->loadComputeShader("Shaders/LightCulling.hlsl");
-	VT_CHECK_INITIALIZATION(m_cullingShader);
+	m_pointLightCullingShader = resManager->loadComputeShader("Shaders/Lighting/PointLightCulling.hlsl");
+	VT_CHECK_INITIALIZATION(m_pointLightCullingShader);
 	m_bindingLayout = resManager->getPipelineBindingLayout(bindingDesc);
 	VT_CHECK_INITIALIZATION(m_bindingLayout);
 
@@ -178,7 +178,7 @@ bool VT::LightPrepearingPass::init()
 
 void VT::LightPrepearingPass::release()
 {
-	m_cullingShader = nullptr;
+	m_pointLightCullingShader = nullptr;
 	m_bindingLayout = nullptr;
 }
 
