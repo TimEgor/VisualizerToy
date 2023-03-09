@@ -70,15 +70,15 @@ float4 PS(PSInput input) : SV_TARGET0
 	const float deltaZ = cameraTransforms.m_farPlane - cameraTransforms.m_nearPlane;
 	const float sliceDepth = (viewPosition.z - cameraTransforms.m_nearPlane) / deltaZ;
 
-	const int sliceIndex = sliceDepth / (deltaZ / lightVolume.m_slicesCount);
+	const uint sliceIndex = sliceDepth / (deltaZ / lightVolume.m_slicesCount);
 	const ZSlice slice = zSlice[sliceIndex];
 
 	float4 resultColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-	if (slice.m_minLightIndex != lightVolume.m_slicesCount + 1)
+	if (slice.m_minLightIndex != MAX_POINT_LIGHTS)
 	{
 		const float2 normTileSize = float2(1.0f / lightVolume.m_tilesCountX, 1.0f / lightVolume.m_tilesCountY);
-		const int2 tileCoords = float2(input.m_uv.x, 1.0f - input.m_uv.y) / normTileSize;
+		const uint2 tileCoords = trunc(float2(input.m_uv.x, 1.0f - input.m_uv.y) / normTileSize);
 		const uint tileIndex = tileCoords.y * lightVolume.m_tilesCountX + tileCoords.x;
 
 		for (uint lightIndex = slice.m_minLightIndex; lightIndex <= slice.m_maxLightIndex; ++lightIndex)
@@ -92,6 +92,7 @@ float4 PS(PSInput input) : SV_TARGET0
 			{
 				const PointLight light = pointLights[lightIndex];
 				resultColor.xyz += calcPointLight(position, normal, color, light);
+				//resultColor += float4(light.m_color, 1.0f);
 			}
 		}
 	}

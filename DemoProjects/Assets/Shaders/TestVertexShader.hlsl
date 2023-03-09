@@ -30,7 +30,7 @@ VSOutput VS(VSInput input, uint vertexId : SV_VertexID)
 	output.m_position = mul(output.m_position, cameraTransforms.m_projTransformMatrix);
 
 	output.m_worldNormal = normalize(mul(float4(input.m_normal, 0.0f), objectTransform.m_worldTransform).xyz);
-	output.m_color = float3(0.0, 0.0, 1.0);
+	output.m_color = float3(1.0, 1.0, 1.0);
 
 	return output;
 }

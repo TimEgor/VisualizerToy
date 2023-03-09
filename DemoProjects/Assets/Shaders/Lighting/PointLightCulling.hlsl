@@ -42,23 +42,26 @@ void CS(uint3 dispatchThreadID : SV_DispatchThreadID)
 	const float4 minLightProjPosition = mul(minLightViewPosition, cameraTransforms.m_projTransformMatrix);
 	const float4 maxLightProjPosition = mul(maxLightViewPosition, cameraTransforms.m_projTransformMatrix);
 
-	const float2 normMinLightScreenPosition = (minLightProjPosition.xy / minLightProjPosition.w + float2(1.0f, 1.0f)) / 2.0f;
-	const float2 normMaxLightScreenPosition = (maxLightProjPosition.xy / maxLightProjPosition.w + float2(1.0f, 1.0f)) / 2.0f;
+	const float2 normMinLightScreenPosition = (minLightProjPosition.xy / minLightProjPosition.w + float2(1.0f, 1.0f)) * 0.5f;
+	const float2 normMaxLightScreenPosition = (maxLightProjPosition.xy / maxLightProjPosition.w + float2(1.0f, 1.0f)) * 0.5f;
 
 	const float2 normTileSize = float2(1.0f / lightVolume.m_tilesCountX, 1.0f / lightVolume.m_tilesCountY);
 
-	const int2 minLightTileCoords = saturate(normMinLightScreenPosition) / normTileSize;
-	const int2 maxLightTileCoords = floor(saturate(normMaxLightScreenPosition) / normTileSize);
+	const uint2 minLightTileCoords = trunc(saturate(normMinLightScreenPosition) / normTileSize);
+	const uint2 maxLightTileCoords = ceil(saturate(normMaxLightScreenPosition) / normTileSize);
 
-	for (int y = minLightTileCoords.y; y <= maxLightTileCoords.y; ++y) {
-		for (int x = minLightTileCoords.x; x <= maxLightTileCoords.x; ++x) {
+	for (uint y = minLightTileCoords.y; y <= maxLightTileCoords.y; ++y)
+	{
+		for (uint x = minLightTileCoords.x; x <= maxLightTileCoords.x; ++x)
+		{
 			const uint tileIndex = y * lightVolume.m_tilesCountX + x;
 
 			const uint tileMaskValIndex = lightIndex / 32;
 			const uint tileMaskBitIndex = lightIndex % 32;
 
 			const uint maskBitVal = 1u << tileMaskBitIndex;
-			tileMasks[tileIndex].m_mask[tileMaskValIndex] |= maskBitVal;
+			uint prevMaskVal = 0;
+			InterlockedOr(tileMasks[tileIndex].m_mask[tileMaskValIndex], maskBitVal, prevMaskVal);
 		}
 	}
 }

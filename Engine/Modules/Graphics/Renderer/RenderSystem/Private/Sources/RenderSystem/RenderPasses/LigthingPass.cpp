@@ -197,6 +197,8 @@ void VT::LightPass::execute(const RenderPassContext& passContext, const RenderPa
 
 	ShaderResourceViewReference pointLightsSRV = passEnvironment.getShaderResourceView("lv_point_light_srv");
 	ShaderResourceViewReference tilesSRV = passEnvironment.getShaderResourceView("lv_point_light_tile_mask_srv");
+
+	ShaderResourceViewReference lightVolumeSlicesSRV = passEnvironment.getShaderResourceView("lv_point_light_zslice_srv");
 	ShaderResourceViewReference lightVolumeSRV = passEnvironment.getShaderResourceView("lv_info_srv");
 
 	passContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
@@ -211,7 +213,7 @@ void VT::LightPass::execute(const RenderPassContext& passContext, const RenderPa
 
 	passContext.m_context->setGraphicBindingParameterValue(3, 0, pointLightsSRV->getResourceView()->getBindingHeapOffset());
 	passContext.m_context->setGraphicBindingParameterValue(3, 1, tilesSRV->getResourceView()->getBindingHeapOffset());
-	passContext.m_context->setGraphicBindingParameterValue(3, 2, lightVolumeSRV->getResourceView()->getBindingHeapOffset());
+	passContext.m_context->setGraphicBindingParameterValue(3, 2, lightVolumeSlicesSRV->getResourceView()->getBindingHeapOffset());
 
 	passContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
 	GraphicRenderContextUtils::setPipelineState(passContext.m_context, pipelineState);

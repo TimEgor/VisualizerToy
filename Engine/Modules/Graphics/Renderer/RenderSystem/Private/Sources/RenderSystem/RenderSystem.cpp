@@ -64,6 +64,9 @@ bool VT::RenderSystem::init()
 	m_lightPass = new LightPass();
 	VT_CHECK_INITIALIZATION(m_lightPass && m_lightPass->init());
 
+	//m_presentPass = new PresentPass();
+	//VT_CHECK_INITIALIZATION(m_presentPass && m_presentPass->init());
+
 	return true;
 }
 
@@ -76,6 +79,8 @@ void VT::RenderSystem::release()
 		environment->m_graphicDevice->destroyFence(m_frameFence);
 		m_frameFence = nullptr;
 	}
+
+	//VT_SAFE_DESTROY_WITH_RELEASING(m_presentPass);
 
 	VT_SAFE_DESTROY_WITH_RELEASING(m_lightPass);
 	VT_SAFE_DESTROY_WITH_RELEASING(m_lightVolume);
@@ -105,6 +110,7 @@ void VT::RenderSystem::render(ITexture2D* target, IGraphicResourceDescriptor* ta
 	m_gBufferPass->execute(renderContext, *m_passEnvironment);
 	m_lightPrepearingPass->execute(renderContext, *m_passEnvironment);
 	m_lightPass->execute(renderContext, *m_passEnvironment);
+	//m_presentPass->execute(renderContext, *m_passEnvironment);
 
 	GraphicRenderContextUtils::prepareTextureResourceForPresenting(m_context, target);
 	m_context->end();

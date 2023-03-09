@@ -38,6 +38,7 @@ namespace VT
 		GBufferPass* m_gBufferPass = nullptr;
 		LightPrepearingPass* m_lightPrepearingPass = nullptr;
 		LightPass* m_lightPass = nullptr;
+		//PresentPass* m_presentPass = nullptr;
 
 	public:
 		RenderSystem() = default;

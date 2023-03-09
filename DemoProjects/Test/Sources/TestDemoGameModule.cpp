@@ -44,13 +44,29 @@ void VT_DEMO_TEST::TestDemoGameModule::onLoaded()
 	m_transforms = level->getScene()->getNodeTransforms(testNodeID);
 	m_transforms->m_globalTransform.getOrigin().m_x = 3.0f;
 
-	VT::VT_Entity lightEntity = level->createEntity();
-	VT::PointLightComponent& light = level->getEntityComponentSystem()->addComponent<VT::PointLightComponent>(lightEntity);
-	VT::NodeID lightNodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(lightEntity).getNodeID();
+	VT::VT_Entity light1Entity = level->createEntity();
+	VT::PointLightComponent& light1 = level->getEntityComponentSystem()->addComponent<VT::PointLightComponent>(light1Entity);
+	VT::NodeID light1NodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(light1Entity).getNodeID();
 
-	light.m_radius = 3.0f;
-	light.m_color = VT::Vector3Identity;
-	level->getScene()->getNodeTransforms(lightNodeID)->m_globalTransform.getOrigin().m_z = -1.5f;
+	VT::VT_Entity light2Entity = level->createEntity();
+	VT::PointLightComponent& light2 = level->getEntityComponentSystem()->addComponent<VT::PointLightComponent>(light2Entity);
+	VT::NodeID light2NodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(light2Entity).getNodeID();
+
+	VT::VT_Entity light3Entity = level->createEntity();
+	VT::PointLightComponent& light3 = level->getEntityComponentSystem()->addComponent<VT::PointLightComponent>(light3Entity);
+	VT::NodeID light3NodeID = level->getEntityComponentSystem()->getComponent<VT::SceneNodeIDComponent>(light3Entity).getNodeID();
+
+	light1.m_radius = 2.0f;
+	light1.m_color = VT::Vector3(1.0f, 0.0f, 0.0f);
+	level->getScene()->getNodeTransforms(light1NodeID)->m_globalTransform.getOrigin() = VT::Vector3(0.0f, 0.3f, -1.5f);
+
+	light2.m_radius = 2.0f;
+	light2.m_color = VT::Vector3(0.0f, 1.0f, 0.0f);
+	level->getScene()->getNodeTransforms(light2NodeID)->m_globalTransform.getOrigin() = VT::Vector3(0.3f, -0.3f, -1.5f);
+
+	light3.m_radius = 2.0f;
+	light3.m_color = VT::Vector3(0.0f, 0.0f, 1.0f);
+	level->getScene()->getNodeTransforms(light3NodeID)->m_globalTransform.getOrigin() = VT::Vector3(-0.3f, -0.3f, -1.5f);
 }
 
 void VT_DEMO_TEST::TestDemoGameModule::onUnloaded()

@@ -96,7 +96,7 @@ void VT::LightPrepearingPass::fillPointLightZSliceBuffer(IGPUBuffer* zSliceBuffe
 	const uint16_t lightCountLimit = std::min(static_cast<uint32_t>(m_sortedPointLights.size()), MAX_POINT_LIGHT_NUM);
 
 	for (uint16_t sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
-		uint16_t minSliceLightIndex = slicesCount + 1;
+		uint16_t minSliceLightIndex = MAX_POINT_LIGHT_NUM;
 		uint16_t maxSliceLightIndex = 0;
 
 		const float binMinPos = sliceDepth * sliceIndex;
@@ -117,14 +117,14 @@ void VT::LightPrepearingPass::fillPointLightZSliceBuffer(IGPUBuffer* zSliceBuffe
 
 				if (i > maxSliceLightIndex )
 				{
-					maxSliceLightIndex  = i;
+					maxSliceLightIndex = i;
 				}
 			}
 		}
 
 		LightVolumeData::ZSlice& slice = slicesMappedData[sliceIndex];
-		slice.m_maxLightIndex = maxSliceLightIndex ;
 		slice.m_minLightIndex = minSliceLightIndex;
+		slice.m_maxLightIndex = maxSliceLightIndex;
 	}
 
 	zSliceBuffer->unmapData();
