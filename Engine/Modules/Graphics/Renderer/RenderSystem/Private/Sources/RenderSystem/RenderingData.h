@@ -13,6 +13,7 @@ namespace VT
 	{
 		Matrix44 m_viewTransform = Matrix44Identity;
 		Matrix44 m_projectionTransform = Matrix44Identity;
+		Matrix44 m_invProjectionTransform = Matrix44Identity;
 
 		Vector3 m_cameraPosition = Vector3Zero;
 

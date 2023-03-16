@@ -78,7 +78,7 @@ float4 PS(PSInput input) : SV_TARGET0
 	if (slice.m_minLightIndex != MAX_POINT_LIGHTS)
 	{
 		const float2 normTileSize = float2(1.0f / lightVolume.m_tilesCountX, 1.0f / lightVolume.m_tilesCountY);
-		const uint2 tileCoords = trunc(float2(input.m_uv.x, 1.0f - input.m_uv.y) / normTileSize);
+		const uint2 tileCoords = trunc(input.m_uv / normTileSize);
 		const uint tileIndex = tileCoords.y * lightVolume.m_tilesCountX + tileCoords.x;
 
 		for (uint lightIndex = slice.m_minLightIndex; lightIndex <= slice.m_maxLightIndex; ++lightIndex)

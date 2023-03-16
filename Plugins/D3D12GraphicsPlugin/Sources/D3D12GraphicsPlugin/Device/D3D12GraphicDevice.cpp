@@ -361,6 +361,54 @@ bool VT_D3D12::D3D12GraphicDevice::createShaderResourceDescriptor(
 
 		return createShaderResourceDescriptorInternal(descriptor, resource, &d3d12SRVDesc);
 	}
+	else if (resource->getType() == VT::ITexture::getGraphicResourceType())
+	{
+		VT::ITexture* texture = reinterpret_cast<VT::ITexture*>(resource);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC d3d12SRVDesc{};
+		d3d12SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		switch (texture->getFormat())
+		{
+		case VT::Format::D24_UNORM_S8_UINT:
+			d3d12SRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+			break;
+
+		default:
+			d3d12SRVDesc.Format = convertFormatVTtoD3D12(texture->getFormat());
+			break;
+		}
+
+		switch (texture->getDimension())
+		{
+		case VT::TextureDimensionType::DIMENSION_1D:
+			{
+				d3d12SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
+				d3d12SRVDesc.Texture1D.MipLevels = -1;
+				d3d12SRVDesc.Texture1D.MostDetailedMip = 0;
+			}
+			break;
+		case VT::TextureDimensionType::DIMENSION_2D:
+			{
+				d3d12SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				d3d12SRVDesc.Texture2D.MipLevels = -1;
+				d3d12SRVDesc.Texture2D.MostDetailedMip = 0;
+			}
+			break;
+		case VT::TextureDimensionType::DIMENSION_3D:
+			{
+				d3d12SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+				d3d12SRVDesc.Texture3D.MipLevels = -1;
+				d3d12SRVDesc.Texture3D.MostDetailedMip = 0;
+			}
+			break;
+		default:
+			assert(false && "Invalid texture dimension");
+			return nullptr;
+		}
+
+		return createShaderResourceDescriptorInternal(descriptor, resource, &d3d12SRVDesc);
+	}
 
 	return createShaderResourceDescriptorInternal(descriptor, resource, nullptr);
 }

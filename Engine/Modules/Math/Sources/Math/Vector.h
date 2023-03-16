@@ -149,4 +149,8 @@ namespace VT
 	using Vector2UInt16 = Vector2Base<uint16_t>;
 	using Vector3UInt16 = Vector3Base<uint16_t>;
 	using Vector4UInt16 = Vector4Base<uint16_t>;
+
+	const Vector2UInt16 Vector2UInt16Zero = Vector2UInt16(0, 0);
+	const Vector3UInt16 Vector3UInt16Zero = Vector3UInt16(0, 0, 0);
+	const Vector4UInt16 Vector4UInt16Zero = Vector4UInt16(0, 0, 0, 0);
 }

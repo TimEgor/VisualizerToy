@@ -29,7 +29,7 @@ bool VT::GBuffer::init(const Vector2UInt16& bufferResolution)
 	VT_CHECK_RETURN_FALSE(m_color && m_normal && m_position);
 
 	bufferTextureDesc.m_format = Format::D24_UNORM_S8_UINT;
-	bufferTextureDesc.m_usage = TEXTURE_USAGE_DEPTH_STENCIL;
+	bufferTextureDesc.m_usage = TEXTURE_USAGE_DEPTH_STENCIL | GRAPHIC_USAGE_SHADER_RESOURCE;
 	m_depth = resManager->createTexture2D(bufferTextureDesc, TEXTURE_STATE_DEPTH_STENCIL);
 
 	VT_CHECK_RETURN_FALSE(m_depth);
@@ -44,8 +44,9 @@ bool VT::GBuffer::init(const Vector2UInt16& bufferResolution)
 	m_colorSRV = resManager->createShaderResourceDescriptor(m_color.getObject());
 	m_normalSRV = resManager->createShaderResourceDescriptor(m_normal.getObject());
 	m_positionSRV = resManager->createShaderResourceDescriptor(m_position.getObject());
+	m_depthSRV = resManager->createShaderResourceDescriptor(m_depth.getObject());
 
-	VT_CHECK_RETURN_FALSE(m_colorSRV && m_normalSRV && m_positionSRV);
+	VT_CHECK_RETURN_FALSE(m_colorSRV && m_normalSRV && m_positionSRV && m_depthSRV);
 
 	device->setResourceName(m_color->getResource(), "gb_color");
 	device->setResourceName(m_normal->getResource(), "gb_normal");
@@ -70,6 +71,7 @@ void VT::GBuffer::release()
 	m_colorSRV = nullptr;
 	m_normalSRV = nullptr;
 	m_positionSRV = nullptr;
+	m_depthSRV = nullptr;
 }
 
 void VT::GBuffer::fillEnvironment(RenderPassEnvironment& environment) const
@@ -87,4 +89,5 @@ void VT::GBuffer::fillEnvironment(RenderPassEnvironment& environment) const
 	environment.addShaderResourceView("gb_color_srv", m_colorSRV);
 	environment.addShaderResourceView("gb_normal_srv", m_normalSRV);
 	environment.addShaderResourceView("gb_position_srv", m_positionSRV);
+	environment.addShaderResourceView("gb_depth_srv", m_depthSRV);
 }

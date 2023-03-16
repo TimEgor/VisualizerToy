@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicResourceCommon/GraphicResourceBase.h"
+#include "GraphicResourceCommon/Format.h"
 
 #include <cstdint>
 

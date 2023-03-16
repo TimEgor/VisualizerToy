@@ -1,0 +1,10 @@
+#ifndef TYPE_HLSL
+#define TYPE_HLSL
+
+#define UINT_MAX 4294967295
+
+#define FLT_MAX 3.402823e+38f
+#define FLT_MIN 1.175494e-38f
+#define FLT_EPSILON 1.192093e-07f
+
+#endif //TYPE_HLSL

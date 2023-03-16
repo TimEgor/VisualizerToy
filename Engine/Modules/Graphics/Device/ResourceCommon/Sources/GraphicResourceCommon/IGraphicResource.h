@@ -3,6 +3,7 @@
 #include "Core/TypeHashMacros.h"
 #include "GraphicObject/IGraphicObject.h"
 #include "GraphicSynchronization/IFence.h"
+#include "Format.h"
 
 namespace VT
 {
@@ -53,6 +54,10 @@ namespace VT
 
 		virtual GraphicResourceStateValueType getState() const = 0;
 		virtual void setState(GraphicResourceStateValueType state) = 0;
+
+		virtual Format getFormat() const = 0;
+		virtual GraphicResourceUsageValueType getUsage() const = 0;
+		virtual bool getHostVisibleState() const = 0;
 
 		virtual GraphicResourceType getType() const = 0;
 	};

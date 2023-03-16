@@ -5,6 +5,7 @@ struct CameraTransforms
 {
 	float4x4 m_viewTransformMatrix;
 	float4x4 m_projTransformMatrix;
+	float4x4 m_invProjTransformMatrix;
 
 	float3 m_position;
 	float m_nearPlane;

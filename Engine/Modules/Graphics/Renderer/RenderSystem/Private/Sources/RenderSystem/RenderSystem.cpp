@@ -47,14 +47,14 @@ bool VT::RenderSystem::init()
 	VT_CHECK_INITIALIZATION(m_passEnvironment);
 
 	m_gBuffer = new GBuffer();
-	VT_CHECK_INITIALIZATION(m_gBuffer && m_gBuffer->init({ 500, 500 }));
+	VT_CHECK_INITIALIZATION(m_gBuffer && m_gBuffer->init({ 512, 512 }));
 	m_gBuffer->fillEnvironment(*m_passEnvironment);
 
 	m_gBufferPass = new GBufferPass();
 	VT_CHECK_INITIALIZATION(m_gBufferPass && m_gBufferPass->init());
 
 	m_lightVolume = new LightVolumeData();
-	VT_CHECK_INITIALIZATION(m_lightVolume && m_lightVolume->init({ 500, 500 }, {50, 50}, 10));
+	VT_CHECK_INITIALIZATION(m_lightVolume && m_lightVolume->init({ 512, 512 }));
 	m_lightVolume->fillEnvironment(*m_passEnvironment);
 
 	m_lightPrepearingPass = new LightPrepearingPass();

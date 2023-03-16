@@ -12,24 +12,28 @@
 #include "RenderSystem/RenderPassEnvironment.h"
 #include "RenderSystem/LightSources/PointLightData.h"
 
+#include "Math/Box.h"
 #include "Math/ComputeVector.h"
 
-bool VT::LightVolumeData::init(const Vector2UInt16& targetSize, const Vector2UInt16& tileSize, uint16_t slicesCount)
+bool VT::LightVolumeData::init(const Vector2UInt16& targetSize)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
 	IGraphicDevice* device = environment->m_graphicDevice;
 
-	m_tilesSlicesCount.m_x = (targetSize.m_x + tileSize.m_x - 1) / tileSize.m_x;
-	m_tilesSlicesCount.m_y = (targetSize.m_y + tileSize.m_y - 1) / tileSize.m_y;
-	m_tilesSlicesCount.m_z = slicesCount;
+	assert(targetSize.m_x % LIGHT_VOLUME_TILE_DIM_SIZE == 0);
+	assert(targetSize.m_y % LIGHT_VOLUME_TILE_DIM_SIZE == 0);
 
-	m_targetSize = targetSize;
-	m_tileSize = tileSize;
+	m_tilesSlicesCount.m_x = targetSize.m_x / LIGHT_VOLUME_TILE_DIM_SIZE;
+	m_tilesSlicesCount.m_y = targetSize.m_y / LIGHT_VOLUME_TILE_DIM_SIZE;
+	m_tilesSlicesCount.m_z = LIGHT_VOLUME_SLICE_COUNT;
 
 	VT_CHECK_RETURN_FALSE(initPointLightBuffer(device, resManager));
 	VT_CHECK_RETURN_FALSE(initPointLightTileMaskBuffer(device, resManager));
 	VT_CHECK_RETURN_FALSE(initPointLightZSliceBuffer(device, resManager));
+
+	VT_CHECK_RETURN_FALSE(initTilesDepthBuffer(device, resManager));
+	VT_CHECK_RETURN_FALSE(initTilesBoundingBoxesBuffer(device, resManager));
 	VT_CHECK_RETURN_FALSE(initVolumeInfoBuffer(device, resManager));
 
 	return true;
@@ -91,6 +95,46 @@ bool VT::LightVolumeData::initPointLightZSliceBuffer(IGraphicDevice* device, IGr
 	return true;
 }
 
+bool VT::LightVolumeData::initTilesDepthBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager)
+{
+	GPUBufferDesc bufferDesc{};
+	bufferDesc.isHostVisible = false;
+	bufferDesc.m_byteSize = sizeof(TileDepth) * m_tilesSlicesCount.m_x * m_tilesSlicesCount.m_y;
+	bufferDesc.m_byteStride = sizeof(TileDepth);
+	bufferDesc.m_flag = GPUBufferFlag::STRUCTURED;
+	bufferDesc.m_usage = GRAPHIC_USAGE_SHADER_RESOURCE | GRAPHIC_USAGE_ALLOW_UNORDERED_ACCESS;
+	m_tilesDepthBuffer = resManager->createGPUBuffer(bufferDesc, CommonGraphicResourceState::GRAPHIC_STATE_SHADER_RESOURCE_COMPUTE);
+	VT_CHECK_RETURN_FALSE(m_tilesDepthBuffer);
+	m_tilesDepthBufferSRV = resManager->createShaderResourceDescriptor(m_tilesDepthBuffer.getObject());
+	VT_CHECK_RETURN_FALSE(m_tilesDepthBufferSRV);
+	m_tilesDepthBufferUAV = resManager->createUnorderedAccessResourceDescriptor(m_tilesDepthBuffer.getObject());
+	VT_CHECK_RETURN_FALSE(m_tilesDepthBufferUAV);
+
+	device->setResourceName(m_tilesDepthBuffer->getResource(), "lv_tilesDepth");
+
+	return true;
+}
+
+bool VT::LightVolumeData::initTilesBoundingBoxesBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager)
+{
+	GPUBufferDesc bufferDesc{};
+	bufferDesc.isHostVisible = false;
+	bufferDesc.m_byteSize = sizeof(AABB) * m_tilesSlicesCount.m_x * m_tilesSlicesCount.m_y;
+	bufferDesc.m_byteStride = sizeof(AABB);
+	bufferDesc.m_flag = GPUBufferFlag::STRUCTURED;
+	bufferDesc.m_usage = GRAPHIC_USAGE_SHADER_RESOURCE | GRAPHIC_USAGE_ALLOW_UNORDERED_ACCESS;
+	m_tilesBoundingBoxesBuffer = resManager->createGPUBuffer(bufferDesc, CommonGraphicResourceState::GRAPHIC_STATE_SHADER_RESOURCE_COMPUTE);
+	VT_CHECK_RETURN_FALSE(m_tilesBoundingBoxesBuffer);
+	m_tilesBoundingBoxesBufferSRV = resManager->createShaderResourceDescriptor(m_tilesBoundingBoxesBuffer.getObject());
+	VT_CHECK_RETURN_FALSE(m_tilesBoundingBoxesBufferSRV);
+	m_tilesBoundingBoxesBufferUAV = resManager->createUnorderedAccessResourceDescriptor(m_tilesBoundingBoxesBuffer.getObject());
+	VT_CHECK_RETURN_FALSE(m_tilesBoundingBoxesBufferUAV);
+
+	device->setResourceName(m_tilesBoundingBoxesBuffer->getResource(), "lv_tilesBoundingBoxes");
+
+	return true;
+}
+
 bool VT::LightVolumeData::initVolumeInfoBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager)
 {
 	LightVolumeInfo volumeInfo{};
@@ -122,6 +166,7 @@ void VT::LightVolumeData::release()
 	m_pointLightTileMasksBuffer = nullptr;
 	m_pointLightZSliceBuffer = nullptr;
 
+	m_tilesBoundingBoxesBuffer = nullptr;
 	m_lightVolumeInfoBuffer = nullptr;
 
 	m_pointLightBufferSRV = nullptr;
@@ -129,6 +174,8 @@ void VT::LightVolumeData::release()
 	m_pointLightTileMasksBufferUAV = nullptr;
 	m_pointLightZSliceBufferSRV = nullptr;
 
+	m_tilesBoundingBoxesBufferSRV = nullptr;
+	m_tilesBoundingBoxesBufferUAV = nullptr;
 	m_lightVolumeInfoBufferSRV = nullptr;
 }
 
@@ -138,6 +185,8 @@ void VT::LightVolumeData::fillEnvironment(RenderPassEnvironment& environment) co
 	environment.addBuffer("lv_point_light_tile_mask_buffer", m_pointLightTileMasksBuffer);
 	environment.addBuffer("lv_point_light_zslice_buffer", m_pointLightZSliceBuffer);
 
+	environment.addBuffer("lv_tilesDepth_buffer", m_tilesDepthBuffer);
+	environment.addBuffer("lv_tilesBB_buffer", m_tilesBoundingBoxesBuffer);
 	environment.addBuffer("lv_info_buffer", m_lightVolumeInfoBuffer);
 
 	environment.addShaderResourceView("lv_point_light_srv", m_pointLightBufferSRV);
@@ -145,5 +194,9 @@ void VT::LightVolumeData::fillEnvironment(RenderPassEnvironment& environment) co
 	environment.addShaderResourceView("lv_point_light_tile_mask_uav", m_pointLightTileMasksBufferUAV);
 	environment.addShaderResourceView("lv_point_light_zslice_srv", m_pointLightZSliceBufferSRV);
 
+	environment.addShaderResourceView("lv_tilesDepth_srv", m_tilesDepthBufferSRV);
+	environment.addShaderResourceView("lv_tilesDepth_uav", m_tilesDepthBufferUAV);
+	environment.addShaderResourceView("lv_tilesBB_srv", m_tilesBoundingBoxesBufferSRV);
+	environment.addShaderResourceView("lv_tilesBB_uav", m_tilesBoundingBoxesBufferUAV);
 	environment.addShaderResourceView("lv_info_srv", m_lightVolumeInfoBufferSRV);
 }

@@ -70,7 +70,7 @@ void VT::RenderingData::setCameraTransforms()
 
 	m_cameraTransforms.m_viewTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(viewTransform);
 	m_cameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
-
+	m_cameraTransforms.m_invProjectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(COMPUTE_MATH::matrixInverse(projectionTransform));
 
 	viewTransform = COMPUTE_MATH::matrixTranspose(viewTransform);
 	projectionTransform = COMPUTE_MATH::matrixTranspose(projectionTransform);
