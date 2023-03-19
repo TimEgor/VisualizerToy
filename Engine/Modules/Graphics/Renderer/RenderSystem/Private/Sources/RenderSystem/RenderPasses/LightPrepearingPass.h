@@ -23,18 +23,21 @@ namespace VT
 	private:
 		std::vector<SortedPointLight> m_sortedPointLights;
 
+		ComputeShaderReference m_pointLightMaskClearingShader;
 		ComputeShaderReference m_pointLightCullingShader;
 
 		ComputeShaderReference m_lightVolumeDepthCalcShader;
 		ComputeShaderReference m_lightVolumeBBCalcShader;
 
-		PipelineBindingLayoutReference m_cullingBindingLayout;
+		PipelineBindingLayoutReference m_pointLightMaskClearingBindingLayout;
+		PipelineBindingLayoutReference m_pointLightCullingBindingLayout;
 
 		PipelineBindingLayoutReference m_lightVolumeDepthCalcBindingLayout;
 		PipelineBindingLayoutReference m_lightVolumeBBCalcBindingLayout;
 
 		const LightVolumeData* m_lightVolumeData = nullptr;
 
+		bool initPointLightMaskClearingData(IGraphicResourceManager* resManager);
 		bool initPointLightCullingData(IGraphicResourceManager* resManager);
 
 		bool initDepthCalcData(IGraphicResourceManager* resManager);
@@ -46,8 +49,10 @@ namespace VT
 
 		void computeTilesDepth(IRenderContext* context, ShaderResourceViewReference tilesDepthUAV,
 			ShaderResourceViewReference lightVolumeSRV, ShaderResourceViewReference depthSourceSRV, ITexture2D* depthSource);
-		void computeTilesBoudingBoxes(IRenderContext* context, ShaderResourceViewReference tilesBbUAV,
+		void computeTilesBoudingBoxes(IRenderContext* context, ShaderResourceViewReference tilesBbUAV, ShaderResourceViewReference tilesDepthSRV,
 			ShaderResourceViewReference cameraTransformsSRV, ShaderResourceViewReference lightVolumeSRV);
+
+		void clearPointLightTileMasks(IRenderContext* context, ShaderResourceViewReference tilesUAV, ShaderResourceViewReference lightVolumeSRV);
 
 		void computePointLightTileMasks(IRenderContext* context, uint32_t pointLightsCount,
 			ShaderResourceViewReference pointLightsSRV, ShaderResourceViewReference tilesUAV, ShaderResourceViewReference tilesBbSRV,

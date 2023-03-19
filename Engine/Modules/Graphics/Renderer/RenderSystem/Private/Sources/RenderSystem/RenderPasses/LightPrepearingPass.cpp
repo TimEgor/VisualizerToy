@@ -21,23 +21,37 @@
 #include "Math/ComputeVector.h"
 #include "Textures/ITexture2D.h"
 
-// need to be sync with val in shader
+// need to be sync with val in the shaders
 static constexpr uint32_t POINT_LIGHT_CULLING_THREAD_GROUP_SIZE = 16;
-static constexpr uint32_t TILES_DEPTH_CALC_THREAD_GROUP_SIZE = 8;
+static constexpr uint32_t POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE = 8;
 static constexpr uint32_t TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE = 8;
+
+bool VT::LightPrepearingPass::initPointLightMaskClearingData(IGraphicResourceManager* resManager)
+{
+	PipelineBindingLayoutDesc bindingDesc{};
+	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES); // LightVolumeInfo
+	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES); // PointLightTileMasks
+
+	m_pointLightMaskClearingShader = resManager->loadComputeShader("Shaders/Lighting/ClearPointLightMasks.hlsl");
+	VT_CHECK_RETURN_FALSE(m_pointLightMaskClearingShader);
+	m_pointLightMaskClearingBindingLayout = resManager->getPipelineBindingLayout(bindingDesc);
+	VT_CHECK_RETURN_FALSE(m_pointLightMaskClearingBindingLayout);
+
+	return true;
+}
 
 bool VT::LightPrepearingPass::initPointLightCullingData(IGraphicResourceManager* resManager)
 {
 	PipelineBindingLayoutDesc bindingDesc{};
-	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES);
-	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES);
-	bindingDesc.m_descriptorBindings.emplace_back(1, 2, 0, ShaderStageVisibility::ALL_STAGES);
-	bindingDesc.m_descriptorBindings.emplace_back(3, 3, 0, ShaderStageVisibility::ALL_STAGES);
+	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES); // CameraTransform
+	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES); // LightVolumeInfo
+	bindingDesc.m_descriptorBindings.emplace_back(1, 2, 0, ShaderStageVisibility::ALL_STAGES); // LightVolumeBoundingBoxes
+	bindingDesc.m_descriptorBindings.emplace_back(3, 3, 0, ShaderStageVisibility::ALL_STAGES); // PointLight bindings
 
 	m_pointLightCullingShader = resManager->loadComputeShader("Shaders/Lighting/PointLightCulling.hlsl");
 	VT_CHECK_RETURN_FALSE(m_pointLightCullingShader);
-	m_cullingBindingLayout = resManager->getPipelineBindingLayout(bindingDesc);
-	VT_CHECK_RETURN_FALSE(m_cullingBindingLayout);
+	m_pointLightCullingBindingLayout = resManager->getPipelineBindingLayout(bindingDesc);
+	VT_CHECK_RETURN_FALSE(m_pointLightCullingBindingLayout);
 
 	return true;
 }
@@ -45,9 +59,9 @@ bool VT::LightPrepearingPass::initPointLightCullingData(IGraphicResourceManager*
 bool VT::LightPrepearingPass::initDepthCalcData(IGraphicResourceManager* resManager)
 {
 	PipelineBindingLayoutDesc bindingDesc{};
-	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES);
-	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES);
-	bindingDesc.m_descriptorBindings.emplace_back(1, 2, 0, ShaderStageVisibility::ALL_STAGES);
+	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES); //DepthSource
+	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES); //LightVolumeInfo
+	bindingDesc.m_descriptorBindings.emplace_back(1, 2, 0, ShaderStageVisibility::ALL_STAGES); //LightVolumeDepth
 
 	m_lightVolumeDepthCalcShader = resManager->loadComputeShader("Shaders/Lighting/TilesDepthCalc.hlsl");
 	VT_CHECK_RETURN_FALSE(m_lightVolumeDepthCalcShader);
@@ -60,9 +74,10 @@ bool VT::LightPrepearingPass::initDepthCalcData(IGraphicResourceManager* resMana
 bool VT::LightPrepearingPass::initBoundingBoxCalcData(IGraphicResourceManager* resManager)
 {
 	PipelineBindingLayoutDesc bindingDesc{};
-	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES);
-	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES);
-	bindingDesc.m_descriptorBindings.emplace_back(1, 2, 0, ShaderStageVisibility::ALL_STAGES);
+	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::ALL_STAGES); // CameraTransform
+	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::ALL_STAGES); // LightVolumeInfo
+	bindingDesc.m_descriptorBindings.emplace_back(1, 2, 0, ShaderStageVisibility::ALL_STAGES); // LightVolumeBoundingBoxes
+	bindingDesc.m_descriptorBindings.emplace_back(1, 3, 0, ShaderStageVisibility::ALL_STAGES); // LightVolumeDepth
 
 	m_lightVolumeBBCalcShader = resManager->loadComputeShader("Shaders/Lighting/TilesBBCalc.hlsl");
 	VT_CHECK_RETURN_FALSE(m_lightVolumeBBCalcShader);
@@ -210,7 +225,7 @@ void VT::LightPrepearingPass::computeTilesDepth(IRenderContext* context, ShaderR
 }
 
 void VT::LightPrepearingPass::computeTilesBoudingBoxes(IRenderContext* context, ShaderResourceViewReference tilesBbUAV,
-	ShaderResourceViewReference cameraTransformsSRV, ShaderResourceViewReference lightVolumeSRV)
+	ShaderResourceViewReference tilesDepthSRV, ShaderResourceViewReference cameraTransformsSRV, ShaderResourceViewReference lightVolumeSRV)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
@@ -226,6 +241,7 @@ void VT::LightPrepearingPass::computeTilesBoudingBoxes(IRenderContext* context, 
 	context->setComputeBindingParameterValue(0, 0, cameraTransformsSRV->getResourceView()->getBindingHeapOffset());
 	context->setComputeBindingParameterValue(1, 0, lightVolumeSRV->getResourceView()->getBindingHeapOffset());
 	context->setComputeBindingParameterValue(2, 0, tilesBbUAV->getResourceView()->getBindingHeapOffset());
+	context->setComputeBindingParameterValue(3, 0, tilesDepthSRV->getResourceView()->getBindingHeapOffset());
 
 	context->setPipelineState(pipelineState->getTypedObject());
 
@@ -233,6 +249,32 @@ void VT::LightPrepearingPass::computeTilesBoudingBoxes(IRenderContext* context, 
 		/ TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE;
 	const uint32_t threadGroupCountY = (m_lightVolumeData->getTilesCounts().m_y + TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE - 1)
 		/ TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE;
+	context->dispatch(threadGroupCountX, threadGroupCountY, 1);
+}
+
+void VT::LightPrepearingPass::clearPointLightTileMasks(IRenderContext* context, ShaderResourceViewReference tilesUAV,
+	ShaderResourceViewReference lightVolumeSRV)
+{
+	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
+
+	ComputePipelineStateInfo pipelineStateInfo{};
+	pipelineStateInfo.m_computeShader = m_pointLightMaskClearingShader->getTypedObject();
+
+	ComputePipelineStateReference pipelineState = environment->m_graphicResourceManager->
+		getComputePipelineState(pipelineStateInfo, m_pointLightMaskClearingBindingLayout);
+
+	context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
+	context->setComputeBindingLayout(m_pointLightMaskClearingBindingLayout->getTypedObject());
+
+	context->setComputeBindingParameterValue(0, 0, lightVolumeSRV->getResourceView()->getBindingHeapOffset());
+	context->setComputeBindingParameterValue(1, 0, tilesUAV->getResourceView()->getBindingHeapOffset());
+
+	context->setPipelineState(pipelineState->getTypedObject());
+
+	const uint32_t threadGroupCountX = (m_lightVolumeData->getTilesCounts().m_x + POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE - 1)
+		/ POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE;
+	const uint32_t threadGroupCountY = (m_lightVolumeData->getTilesCounts().m_y + POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE - 1)
+		/ POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE;
 	context->dispatch(threadGroupCountX, threadGroupCountY, 1);
 }
 
@@ -246,10 +288,10 @@ void VT::LightPrepearingPass::computePointLightTileMasks(IRenderContext* context
 	pipelineStateInfo.m_computeShader = m_pointLightCullingShader->getTypedObject();
 
 	ComputePipelineStateReference pipelineState = environment->m_graphicResourceManager->
-		getComputePipelineState(pipelineStateInfo, m_cullingBindingLayout);
+		getComputePipelineState(pipelineStateInfo, m_pointLightCullingBindingLayout);
 
 	context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	context->setComputeBindingLayout(m_cullingBindingLayout->getTypedObject());
+	context->setComputeBindingLayout(m_pointLightCullingBindingLayout->getTypedObject());
 
 	context->setComputeBindingParameterValue(0, 0, cameraTransformsSRV->getResourceView()->getBindingHeapOffset());
 	context->setComputeBindingParameterValue(1, 0, lightVolumeSRV->getResourceView()->getBindingHeapOffset());
@@ -261,8 +303,8 @@ void VT::LightPrepearingPass::computePointLightTileMasks(IRenderContext* context
 
 	context->setPipelineState(pipelineState->getTypedObject());
 
-	const uint32_t threadGroupCount = (pointLightsCount + POINT_LIGHT_CULLING_THREAD_GROUP_SIZE - 1) / POINT_LIGHT_CULLING_THREAD_GROUP_SIZE;
-	context->dispatch(threadGroupCount, 1, 1);
+	const uint32_t threadGroupCountX = (pointLightsCount + POINT_LIGHT_CULLING_THREAD_GROUP_SIZE - 1) / POINT_LIGHT_CULLING_THREAD_GROUP_SIZE;
+	context->dispatch(threadGroupCountX, 1, 1);
 }
 
 bool VT::LightPrepearingPass::init()
@@ -270,6 +312,7 @@ bool VT::LightPrepearingPass::init()
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
 
+	VT_CHECK_INITIALIZATION(initPointLightMaskClearingData(resManager));
 	VT_CHECK_INITIALIZATION(initPointLightCullingData(resManager));
 
 	VT_CHECK_INITIALIZATION(initDepthCalcData(resManager));
@@ -280,10 +323,16 @@ bool VT::LightPrepearingPass::init()
 
 void VT::LightPrepearingPass::release()
 {
+	m_pointLightMaskClearingShader = nullptr;
 	m_pointLightCullingShader = nullptr;
+
+	m_lightVolumeDepthCalcShader = nullptr;
 	m_lightVolumeBBCalcShader = nullptr;
 
-	m_cullingBindingLayout = nullptr;
+	m_pointLightMaskClearingBindingLayout = nullptr;
+	m_pointLightCullingBindingLayout = nullptr;
+
+	m_lightVolumeDepthCalcBindingLayout = nullptr;
 	m_lightVolumeBBCalcBindingLayout = nullptr;
 }
 
@@ -323,8 +372,10 @@ void VT::LightPrepearingPass::execute(const RenderPassContext& passContext, cons
 	computeTilesDepth(passContext.m_context, tilesDepthUAV, lightVolumeSRV,
 		depthSourceSRV, depthSource->getTextureCast<ITexture2D>());
 
-	computeTilesBoudingBoxes(passContext.m_context, tilesBbUAV,
+	computeTilesBoudingBoxes(passContext.m_context, tilesBbUAV, tilesDepthSRV,
 		passContext.m_renderingData.getCameraTransformBufferView(), lightVolumeSRV);
+
+	clearPointLightTileMasks(passContext.m_context, tilesUAV, lightVolumeSRV);
 
 	computePointLightTileMasks(passContext.m_context, pointLightCollection.size(),
 		pointLightsSRV, tilesUAV, tilesBbSRV,

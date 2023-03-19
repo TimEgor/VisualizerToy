@@ -8,6 +8,7 @@
 ConstantBuffer<UniqueBinding> cameraTransformsBinding : register(b0);
 ConstantBuffer<UniqueBinding> lightVolumeInfoBinding : register(b1);
 ConstantBuffer<UniqueBinding> lightVolumeBBBinding : register(b2);
+ConstantBuffer<UniqueBinding> lightVolumeDepthBinding : register(b3);
 
 float3 calcViewTilePosition(in float2 tilePosition, in float depth, in float4x4 invProj)
 {
@@ -29,21 +30,24 @@ void CS(uint3 dispatchThreadID : SV_DispatchThreadID)
 	}
 
 	ConstantBuffer<CameraTransforms> cameraTransforms = ResourceDescriptorHeap[cameraTransformsBinding.m_bindingIndex];
+	StructuredBuffer<TileDepth> depth = ResourceDescriptorHeap[lightVolumeDepthBinding.m_bindingIndex];
 	RWStructuredBuffer<AABB> boundingBoxes = ResourceDescriptorHeap[lightVolumeBBBinding.m_bindingIndex];
 	
 	const float2 normTileSize = float2(1.0f / lightVolume.m_tilesCountX, 1.0f / lightVolume.m_tilesCountY);
 	const uint tileIndex =  dispatchThreadID.y * lightVolume.m_tilesCountX + dispatchThreadID.x;
 
-	float3 tileBoundBoxCorners[8];
-	tileBoundBoxCorners[0] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y) * normTileSize, 0.0f, cameraTransforms.m_invProjTransformMatrix);
-	tileBoundBoxCorners[1] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y) * normTileSize, 0.0f, cameraTransforms.m_invProjTransformMatrix);
-	tileBoundBoxCorners[2] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y + 1) * normTileSize, 0.0f, cameraTransforms.m_invProjTransformMatrix);
-	tileBoundBoxCorners[3] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y + 1) * normTileSize, 0.0f, cameraTransforms.m_invProjTransformMatrix);
+	TileDepth tileDepth = depth[tileIndex];
 
-	tileBoundBoxCorners[4] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y) * normTileSize, 1.0f, cameraTransforms.m_invProjTransformMatrix);
-	tileBoundBoxCorners[5] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y) * normTileSize, 1.0f, cameraTransforms.m_invProjTransformMatrix);
-	tileBoundBoxCorners[6] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y + 1) * normTileSize, 1.0f, cameraTransforms.m_invProjTransformMatrix);
-	tileBoundBoxCorners[7] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y + 1) * normTileSize, 1.0f, cameraTransforms.m_invProjTransformMatrix);
+	float3 tileBoundBoxCorners[8];
+	tileBoundBoxCorners[0] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y) * normTileSize, tileDepth.m_min, cameraTransforms.m_invProjTransformMatrix);
+	tileBoundBoxCorners[1] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y) * normTileSize, tileDepth.m_min, cameraTransforms.m_invProjTransformMatrix);
+	tileBoundBoxCorners[2] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y + 1) * normTileSize, tileDepth.m_min, cameraTransforms.m_invProjTransformMatrix);
+	tileBoundBoxCorners[3] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y + 1) * normTileSize, tileDepth.m_min, cameraTransforms.m_invProjTransformMatrix);
+
+	tileBoundBoxCorners[4] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y) * normTileSize, tileDepth.m_max, cameraTransforms.m_invProjTransformMatrix);
+	tileBoundBoxCorners[5] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y) * normTileSize, tileDepth.m_max, cameraTransforms.m_invProjTransformMatrix);
+	tileBoundBoxCorners[6] = calcViewTilePosition(float2(dispatchThreadID.x, dispatchThreadID.y + 1) * normTileSize, tileDepth.m_max, cameraTransforms.m_invProjTransformMatrix);
+	tileBoundBoxCorners[7] = calcViewTilePosition(float2(dispatchThreadID.x + 1, dispatchThreadID.y + 1) * normTileSize, tileDepth.m_max, cameraTransforms.m_invProjTransformMatrix);
 
 	float3 minCorner = FLT_MAX;
 	float3 maxCorner = -FLT_MAX;
