@@ -7,5 +7,5 @@ namespace VT
 
 namespace VT_Launcher
 {
-	void getGameModulePath(VT::FileName& modulePath);
+	void getGamePath(VT::FileName& modulePath);
 }

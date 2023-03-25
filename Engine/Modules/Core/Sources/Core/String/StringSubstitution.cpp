@@ -1,8 +1,7 @@
 #include "StringSubstitution.h"
-
 #include "Core/HashFunctions/CRC32.h"
 
-size_t VT::StringSubstitution::processSubstring(size_t beginPos, size_t endPos)
+size_t VT::StringSubstitutionProcessor::processSubstring(size_t beginPos, size_t endPos)
 {
 	const std::string_view substring(&m_resultString[beginPos], endPos - beginPos);
 	size_t entrancePos = m_resultString.npos;
@@ -69,7 +68,7 @@ size_t VT::StringSubstitution::processSubstring(size_t beginPos, size_t endPos)
 	return endLimPos - 1;
 }
 
-void VT::StringSubstitution::replaceSubstring(size_t beginPos, size_t endPos)
+void VT::StringSubstitutionProcessor::replaceSubstring(size_t beginPos, size_t endPos)
 {
 	if (beginPos >= endPos)
 	{
@@ -89,7 +88,7 @@ void VT::StringSubstitution::replaceSubstring(size_t beginPos, size_t endPos)
 	m_resultString.replace(beginPos, endPos - beginPos + 1, findIter->second);
 }
 
-VT::StringSubstitution::ResultStringType VT::StringSubstitution::process()
+VT::StringSubstitutionProcessor::ResultStringType VT::StringSubstitutionProcessor::process()
 {
 	if (m_resultString.empty() || m_replacementMap.empty())
 	{

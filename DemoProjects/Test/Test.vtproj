@@ -1,0 +1,5 @@
+<Project>
+    <Modules>
+        <Module>${VT_PROJECT_PATH}/Out/${VT_PLATFORM}/VT_DemoTest_${VT_CONFIG}_${VT_PLATFORM}${VT_DYNAMIC_LIB_EXT}</Module>
+    </Modules>
+</Project>

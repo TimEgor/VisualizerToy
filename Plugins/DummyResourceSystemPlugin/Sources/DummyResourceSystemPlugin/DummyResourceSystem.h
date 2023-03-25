@@ -4,12 +4,15 @@
 #include "ManagedResourceDependencyState.h"
 #include "ManagedResourceSystemConverterArgs.h"
 
+#include "NativeFileSystem/NativeFileSystem.h"
+
 #include "Multithreading/Mutex.h"
 
 #include "ObjectPool/ThreadSafeIndexObjectPool.h"
 #include "Containers/StaticVector.h"
 
 #include <unordered_map>
+
 
 #define VT_RESOURCE_SYSTEM_DUMMY_TYPE
 
@@ -50,6 +53,8 @@ namespace VT_DUMMY_RS
 		VT::Mutex m_resourceRequestMutex;
 		VT::Mutex m_resoureEventMutex;
 
+		VT::NativeFileSystem m_baseFileSystem;
+
 		ResourceLoader* m_loader = nullptr;
 
 		ManagedResourceDataID getResourceID(const VT::FileName& name) const;
@@ -82,6 +87,8 @@ namespace VT_DUMMY_RS
 			VT::ResourceSystemConverterArgsReference args = nullptr) override;
 
 		virtual VT::ResourceDependencyStateReference createResourceDependencyState(const VT::ResourceDependencyState::Callback& callback) override;
+
+		virtual VT::IFileSystem* getBaseFileSystem() const override { return const_cast<VT::NativeFileSystem*>(&m_baseFileSystem); }
 
 		VT_RESOURCE_SYSTEM_TYPE(VT_RESOURCE_SYSTEM_DUMMY_TYPE)
 	};

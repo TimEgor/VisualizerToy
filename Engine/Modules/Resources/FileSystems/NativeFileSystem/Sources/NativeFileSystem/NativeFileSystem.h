@@ -23,7 +23,8 @@ namespace VT
 		NativeFileSystem() = default;
 		virtual ~NativeFileSystem() {}
 
-		virtual bool init(const FileName& path = "") override;
+		virtual bool init() override;
+		virtual bool init(const FileName& path) override;
 		virtual void release() override;
 
 		virtual bool getResourceSize(const FileName& resourceName, size_t& resourceSize) const override;

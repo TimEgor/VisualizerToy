@@ -13,4 +13,5 @@ set(MODULES_SET
 	ResourceModule			Resources
 	Scene_COMMON			Scene/Common
 	WindowSystem_COMMON		WindowSystem/Common
+	UtilsModule_COMMON		Utils
 )

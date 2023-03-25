@@ -6,7 +6,6 @@
 #include "ResourceConverter/IResourceConverter.h"
 #include "ResourceSystemConverterArgs.h"
 
-#include "Core/HashFunctions/CRC32.h"
 #include "Core/FileName/FileName.h"
 
 #include <functional>
@@ -15,9 +14,10 @@
 
 namespace VT
 {
-	using ResourceSystemType = uint32_t;
+	using ResourceSystemType = HashTyped::Type;
+	using ResourceSystemTypeHash = uint32_t;
 
-	class IResourceSystem
+	class IResourceSystem : public HashTyped
 	{
 	public:
 		using LoadingResourceCallback = std::function<void(ResourceDataReference)>;
@@ -66,10 +66,10 @@ namespace VT
 			return argsHolderPtr;
 		}
 
+		virtual IFileSystem* getBaseFileSystem() const = 0;
+
 		virtual ResourceSystemType getType() const = 0;
 	};
 }
 
-#define VT_RESOURCE_SYSTEM_TYPE(RES_SYSTEM_TYPE)																	\
-	static inline constexpr VT::ResourceSystemType getResourceSystemType() { return VT::crc32(#RES_SYSTEM_TYPE); }	\
-	virtual VT::ResourceSystemType getType() const override { return getResourceSystemType(); }
+#define VT_RESOURCE_SYSTEM_TYPE(RESOURCE_SYSTEM_TYPE) VT_HASH_TYPE(#RESOURCE_SYSTEM_TYPE, VT::ResourceSystemType, ResourceSystem)

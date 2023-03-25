@@ -11,3 +11,6 @@
 [submodule "Libs/DirectX-Headers"]
 	path = Libs/DirectX-Headers
 	url = https://github.com/microsoft/DirectX-Headers.git
+[submodule "Libs/pugixml"]
+	path = Libs/pugixml
+	url = https://github.com/zeux/pugixml.git

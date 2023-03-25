@@ -82,6 +82,7 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 
 	m_engineEnvironment->m_graphicDevice->submitContexts();
 	m_engineEnvironment->m_graphicDevice->waitContexts();
+	m_engineEnvironment->m_graphicDevice->resetContexts();
 
 	return true;
 }

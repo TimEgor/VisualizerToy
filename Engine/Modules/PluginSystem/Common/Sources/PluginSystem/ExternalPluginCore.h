@@ -11,7 +11,7 @@
 #define VT_PLUGIN_RELEASE_FUNC VTPluginRelease
 
 #define VT_PLUGIN_CREATE(PLUGIN_TYPE)																												\
-extern "C" VT_DLL_EXPORT VT::PluginBase* VT_PLUGIN_CREATE_FUNC(VT::PluginID pluginID, VT_PLATFORM_HANDLE_MODULE nativeHandle, VT::IEngine* engine)	\
+extern "C" VT_DYNAMIC_LIB_EXPORT VT::PluginBase* VT_PLUGIN_CREATE_FUNC(VT::PluginID pluginID, VT_PLATFORM_HANDLE_MODULE nativeHandle, VT::IEngine* engine)	\
 {																																					\
 	static_assert(std::is_base_of<VT::PluginBase, PLUGIN_TYPE>::value);																				\
 																																					\
@@ -20,7 +20,7 @@ extern "C" VT_DLL_EXPORT VT::PluginBase* VT_PLUGIN_CREATE_FUNC(VT::PluginID plug
 }
 
 #define VT_PLUGIN_RELEASE(PLUGIN_TYPE)																												\
-extern "C" VT_DLL_EXPORT void VT_PLUGIN_RELEASE_FUNC(PLUGIN_TYPE* plugin)																			\
+extern "C" VT_DYNAMIC_LIB_EXPORT void VT_PLUGIN_RELEASE_FUNC(PLUGIN_TYPE* plugin)																			\
 {																																					\
 	static_assert(std::is_base_of<VT::PluginBase, PLUGIN_TYPE>::value);																				\
 	delete plugin;																																	\

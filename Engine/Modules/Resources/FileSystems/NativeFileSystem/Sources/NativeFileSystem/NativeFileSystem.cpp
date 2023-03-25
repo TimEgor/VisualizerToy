@@ -15,7 +15,10 @@ namespace VT
 		prepareTargetName(resourceName, targetResourceName);
 
 		std::fstream fileStream(targetResourceName.c_str(), static_cast<std::ios_base::openmode>(mode));
-		assert(fileStream.is_open());
+		if (!fileStream.is_open())
+		{
+			return false;
+		}
 
 		fileStream.read(reinterpret_cast<char*>(data), size);
 
@@ -45,6 +48,11 @@ namespace VT
 	bool NativeFileSystem::existInternal(const FileName& path) const
 	{
 		return std::filesystem::exists(path.c_str());
+	}
+
+	bool NativeFileSystem::init()
+	{
+		return true;
 	}
 
 	bool NativeFileSystem::init(const FileName& path)
@@ -79,7 +87,7 @@ namespace VT
 
 	void* NativeFileSystem::readResourceData(const FileName& resourceName, size_t& resourceSize) const
 	{
-		if (!getResourceSize(resourceName, resourceSize) && resourceSize > 0)
+		if (!getResourceSize(resourceName, resourceSize) || resourceSize == 0)
 		{
 			return nullptr;
 		}
@@ -119,7 +127,10 @@ namespace VT
 
 		std::fstream fileStream(targetResourceName.c_str(),
 			std::ios_base::out | ((flag == WriteResourceFileFlag::APPEND ? std::ios_base::app : std::ios_base::trunc) | std::ios_base::binary));
-		assert(fileStream.is_open());
+		if (!fileStream.is_open())
+		{
+			return false;
+		}
 
 		fileStream.write(reinterpret_cast<char*>(data), resourceSize);
 

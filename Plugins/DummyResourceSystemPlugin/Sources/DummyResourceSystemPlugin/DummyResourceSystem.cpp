@@ -17,6 +17,8 @@ namespace VT_DUMMY_RS
 
 		VT_CHECK_INITIALIZATION(m_dependencyStates.init());
 
+		VT_CHECK_INITIALIZATION(m_baseFileSystem.init());
+
 		return true;
 	}
 

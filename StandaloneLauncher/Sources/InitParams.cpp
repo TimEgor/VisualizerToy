@@ -7,41 +7,41 @@
 VT::FileName VT_Launcher::preparePluginName(const VT::FileName& pluginName)
 {
 	return pluginName + '_' + VT::FileName(VT_CONFIG_NAME) + '_'
-		+ VT::FileName(VT_PLATFORM_NAME) + VT::FileName(VT_DYNAMIC_LIB_EXT_NAME);
+		+ VT::FileName(VT_PLATFORM_NAME) + VT::FileName(VT_DYNAMIC_LIB_FULL_EXT_NAME);
 }
 
-void VT_Launcher::preparePluginPath(const VT::FileName& pluginName, VT::FileName& outPath)
+VT::FileName VT_Launcher::preparePluginPath(const VT::FileName& pluginName)
 {
-	outPath = VT::FileName(VT_ROOT_PATH) + "Plugins/Out/" + preparePluginName(pluginName);
+	return VT::FileName(VT_ROOT_PATH) + "Plugins/Out/" + preparePluginName(pluginName);
 }
 
-void VT_Launcher::prepareConverterPath(const VT::FileName& pluginName, const VT::FileName& subdir, VT::FileName& outPath)
+VT::FileName VT_Launcher::prepareConverterPath(const VT::FileName& pluginName, const VT::FileName& subdir)
 {
-	outPath = VT::FileName(VT_ROOT_PATH) + "AssetConverters/Out/" + subdir + '/' + preparePluginName(pluginName);
+	return VT::FileName(VT_ROOT_PATH) + "AssetConverters/Out/" + subdir + '/' + preparePluginName(pluginName);
 }
 
-void VT_Launcher::getPlatformPluginPath(VT::FileName& outPath)
+VT::FileName VT_Launcher::getPlatformPluginPath()
 {
 	VT::FileName pluginName;
-#if defined(WIN32) || defined(WIN64)
+
+#if defined(WIN32)
 	pluginName = "Win32PlatformPlugin";
 #endif
-	assert(!pluginName.empty());
 
-	preparePluginPath(pluginName, outPath);
+	return preparePluginPath(pluginName);
 }
 
-void VT_Launcher::getGraphicsPluginPath(VT::FileName& outPath)
+VT::FileName VT_Launcher::getGraphicsPluginPath()
 {
-	preparePluginPath("D3D12GraphicsPlugin", outPath);
+	return preparePluginPath("D3D12GraphicsPlugin");
 }
 
-void VT_Launcher::getResourceSystemPluginPath(VT::FileName& outPath)
+VT::FileName VT_Launcher::getResourceSystemPluginPath()
 {
-	preparePluginPath("DummyResourceSystemPlugin", outPath);
+	return preparePluginPath("DummyResourceSystemPlugin");
 }
 
-void VT_Launcher::getResourceSystemPath(VT::FileName& outPath)
+VT::FileName VT_Launcher::getResourceSystemPath()
 {
-	outPath = VT::FileName(VT_ROOT_PATH) + "DemoProjects/Assets";
+	return VT::FileName(VT_ROOT_PATH) + "DemoProjects/Assets";
 }

@@ -36,6 +36,13 @@ namespace VT
 		FileName& operator+=(const std::string& str);
 		FileName& operator+=(const FileName& name);
 
+		bool operator==(const ResourceNameCharType* name) const;
+		bool operator==(const std::string& str) const;
+		bool operator==(const FileName& name) const;
+		bool operator!=(const ResourceNameCharType* name) const;
+		bool operator!=(const std::string& str) const;
+		bool operator!=(const FileName& name) const;
+
 		operator bool() const { return !empty(); }
 
 		const ResourceNameCharType& operator[](size_t index) const;

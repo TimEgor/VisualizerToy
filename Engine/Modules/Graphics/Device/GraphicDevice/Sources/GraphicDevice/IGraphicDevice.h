@@ -45,7 +45,6 @@ namespace VT
 	};
 
 	using GraphicDeviceType = HashTyped::Type;
-	using GraphicDeviceTypeHash = uint32_t;
 
 	class IGraphicDevice : public HashTyped
 	{

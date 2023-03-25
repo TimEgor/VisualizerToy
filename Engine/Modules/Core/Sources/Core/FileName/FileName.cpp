@@ -105,6 +105,36 @@ namespace VT
 		return operator+=(name.m_name);
 	}
 
+	bool FileName::operator==(const ResourceNameCharType* name) const
+	{
+		return m_name == name;
+	}
+
+	bool FileName::operator==(const std::string& str) const
+	{
+		return m_name == str;
+	}
+
+	bool FileName::operator==(const FileName& name) const
+	{
+		return m_name == name.m_name;
+	}
+
+	bool FileName::operator!=(const ResourceNameCharType* name) const
+	{
+		return m_name != name;
+	}
+
+	bool FileName::operator!=(const std::string& str) const
+	{
+		return m_name != str;
+	}
+
+	bool FileName::operator!=(const FileName& name) const
+	{
+		return m_name != name.m_name;
+	}
+
 	const FileName::ResourceNameCharType& FileName::operator[](size_t index) const
 	{
 		return m_name[index];

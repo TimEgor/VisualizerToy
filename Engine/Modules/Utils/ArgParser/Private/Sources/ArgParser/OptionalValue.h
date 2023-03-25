@@ -38,7 +38,7 @@ namespace VT
 			}
 			else
 			{
-				parseValue(valStr, m_value);
+				ArgParserInterface::parseValue(valStr, m_value);
 			}
 		}
 	};

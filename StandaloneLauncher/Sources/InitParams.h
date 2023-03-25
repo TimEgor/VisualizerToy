@@ -7,12 +7,12 @@
 namespace VT_Launcher
 {
 	VT::FileName preparePluginName(const VT::FileName& pluginName);
-	void preparePluginPath(const VT::FileName& pluginName, VT::FileName& outPath);
-	void prepareConverterPath(const VT::FileName& pluginName, const VT::FileName& subdir, VT::FileName& outPath);
+	VT::FileName preparePluginPath(const VT::FileName& pluginName);
+	VT::FileName prepareConverterPath(const VT::FileName& pluginName, const VT::FileName& subdir);
 
-	void getPlatformPluginPath(VT::FileName& outPath);
-	void getGraphicsPluginPath(VT::FileName& outPath);
-	void getResourceSystemPluginPath(VT::FileName& outPath);
+	VT::FileName getPlatformPluginPath();
+	VT::FileName getGraphicsPluginPath();
+	VT::FileName getResourceSystemPluginPath();
 
-	void getResourceSystemPath(VT::FileName& outPath);
+	VT::FileName getResourceSystemPath();
 }

@@ -27,6 +27,18 @@ VT::FileName VT::FileNameUtils::getFileDirPath(const FileName & path)
 	return tmpPath.parent_path().string();
 }
 
+void VT::FileNameUtils::getFileExtension(const FileName& path, FileName& resultExtension)
+{
+	std::filesystem::path tmpPath(path.c_str());
+	resultExtension = tmpPath.extension().string();
+}
+
+VT::FileName VT::FileNameUtils::getFileExtension(const FileName& path)
+{
+	std::filesystem::path tmpPath(path.c_str());
+	return tmpPath.extension().string();
+}
+
 void VT::FileNameUtils::removeExtension(FileName& name)
 {
 	std::filesystem::path tmpPath(name.c_str());

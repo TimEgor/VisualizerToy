@@ -19,7 +19,7 @@
 
 #include "MeshSystem/MeshSystem.h"
 
-#include "GameSystem/IGameSystem.h"
+#include "ProjectLoader/ProjectLoader.h"
 #include "LevelSystem/ILevelSystem.h"
 
 #include "ArgParser/Parser.h"
@@ -27,77 +27,94 @@
 #include <vector>
 
 
+
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	VT::FileName gameModulePath;
-
-	VT::ArgParser mainArgParser;
-	mainArgParser.addOptionValue<VT::FileName>("--module", gameModulePath);
-	mainArgParser.parse(__argc, __argv);
-
 	VT::EngineInstance& engineInst = VT::EngineInstance::getInstance();
-
 	VT::IEngine* engine = new VT::Engine();
-	VT::WindowGraphicPresenter* graphicPresenter = new VT::WindowGraphicPresenter();
 
 	{
-		VT::EngineInitParam initParams;
-		VT_Launcher::getPlatformPluginPath(initParams.m_platformPluginPath);
-		VT_Launcher::getGraphicsPluginPath(initParams.m_graphicDevicePluginPath);
-		VT_Launcher::getResourceSystemPluginPath(initParams.m_resourceSystenPluginPath);
+		VT::FileName gameProjectPath;
 
-		VT_Launcher::getResourceSystemPath(initParams.m_resourceSystemPath);
+		{
+			VT::FileName gameModulePath;
 
-		std::vector<VT::FileName> converters;
+			VT::ArgParser mainArgParser;
+			mainArgParser.addOptionValue<VT::FileName>("--module", gameModulePath);
+			mainArgParser.addOptionValue<VT::FileName>("--project", gameProjectPath);
+			mainArgParser.parse(__argc, __argv);
 
-		VT::FileName& shaderConverter = converters.emplace_back();
-		VT_Launcher::prepareConverterPath("ShaderConverterHLSL",
-			"HLSL/" + VT::FileName(VT_PLATFORM_NAME), shaderConverter);
+			if (gameProjectPath && gameModulePath)
+			{
+				return VT_LAUNCHER_GAME_ARGS_ERROR;
+			}
 
-		VT::FileName& modelConverter = converters.emplace_back();
-		VT_Launcher::prepareConverterPath("ModelConverterFBX",
-			"", modelConverter);
-
-		initParams.m_converterPaths = converters.data();
-		initParams.m_converterPathsCount = static_cast<uint32_t>(converters.size());
+			if (gameProjectPath.empty())
+			{
+				gameProjectPath = gameModulePath;
+			}
+		}
 
 		engineInst.setEngine(engine);
-		if (!engineInst->init(initParams))
+
 		{
-			return VT_LAUNCHER_ENGINE_INIT_ERROR;
+			VT::EngineInitParam initParams;
+			initParams.m_platformPluginPath = VT_Launcher::getPlatformPluginPath();
+			initParams.m_graphicDevicePluginPath = VT_Launcher::getGraphicsPluginPath();
+			initParams.m_resourceSystenPluginPath = VT_Launcher::getResourceSystemPluginPath();
+
+			initParams.m_resourceSystemPath = VT_Launcher::getResourceSystemPath();
+
+			std::vector<VT::FileName> converters;
+
+			converters.emplace_back(VT_Launcher::prepareConverterPath("ShaderConverterHLSL",
+				"HLSL/" + VT::FileName(VT_PLATFORM_NAME)));
+			converters.emplace_back(VT_Launcher::prepareConverterPath("ModelConverterFBX", ""));
+
+			initParams.m_converterPaths = converters.data();
+			initParams.m_converterPathsCount = static_cast<uint32_t>(converters.size());
+
+			if (!engineInst->init(initParams))
+			{
+				return VT_LAUNCHER_ENGINE_INIT_ERROR;
+			}
+
+		}
+
+		{
+			if (gameProjectPath.empty())
+			{
+				VT_Launcher::getGamePath(gameProjectPath);
+			}
+
+			if (gameProjectPath.empty() || !VT::ProjectLoader::load(gameProjectPath))
+			{
+				return VT_LAUNCHER_GAME_INIT_ERROR;
+			}
 		}
 	}
 
-	const VT::WindowSize defaultWindowSize(500, 500);
+	VT::EngineEnvironment* engineEnvironment = engine->getEnvironment();
+	VT::WindowGraphicPresenter* graphicPresenter = new VT::WindowGraphicPresenter();
 
-	VT::SwapChainDesc swapChainDesc{};
-	swapChainDesc.m_format = VT::Format::R8G8B8A8_UNORM;
-	swapChainDesc.m_imageCount = 2;
-	if (!graphicPresenter->init("VT LAUNCHER", defaultWindowSize, swapChainDesc))
 	{
-		return VT_LAUNCHER_WINDOW_PRESENTER_INIT_ERROR;
+		const VT::WindowSize defaultWindowSize(500, 500);
+
+		VT::SwapChainDesc swapChainDesc{};
+		swapChainDesc.m_format = VT::Format::R8G8B8A8_UNORM;
+		swapChainDesc.m_imageCount = 2;
+		if (!graphicPresenter->init("VT LAUNCHER", defaultWindowSize, swapChainDesc))
+		{
+			return VT_LAUNCHER_WINDOW_PRESENTER_INIT_ERROR;
+		}
 	}
-
-	if (gameModulePath.empty())
-	{
-		VT_Launcher::getGameModulePath(gameModulePath);
-	}
-
-	VT::EngineEnvironment* engineEnvironment = engineInst->getEnvironment();
-
-	VT::IGraphicDevice* graphicDevice = engineEnvironment->m_graphicDevice;
-	graphicDevice->resetContexts();
-
-	if (gameModulePath.empty() || !engineEnvironment->m_gameSystem->loadGameModule(gameModulePath))
-	{
-		return VT_LAUNCHER_INVALID_GAME_MODULE;
-	}
-
-	graphicDevice->submitContexts();
 
 	{
 		VT::IRenderSystem* renderSystem = engineEnvironment->m_renderSystem;
 		VT::ILevelSystem* levelSystem = engineEnvironment->m_levelSystem;
+		VT::IGraphicDevice* graphicDevice = engineEnvironment->m_graphicDevice;
+
+		graphicDevice->submitContexts();
 
 		engine->startTimer();
 

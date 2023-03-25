@@ -5,7 +5,7 @@
 
 namespace VT
 {
-	class StringSubstitution final
+	class StringSubstitutionProcessor final
 	{
 		using ResultStringType = std::string;
 
@@ -25,9 +25,15 @@ namespace VT
 		void replaceSubstring(size_t beginPos, size_t endPos);
 
 	public:
-		StringSubstitution(const char* baseStr, const ReplacementMap& replacementMap)
+		StringSubstitutionProcessor(const char* baseStr, const ReplacementMap& replacementMap)
 			: m_replacementMap(replacementMap), m_resultString(baseStr) {}
 
 		ResultStringType process();
 	};
+
+	inline std::string stringSubstitute(const char* baseStr, const StringSubstitutionProcessor::ReplacementMap& replacementMap)
+	{
+		StringSubstitutionProcessor processor(baseStr, replacementMap);
+		return processor.process();
+	}
 }
