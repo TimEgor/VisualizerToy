@@ -536,8 +536,8 @@ VT::ISwapChain* VT_D3D12::D3D12GraphicDevice::createSwapChain(const VT::SwapChai
 	DXGI_SWAP_CHAIN_DESC1 d3d12SwapChainDesc{};
 	d3d12SwapChainDesc.BufferCount = desc.m_imageCount;
 	d3d12SwapChainDesc.Format = convertFormatVTtoD3D12(desc.m_format);
-	d3d12SwapChainDesc.Width = windowSize.m_width;
-	d3d12SwapChainDesc.Height = windowSize.m_height;
+	d3d12SwapChainDesc.Width = windowSize.m_x;
+	d3d12SwapChainDesc.Height = windowSize.m_y;
 	d3d12SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	d3d12SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	d3d12SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -557,8 +557,8 @@ VT::ISwapChain* VT_D3D12::D3D12GraphicDevice::createSwapChain(const VT::SwapChai
 
 	VT::Texture2DDesc textureDesc{};
 	textureDesc.m_format = desc.m_format;
-	textureDesc.m_width = windowSize.m_width;
-	textureDesc.m_height = windowSize.m_height;
+	textureDesc.m_width = windowSize.m_x;
+	textureDesc.m_height = windowSize.m_y;
 
 	for (size_t i = 0; i < desc.m_imageCount; ++i)
 	{

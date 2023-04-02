@@ -1,30 +1,12 @@
 #pragma once
 
-#include "Core/HashFunctions/CRC32.h"
+#include "Core/TypeHashMacros.h"
 #include "Math/Vector.h"
 
 namespace VT
 {
-	struct WindowSize final
-	{
-		using ValueType = uint16_t;
-		using VectorValueType = Vector2Base<ValueType>;
-
-		union
-		{
-			VectorValueType m_vector;
-
-			struct
-			{
-				ValueType m_width;
-				ValueType m_height;
-			};
-		};
-
-		WindowSize() = default;
-		WindowSize(const VectorValueType& vector) : m_vector(vector) {}
-		WindowSize(ValueType width, ValueType height) : m_width(width), m_height(height) {}
-	};
+	using WindowSize = Vector2UInt16;
+	constexpr WindowSize DefaultWindowSize = Vector2UInt16Zero;
 
 	struct WindowArea final
 	{
@@ -44,15 +26,17 @@ namespace VT
 			};
 		};
 
-		WindowArea() = default;
-		WindowArea(const VectorValueType& vector) : m_vector(vector) {}
-		WindowArea(ValueType top, ValueType bottom, ValueType right, ValueType left)
+		constexpr WindowArea() = default;
+		constexpr WindowArea(const VectorValueType& vector) : m_vector(vector) {}
+		constexpr WindowArea(ValueType top, ValueType bottom, ValueType right, ValueType left)
 			: m_top(top), m_bottom(bottom), m_right(right), m_left(left) {}
 	};
 
-	using WindowType = uint32_t;
+	constexpr WindowArea DefaultWindowArea = WindowArea{ 0, 0, 0, 0 };
 
-	class IWindow
+	using WindowType = HashTyped::Type;
+
+	class IWindow : public HashTyped
 	{
 	public:
 		IWindow() = default;
@@ -75,6 +59,4 @@ namespace VT
 	};
 }
 
-#define VT_WINDOW_TYPE(WINDOW_TYPE)																\
-	static inline constexpr VT::WindowType getWindowType() { return VT::crc32(#WINDOW_TYPE); }	\
-	virtual VT::WindowType getType() const override { return getWindowType(); }
+#define VT_WINDOW_TYPE(WINDOW_TYPE) VT_HASH_TYPE(#WINDOW_TYPE, VT::WindowType, Window)

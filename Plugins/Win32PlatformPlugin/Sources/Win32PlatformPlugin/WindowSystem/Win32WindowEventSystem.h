@@ -12,8 +12,12 @@ namespace VT_WIN32
 
 	public:
 		Win32WindowEventSystem() = default;
+		~Win32WindowEventSystem() { release(); }
 
 		virtual void updateWindowEvents() override;
+
+		virtual bool init() override;
+		virtual void release() override;
 
 		static WNDPROC getWndProcPtr() { return wndProc; }
 	};

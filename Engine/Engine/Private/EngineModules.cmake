@@ -1,7 +1,9 @@
 set(MODULES_SET
 	Containers				Containers
 	Core					Core
+	DebuggingModule			Debugging
 	EntityComponentSystem	EntityComponentSystem
+	EventSystem				EventSystem/Private
 	GameSystem				GameSystem/Private
 	GraphicsModule			Graphics
 	LevelSystem				LevelSystem/Private

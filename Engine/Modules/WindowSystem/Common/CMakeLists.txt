@@ -11,4 +11,5 @@ target_link_libraries(WindowSystem_COMMON
 	INTERFACE
 		Math
 		ObjectPool
+		EventSystem_COMMON
 )

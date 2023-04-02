@@ -5,6 +5,14 @@
 
 #include <cassert>
 
+void VT::PluginSystem::unloadPluginInternal(IPlugin* plugin)
+{
+	assert(m_loader);
+
+	plugin->onUnloaded();
+	m_loader->unload(plugin);
+}
+
 bool VT::PluginSystem::init()
 {
 	m_loader = createPluginLoader();
@@ -15,16 +23,30 @@ bool VT::PluginSystem::init()
 
 void VT::PluginSystem::release()
 {
+	for (auto pluginIDIter = m_pluginOrder.rbegin(); pluginIDIter != m_pluginOrder.rend(); ++pluginIDIter)
+	{
+		unloadPluginInternal(m_plugins[*pluginIDIter]);
+	}
+
+	m_plugins = PluginContainer();
+	m_pluginOrder = PluginOrderContainer();
+
 	VT_SAFE_DESTROY(m_loader);
 }
 
 VT::IPlugin* VT::PluginSystem::loadPlugin(const FileName& name)
 {
+	PluginID pluginID = getPluginID(name);
+
+	assert(!getPlugin(pluginID));
 	assert(m_loader);
 
-	IPlugin* newPlugin = m_loader->load(name, getPluginID(name));
+	IPlugin* newPlugin = m_loader->load(name, pluginID);
 	if (newPlugin)
 	{
+		m_plugins.insert(std::make_pair(pluginID, newPlugin));
+		m_pluginOrder.insert(pluginID);
+
 		newPlugin->onLoaded();
 	}
 
@@ -38,13 +60,13 @@ void VT::PluginSystem::unloadPlugin(const FileName& name)
 
 void VT::PluginSystem::unloadPlugin(PluginID id)
 {
-	assert(m_loader);
-
 	IPlugin* plugin = getPlugin(id);
 	assert(plugin);
 
-	plugin->onUnloaded();
-	m_loader->unload(plugin);
+	unloadPluginInternal(plugin);
+
+	m_plugins.erase(id);
+	m_pluginOrder.erase(id);
 }
 
 VT::IPlugin* VT::PluginSystem::getPlugin(const FileName& name)

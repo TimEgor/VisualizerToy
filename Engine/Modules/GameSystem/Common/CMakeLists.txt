@@ -9,5 +9,5 @@ vt_add_common_module_target(GameSystem INTERFACE "VT_Engine/GameSystem")
 
 target_link_libraries(GameSystem_COMMON
 	INTERFACE
-        PluginSystem_COMMON
+		PluginSystem_COMMON
 )

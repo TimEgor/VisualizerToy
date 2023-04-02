@@ -9,6 +9,8 @@ namespace VT
 	public:
 		using Type = uint32_t;
 
+		inline static constexpr Type InvalidType = 0;
+
 	public:
 		HashTyped() = default;
 		virtual ~HashTyped() {}

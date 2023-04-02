@@ -7,9 +7,9 @@ namespace VT
 	class WindowBase : public IWindow
 	{
 	protected:
-		WindowSize m_windowSize = {0, 0};
-		WindowSize m_clientAreaSize = {0, 0};
-		WindowArea m_cutoutsArea = {0, 0, 0, 0};
+		WindowSize m_windowSize = DefaultWindowSize;
+		WindowSize m_clientAreaSize = DefaultWindowSize;
+		WindowArea m_cutoutsArea = DefaultWindowArea;
 
 		bool m_isShown = false;
 

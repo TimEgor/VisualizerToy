@@ -2,10 +2,11 @@
 
 namespace VT
 {
-	class IMeshSystem;
 	class IPlatform;
 	class IPluginSystem;
 	class IWindowSystem;
+
+	class IEventSystem;
 
 	class IGraphicPlatform;
 	class IGraphicDevice;
@@ -13,6 +14,7 @@ namespace VT
 
 	class IRenderSystem;
 	class IMaterialSystem;
+	class IMeshSystem;
 
 	class IResourceSystem;
 
@@ -24,6 +26,8 @@ namespace VT
 		IPlatform* m_platform = nullptr;
 		IPluginSystem* m_pluginSystem = nullptr;
 		IWindowSystem* m_windowSystem = nullptr;
+
+		IEventSystem* m_eventSystem = nullptr;
 
 		IGraphicPlatform* m_graphicPlatform = nullptr;
 		IGraphicDevice* m_graphicDevice = nullptr;

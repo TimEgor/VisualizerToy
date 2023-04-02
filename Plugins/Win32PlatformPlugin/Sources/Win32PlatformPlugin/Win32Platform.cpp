@@ -28,9 +28,31 @@ bool VT_WIN32::Win32Platform::initWindowClass()
 	return true;
 }
 
+void VT_WIN32::Win32Platform::collectMonitorInfo()
+{
+	EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hMonitor, HDC hdc, LPRECT rect, LPARAM param)
+		{
+			MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+			if (GetMonitorInfo(hMonitor, &monitorInfo))
+			{
+				VT::MonitorInfo& info = reinterpret_cast<MonitorInfoCollection*>(param)->emplace_back();
+
+				info.m_resolution.m_x = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+				info.m_resolution.m_y = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+
+				info.m_basePos.m_x = monitorInfo.rcMonitor.left;
+				info.m_basePos.m_y = monitorInfo.rcMonitor.top;
+			}
+
+			return TRUE;
+		}, reinterpret_cast<LPARAM>(&m_monitorInfos));
+}
+
 bool VT_WIN32::Win32Platform::init()
 {
 	VT_CHECK_INITIALIZATION(initWindowClass());
+
+	collectMonitorInfo();
 
 	return true;
 }

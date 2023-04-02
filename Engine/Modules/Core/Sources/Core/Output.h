@@ -5,18 +5,18 @@
 namespace VT
 {
 #ifdef VT_WIN_PLATFORM
-	void outputEnvConsole(const char* msg)
+	inline void outputEnvConsole(const char* msg)
 	{
 		OutputDebugStringA(msg);
 	}
 
-	void outputEnvWindow(const char* msg, const char* title)
+	inline void outputEnvWindow(const char* msg, const char* title)
 	{
 		MessageBoxA(NULL, msg, title, MB_OK);
 	}
 #else
-	void outputEnvConsole(const char* msg) {}
-	void outputEnvWindow(const char* msg, const char* title) {}
+	inline void outputEnvConsole(const char* msg) {}
+	inline void outputEnvWindow(const char* msg, const char* title) {}
 #endif
 }
 

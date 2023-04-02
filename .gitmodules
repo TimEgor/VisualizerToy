@@ -14,3 +14,6 @@
 [submodule "Libs/pugixml"]
 	path = Libs/pugixml
 	url = https://github.com/zeux/pugixml.git
+[submodule "Libs/imgui"]
+	path = Libs/imgui
+	url = https://github.com/ocornut/imgui.git

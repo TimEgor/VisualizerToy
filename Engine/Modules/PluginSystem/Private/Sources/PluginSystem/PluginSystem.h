@@ -1,9 +1,9 @@
 #pragma once
 
 #include "PluginSystem/IPluginSystem.h"
-#include "Core/Platform.h"
 
 #include <unordered_map>
+#include <set>
 
 namespace VT
 {
@@ -12,10 +12,15 @@ namespace VT
 	class PluginSystem final : public IPluginSystem
 	{
 		using PluginContainer = std::unordered_map<PluginID, IPlugin*>;
+		using PluginOrderContainer = std::set<PluginID>;
 
 	private:
 		PluginContainer m_plugins;
+		PluginOrderContainer m_pluginOrder;
+
 		IPluginLoader* m_loader = nullptr;
+
+		void unloadPluginInternal(IPlugin* plugin);
 
 	public:
 		PluginSystem() = default;

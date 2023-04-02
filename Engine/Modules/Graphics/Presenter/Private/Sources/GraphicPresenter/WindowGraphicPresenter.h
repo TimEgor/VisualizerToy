@@ -1,15 +1,14 @@
 #pragma once
 
 #include "GraphicPresenter/IPresenter.h"
+#include "WindowSystem/IWindow.h"
 
 namespace VT
 {
 	class ITeture2D;
 	class ISwapChain;
-	class IWindow;
 
 	struct SwapChainDesc;
-	struct WindowSize;
 
 	class WindowGraphicPresenter final : public IPresenter
 	{

@@ -1,11 +1,17 @@
 #include "Win32WindowEventSystem.h"
 
+#include "Engine/EngineInstance.h"
+#include "Engine/IEngine.h"
+#include "Engine/EngineEnvironment.h"
 
-#include "Win32PlatformPlugin/Win32PlatformUtils.h"
+#include "EventSystem/IEventSystem.h"
+
 #include "Win32Window.h"
 
 LRESULT VT_WIN32::Win32WindowEventSystem::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	VT::IEventSystem* eventSystem = VT::EngineInstance::getInstance()->getEnvironment()->m_eventSystem;
+
 	Win32Window* window = reinterpret_cast<Win32Window*>(GetWindowLongPtr(hwnd, 0));
 
 	switch (msg)
@@ -30,7 +36,11 @@ LRESULT VT_WIN32::Win32WindowEventSystem::wndProc(HWND hwnd, UINT msg, WPARAM wP
 		return 0;
 	}
 	case WM_SIZE:
+		VT::WindowSizeEvent event(window, window->getWindowSize());
 		window->updateSize();
+
+		eventSystem->dispatchEvent(VT::WindowSizeEvent::getEventType(), event);
+
 		return 0;
 	}
 
@@ -51,4 +61,18 @@ void VT_WIN32::Win32WindowEventSystem::updateWindowEvents()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+}
+
+bool VT_WIN32::Win32WindowEventSystem::init()
+{
+	VT::IEventSystem* eventSystem = VT::EngineInstance::getInstance()->getEnvironment()->m_eventSystem;
+	VT_CHECK_RETURN_FALSE(eventSystem->registerEvent(VT::WindowSizeEvent::getEventType()));
+
+	return true;
+}
+
+void VT_WIN32::Win32WindowEventSystem::release()
+{
+	VT::IEventSystem* eventSystem = VT::EngineInstance::getInstance()->getEnvironment()->m_eventSystem;
+	eventSystem->unregisterEvent(VT::WindowSizeEvent::getEventType());
 }

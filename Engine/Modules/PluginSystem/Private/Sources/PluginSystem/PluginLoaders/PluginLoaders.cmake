@@ -1,6 +1,4 @@
-set(LOADER_SRCS
-	${SOURCE_DIR_PATH}/PluginLoaderCreator.h
-)
+set(LOADER_SRCS ${SOURCE_DIR_PATH}/PluginLoaderCreator.h)
 
 if (WIN32)
 	set(LOADER_SRCS ${LOADER_SRCS}

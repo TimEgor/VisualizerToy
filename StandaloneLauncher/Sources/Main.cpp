@@ -98,12 +98,12 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	VT::WindowGraphicPresenter* graphicPresenter = new VT::WindowGraphicPresenter();
 
 	{
-		const VT::WindowSize defaultWindowSize(500, 500);
+		const VT::WindowSize windowSize(500, 500);
 
 		VT::SwapChainDesc swapChainDesc{};
 		swapChainDesc.m_format = VT::Format::R8G8B8A8_UNORM;
 		swapChainDesc.m_imageCount = 2;
-		if (!graphicPresenter->init("VT LAUNCHER", defaultWindowSize, swapChainDesc))
+		if (!graphicPresenter->init("VT LAUNCHER", windowSize, swapChainDesc))
 		{
 			return VT_LAUNCHER_WINDOW_PRESENTER_INIT_ERROR;
 		}

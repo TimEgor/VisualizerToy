@@ -12,14 +12,10 @@ void VT_Launcher::getGamePath(VT::FileName& modulePath)
 	OPENFILENAME openFileName;
 	ZeroMemory(&openFileName, sizeof(openFileName));
 	openFileName.lStructSize = sizeof(openFileName);
-	openFileName.hwndOwner = NULL;
 	openFileName.lpstrFile = tmpPathBuffer;
 	openFileName.nMaxFile = sizeof(tmpPathBuffer);
 	openFileName.lpstrFilter = "Game Module (.dll)\0*.dll\0Game Project (.vtproj)\0*.vtproj\0";
 	openFileName.nFilterIndex = 1;
-	openFileName.lpstrFileTitle = NULL;
-	openFileName.nMaxFileTitle = 0;
-	openFileName.lpstrInitialDir = NULL;
 	openFileName.lpstrInitialDir = VT_ROOT_PATH;
 	openFileName.lpstrTitle = "Game path";
 	openFileName.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;

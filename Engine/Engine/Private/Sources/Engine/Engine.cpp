@@ -6,11 +6,13 @@
 #include "Core/UtilitiesMacros.h"
 #include "Engine/EngineEnvironment.h"
 
-#include "PluginSystem/PluginSystem.h"
-#include "WindowSystem/WindowSystem.h"
+#include "EventSystem/EventSystem.h"
 
+#include "PluginSystem/PluginSystem.h"
 #include "Platform/IPlatform.h"
 #include "ResourceSystem/IResourceSystem.h"
+#include "WindowSystem/WindowSystem.h"
+
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicResourceManager/NamedGraphicResourceSystem.h"
@@ -20,12 +22,14 @@
 
 #include <cassert>
 
-
 bool VT::Engine::init(const EngineInitParam& initParam)
 {
 
 	m_engineEnvironment = new EngineEnvironment();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment);
+
+	m_engineEnvironment->m_eventSystem = new EventSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_eventSystem && m_engineEnvironment->m_eventSystem->init());
 
 	m_engineEnvironment->m_pluginSystem = new PluginSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_pluginSystem && m_engineEnvironment->m_pluginSystem->init());
@@ -38,9 +42,12 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_resourceSystenPluginPath);
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_resourceSystem && m_engineEnvironment->m_resourceSystem->init(initParam.m_resourceSystemPath));
 
+	IWindowEventSystem* m_windowEventSystem = m_engineEnvironment->m_platform->createWindowEventSystem();
+	VT_CHECK_INITIALIZATION(m_windowEventSystem && m_windowEventSystem->init());
+
 	m_engineEnvironment->m_windowSystem = new WindowSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem
-		&& m_engineEnvironment->m_windowSystem->init(m_engineEnvironment->m_platform->createWindowEventSystem()));
+		&& m_engineEnvironment->m_windowSystem->init(m_windowEventSystem));
 
 	assert(initParam.m_graphicDevicePluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_graphicDevicePluginPath);
@@ -102,6 +109,8 @@ void VT::Engine::release()
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_windowSystem);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_platform);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_pluginSystem);
+
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_eventSystem);
 
 		VT_SAFE_DESTROY(m_engineEnvironment);
 	}

@@ -30,14 +30,14 @@ namespace VT
 			};
 		};
 
-		Matrix22Base() = default;
-		Matrix22Base(
+		constexpr Matrix22Base() = default;
+		constexpr Matrix22Base(
 			Type v11, Type v12,
 			Type v21, Type v22)
 			: m_11(v11), m_12(v12),
 			m_21(v21), m_22(v22)
 		{}
-		Matrix22Base(const Matrix22Base& matr) = default;
+		constexpr Matrix22Base(const Matrix22Base& matr) = default;
 
 		inline Type& getElement(size_t n, size_t m) { return m_vals[n][m]; }
 		inline const Type& getElement(size_t n, size_t m) const { return m_vals[n][m]; }
@@ -72,8 +72,8 @@ namespace VT
 			};
 		};
 
-		Matrix33Base() = default;
-		Matrix33Base(
+		constexpr Matrix33Base() = default;
+		constexpr Matrix33Base(
 			Type v11, Type v12, Type v13,
 			Type v21, Type v22, Type v23,
 			Type v31, Type v32, Type v33)
@@ -81,12 +81,12 @@ namespace VT
 			m_21(v21), m_22(v22), m_23(v23),
 			m_31(v31), m_32(v32), m_33(v33)
 		{}
-		Matrix33Base(const Matrix22Base<Type>& matr)
+		constexpr Matrix33Base(const Matrix22Base<Type>& matr)
 			: m_11(matr.m_11), m_12(matr.m_12), m_13(InitialVal),
 			m_21(matr.m_21), m_22(matr.m_22), m_23(InitialVal),
 			m_31(InitialVal), m_32(InitialVal), m_33(InitialVal)
 		{}
-		Matrix33Base(const Matrix33Base<Type>& matr) = default;
+		constexpr Matrix33Base(const Matrix33Base<Type>& matr) = default;
 
 		inline Type& getElement(size_t n, size_t m) { return m_vals[n][m]; }
 		inline const Type& getElement(size_t n, size_t m) const { return m_vals[n][m]; }
@@ -137,8 +137,8 @@ namespace VT
 			};
 		};
 
-		Matrix44Base() = default;
-		Matrix44Base(
+		constexpr Matrix44Base() = default;
+		constexpr Matrix44Base(
 			Type v11, Type v12, Type v13, Type v14,
 			Type v21, Type v22, Type v23, Type v24,
 			Type v31, Type v32, Type v33, Type v34,
@@ -148,19 +148,19 @@ namespace VT
 			m_31(v31), m_32(v32), m_33(v33), m_34(v34),
 			m_41(v41), m_42(v42), m_43(v43), m_44(v44)
 		{}
-		Matrix44Base(const Matrix22Base<Type>& matr)
+		constexpr Matrix44Base(const Matrix22Base<Type>& matr)
 			: m_11(matr.m_11), m_12(matr.m_12), m_13(InitialVal), m_14(InitialVal),
 			m_21(matr.m_21), m_22(matr.m_22), m_23(InitialVal), m_24(InitialVal),
 			m_31(InitialVal), m_32(InitialVal), m_33(InitialVal), m_34(InitialVal),
 			m_41(InitialVal), m_42(InitialVal), m_43(InitialVal), m_44(InitialVal)
 		{}
-		Matrix44Base(const Matrix33Base<Type>& matr)
+		constexpr Matrix44Base(const Matrix33Base<Type>& matr)
 			: m_11(matr.m_11), m_12(matr.m_12), m_13(matr.m_13), m_14(InitialVal),
 			m_21(matr.m_21), m_22(matr.m_22), m_23(matr.m_23), m_24(InitialVal),
 			m_31(matr.m_31), m_32(matr.m_32), m_33(matr.m_33), m_34(InitialVal),
 			m_41(InitialVal), m_42(InitialVal), m_43(InitialVal), m_44(InitialVal)
 		{}
-		Matrix44Base(const Matrix44Base<Type>& matr) = default;
+		constexpr Matrix44Base(const Matrix44Base<Type>& matr) = default;
 
 		inline Type& getElement(size_t n, size_t m) { return m_vals[n][m]; }
 		inline const Type& getElement(size_t n, size_t m) const { return m_vals[n][m]; }

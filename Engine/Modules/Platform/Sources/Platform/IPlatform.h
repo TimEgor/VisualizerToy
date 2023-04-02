@@ -1,15 +1,17 @@
 #pragma once
 
-#include "Core/HashFunctions/CRC32.h"
+#include "Core/TypeHashMacros.h"
+#include "MonitorInfo.h"
 
 namespace VT
 {
+
 	class IWindow;
 	class IWindowEventSystem;
 
-	using PlatformType = uint32_t;
+	using PlatformType = HashTyped::Type;
 
-	class IPlatform
+	class IPlatform : public HashTyped
 	{
 	public:
 		IPlatform() = default;
@@ -24,10 +26,11 @@ namespace VT
 		virtual IWindow* createWindow() = 0;
 		virtual IWindowEventSystem* createWindowEventSystem() = 0;
 
+		virtual uint32_t getMonitorCount() const = 0;
+		virtual const MonitorInfo& getMonitorInfo(uint32_t index) const = 0;
+
 		virtual PlatformType getType() const = 0;
 	};
 }
 
-#define VT_PLATFORM_TYPE(PLATFORM_TYPE)																	\
-	static inline constexpr VT::PlatformType getPlatformType() { return VT::crc32(#PLATFORM_TYPE); }	\
-	virtual VT::PlatformType getType() const { return getPlatformType(); }
+#define VT_PLATFORM_TYPE(PLATFORM_TYPE) VT_HASH_TYPE(#PLATFORM_TYPE, VT::PlatformType, Platform)

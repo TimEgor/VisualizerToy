@@ -1,13 +1,15 @@
 #include "WindowGraphicPresenter.h"
 
+#include "Core/Output.h"
+
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
 #include "Engine/EngineInstance.h"
+#include "EventSystem/IEventSystem.h"
 
 #include "GraphicDevice/IGraphicDevice.h"
 
 #include "WindowSystem/IWindowSystem.h"
-#include "WindowSystem/IWindow.h"
 #include "SwapChain/ISwapChain.h"
 
 bool VT::WindowGraphicPresenter::init(const char* windowTitle, const WindowSize& windowSize, const SwapChainDesc& swapChainDesc)
