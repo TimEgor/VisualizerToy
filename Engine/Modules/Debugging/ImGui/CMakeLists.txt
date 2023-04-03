@@ -8,6 +8,12 @@ include(${VT_ROOT_PATH}/CMake/Module.cmake)
 vt_add_module_target(ImGui STATIC "VT_Engine/Debugging")
 
 target_include_directories(ImGui
-	PRIVATE
+	PUBLIC
 		${VT_ROOT_PATH}/Libs/imgui/
+)
+
+target_link_libraries(ImGui
+	PUBLIC
+		EventSystem_COMMON
+		WindowSystem_COMMON
 )

@@ -1,7 +1,5 @@
 #include "EventSystem.h"
 
-#include "Core/HashFunctions/CRC32.h"
-
 bool VT::EventSystem::init()
 {
 	return m_dispatchers.init();

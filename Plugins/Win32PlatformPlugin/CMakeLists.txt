@@ -13,4 +13,5 @@ target_link_libraries(Win32PlatformPlugin
 		Platform
 		PluginSystem_COMMON
 		WindowSystem_COMMON
+		InputSystem
 )

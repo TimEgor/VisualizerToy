@@ -35,6 +35,8 @@ namespace VT_WIN32
 		virtual VT::IWindow* createWindow() override;
 		virtual VT::IWindowEventSystem* createWindowEventSystem() override;
 
+		virtual VT::IInputSystem* createInputSystem() override;
+
 		virtual uint32_t getMonitorCount() const override { return m_monitorInfos.size(); }
 		virtual const VT::MonitorInfo& getMonitorInfo(uint32_t index) const override { return m_monitorInfos[index]; }
 

@@ -6,6 +6,7 @@ set(MODULES_SET
 	EventSystem				EventSystem/Private
 	GameSystem				GameSystem/Private
 	GraphicsModule			Graphics
+	InputSystem				InputSystem
 	LevelSystem				LevelSystem/Private
 	Math					Math
 	Multithreading			Multithreading

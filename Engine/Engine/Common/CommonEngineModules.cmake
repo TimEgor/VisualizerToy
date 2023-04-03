@@ -6,6 +6,7 @@ set(MODULES_SET
 	EventSystem_COMMON		EventSystem/Common
 	GameSystem_COMMON		GameSystem/Common
 	GraphicsModule_COMMON	Graphics
+	InputSystem				InputSystem
 	LevelSystem_COMMON		LevelSystem/Common
 	Math					Math
 	Multithreading			Multithreading

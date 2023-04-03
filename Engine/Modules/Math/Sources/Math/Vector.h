@@ -152,4 +152,28 @@ namespace VT
 	constexpr Vector2UInt16 Vector2UInt16Zero = Vector2UInt16(0, 0);
 	constexpr Vector3UInt16 Vector3UInt16Zero = Vector3UInt16(0, 0, 0);
 	constexpr Vector4UInt16 Vector4UInt16Zero = Vector4UInt16(0, 0, 0, 0);
+
+	using Vector2Int16 = Vector2Base<int16_t>;
+	using Vector3Int16 = Vector3Base<int16_t>;
+	using Vector4Int16 = Vector4Base<int16_t>;
+
+	constexpr Vector2Int16 Vector2Int16Zero = Vector2Int16(0, 0);
+	constexpr Vector3Int16 Vector3Int16Zero = Vector3Int16(0, 0, 0);
+	constexpr Vector4Int16 Vector4Int16Zero = Vector4Int16(0, 0, 0, 0);
+
+	using Vector2UInt32 = Vector2Base<uint32_t>;
+	using Vector3UInt32 = Vector3Base<uint32_t>;
+	using Vector4UInt32 = Vector4Base<uint32_t>;
+
+	constexpr Vector2UInt32 Vector2UInt32Zero = Vector2UInt32(0, 0);
+	constexpr Vector3UInt32 Vector3UInt32Zero = Vector3UInt32(0, 0, 0);
+	constexpr Vector4UInt32 Vector4UInt32Zero = Vector4UInt32(0, 0, 0, 0);
+
+	using Vector2Int32 = Vector2Base<int32_t>;
+	using Vector3Int32 = Vector3Base<int32_t>;
+	using Vector4Int32 = Vector4Base<int32_t>;
+
+	constexpr Vector2Int32 Vector2Int32Zero = Vector2Int32(0, 0);
+	constexpr Vector3Int32 Vector3Int32Zero = Vector3Int32(0, 0, 0);
+	constexpr Vector4Int32 Vector4Int32Zero = Vector4Int32(0, 0, 0, 0);
 }

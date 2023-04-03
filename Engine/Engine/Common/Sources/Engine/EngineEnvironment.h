@@ -5,6 +5,7 @@ namespace VT
 	class IPlatform;
 	class IPluginSystem;
 	class IWindowSystem;
+	class IInputSystem;
 
 	class IEventSystem;
 
@@ -26,6 +27,7 @@ namespace VT
 		IPlatform* m_platform = nullptr;
 		IPluginSystem* m_pluginSystem = nullptr;
 		IWindowSystem* m_windowSystem = nullptr;
+		IInputSystem* m_inputSystem = nullptr;
 
 		IEventSystem* m_eventSystem = nullptr;
 

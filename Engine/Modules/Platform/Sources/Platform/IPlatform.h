@@ -5,6 +5,7 @@
 
 namespace VT
 {
+	class IInputSystem;
 
 	class IWindow;
 	class IWindowEventSystem;
@@ -25,6 +26,8 @@ namespace VT
 		//WindowSystem
 		virtual IWindow* createWindow() = 0;
 		virtual IWindowEventSystem* createWindowEventSystem() = 0;
+
+		virtual IInputSystem* createInputSystem() = 0;
 
 		virtual uint32_t getMonitorCount() const = 0;
 		virtual const MonitorInfo& getMonitorInfo(uint32_t index) const = 0;

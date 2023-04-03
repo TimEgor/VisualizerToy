@@ -13,6 +13,8 @@
 #include "ResourceSystem/IResourceSystem.h"
 #include "WindowSystem/WindowSystem.h"
 
+#include "InputSystem/IInputSystem.h"
+
 #include "GraphicPlatform/IGraphicPlatform.h"
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicResourceManager/NamedGraphicResourceSystem.h"
@@ -48,6 +50,10 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	m_engineEnvironment->m_windowSystem = new WindowSystem();
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_windowSystem
 		&& m_engineEnvironment->m_windowSystem->init(m_windowEventSystem));
+
+	m_engineEnvironment->m_inputSystem = m_engineEnvironment->m_platform->createInputSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_inputSystem
+		&& m_engineEnvironment->m_inputSystem->init());
 
 	assert(initParam.m_graphicDevicePluginPath);
 	m_engineEnvironment->m_pluginSystem->loadPlugin(initParam.m_graphicDevicePluginPath);
@@ -106,6 +112,8 @@ void VT::Engine::release()
 
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_graphicResourceManager);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_graphicDevice);
+
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_inputSystem);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_windowSystem);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_platform);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_pluginSystem);

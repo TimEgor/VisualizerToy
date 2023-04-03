@@ -5,6 +5,8 @@
 #include "WindowSystem/Win32Window.h"
 #include "WindowSystem/Win32WindowEventSystem.h"
 
+#include "InputSystem/Win32InputSystem.h"
+
 bool VT_WIN32::Win32Platform::initWindowClass()
 {
 	WNDCLASS wndClass{};
@@ -65,4 +67,9 @@ VT::IWindow* VT_WIN32::Win32Platform::createWindow()
 VT::IWindowEventSystem* VT_WIN32::Win32Platform::createWindowEventSystem()
 {
 	return new Win32WindowEventSystem();
+}
+
+VT::IInputSystem* VT_WIN32::Win32Platform::createInputSystem()
+{
+	return new Win32InputSystem();
 }
