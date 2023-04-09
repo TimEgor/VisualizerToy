@@ -1,10 +1,10 @@
 #pragma once
 
 #include "GraphicPresenter/IPresenter.h"
-#include "WindowSystem/IWindow.h"
 
 namespace VT
 {
+	class IWindow;
 	class ITeture2D;
 	class ISwapChain;
 
@@ -13,14 +13,13 @@ namespace VT
 	class WindowGraphicPresenter final : public IPresenter
 	{
 	private:
-		IWindow* m_window = nullptr;
 		ISwapChain* m_swapChain = nullptr;
 
 	public:
 		WindowGraphicPresenter() = default;
 		~WindowGraphicPresenter() { release(); }
 
-		bool init(const char* windowTitle, const WindowSize& windowSize, const SwapChainDesc& swapChainDesc);
+		bool init(const IWindow* window, const SwapChainDesc& swapChainDesc);
 		void release();
 
 		virtual void updateNextTargetTextureIndex() override;

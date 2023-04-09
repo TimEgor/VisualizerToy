@@ -1,3 +1,4 @@
 set(MODULES_SET
-	ImGui	ImGui
+	DebugUiSystem	DebugUiSystem/Private
+	ImGui			ImGui/Private
 )

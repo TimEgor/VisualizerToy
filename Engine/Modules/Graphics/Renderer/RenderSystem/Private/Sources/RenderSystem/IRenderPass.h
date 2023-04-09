@@ -6,6 +6,9 @@ namespace VT
 	class RenderingData;
 	class RenderPassEnvironment;
 
+	class ITexture2D;
+	class IGraphicResourceDescriptor;
+
 	struct RenderPassContext final
 	{
 		IRenderContext* m_context = nullptr;

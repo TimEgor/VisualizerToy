@@ -14,4 +14,6 @@ target_link_libraries(Win32PlatformPlugin
 		PluginSystem_COMMON
 		WindowSystem_COMMON
 		InputSystem
+		EventSystem_COMMON
+		ImGui_COMMON
 )

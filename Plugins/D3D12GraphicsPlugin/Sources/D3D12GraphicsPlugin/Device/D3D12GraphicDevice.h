@@ -118,7 +118,6 @@ namespace VT_D3D12
 		virtual void destroyFence(VT::ManagedGraphicDevice::ManagedFenceBase* fence) override;
 
 		//
-		virtual VT::IGraphicResourceDescriptorHeap* getBindlessResourceDescriptionHeap() override;
 		virtual VT::IGraphicResourceDescriptorHeap* createGraphicResourceDescriptionHeap(
 			const VT::GraphicResourceDescriptorHeapDesc& desc) override;
 		virtual void destroyGraphicResourceDescriptionHeap(VT::IGraphicResourceDescriptorHeap* heap) override;
@@ -153,6 +152,10 @@ namespace VT_D3D12
 		virtual void resetContexts() override;
 		virtual void submitContexts() override;
 		virtual void waitContexts() override;
+
+		virtual VT::IGraphicResourceDescriptorHeap* getBindlessResourceDescriptionHeap() override;
+
+		D3D12DeviceComPtr getNativeD3D12Device() const { return m_d3d12Device; }
 
 		VT_GRAPHIC_DEVICE_TYPE(VT_GRAPHIC_DEVICE_D3D12_TYPE)
 	};

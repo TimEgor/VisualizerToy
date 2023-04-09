@@ -6,6 +6,8 @@ namespace VT
 {
 	enum class Key : uint8_t
 	{
+		UNKNOWN,
+
 		MOUSE_RIGHT,
 		MOUSE_LEFT,
 		MOUSE_MIDDLE,

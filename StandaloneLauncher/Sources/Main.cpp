@@ -8,6 +8,10 @@
 #include "Engine/EngineInstance.h"
 #include "Engine/EngineEnvironment.h"
 
+#include "WindowSystem/IWindowSystem.h"
+
+#include "DebugUiSystem/IDebugUiSystem.h"
+
 #include "GraphicDevice/IGraphicDevice.h"
 
 #include "GraphicPresenter/WindowGraphicPresenter.h"
@@ -25,7 +29,6 @@
 #include "ArgParser/Parser.h"
 
 #include <vector>
-
 
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -95,15 +98,30 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	VT::EngineEnvironment* engineEnvironment = engine->getEnvironment();
-	VT::WindowGraphicPresenter* graphicPresenter = new VT::WindowGraphicPresenter();
+	VT::IWindow* window = nullptr;
 
 	{
 		const VT::WindowSize windowSize(500, 500);
+		window = engineEnvironment->m_windowSystem->createWindow("VT LAUNCHER", windowSize);
 
+		if (!window)
+		{
+			return VT_LAUNCHER_WINDOW_CREATION_ERROR;
+		}
+
+		if (!engineEnvironment->m_debugUiSystem->setWindow(window))
+		{
+			return VT_LAUNCHER_IMGUI_WINDOW_BACKEND_INIT_ERROR;
+		}
+	}
+
+	VT::WindowGraphicPresenter* graphicPresenter = new VT::WindowGraphicPresenter();
+
+	{
 		VT::SwapChainDesc swapChainDesc{};
 		swapChainDesc.m_format = VT::Format::R8G8B8A8_UNORM;
 		swapChainDesc.m_imageCount = 2;
-		if (!graphicPresenter->init("VT LAUNCHER", windowSize, swapChainDesc))
+		if (!graphicPresenter->init(window, swapChainDesc))
 		{
 			return VT_LAUNCHER_WINDOW_PRESENTER_INIT_ERROR;
 		}
@@ -113,6 +131,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		VT::IRenderSystem* renderSystem = engineEnvironment->m_renderSystem;
 		VT::ILevelSystem* levelSystem = engineEnvironment->m_levelSystem;
 		VT::IGraphicDevice* graphicDevice = engineEnvironment->m_graphicDevice;
+		VT::IDebugUiSystem* debugUi = engineEnvironment->m_debugUiSystem;
 
 		graphicDevice->submitContexts();
 
@@ -124,6 +143,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 			graphicDevice->waitContexts();
 			graphicDevice->resetContexts();
+
+			debugUi->update();
 
 			engine->updateFrame();
 
@@ -148,6 +169,9 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	VT_SAFE_DESTROY(graphicPresenter);
+
+	engineEnvironment->m_windowSystem->destroyWindow(window);
+
 	VT_SAFE_DESTROY(engine);
 
 	return VT_LAUNCHER_SUCCESS;

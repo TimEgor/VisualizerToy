@@ -32,13 +32,15 @@ namespace VT_WIN32
 		virtual void* getNativeHandle() const override { return m_hInstance; }
 
 		//WindowSystem
-		virtual VT::IWindow* createWindow() override;
-		virtual VT::IWindowEventSystem* createWindowEventSystem() override;
+		virtual VT::IWindow* createWindow() const override;
+		virtual VT::IWindowEventSystem* createWindowEventSystem() const override;
 
-		virtual VT::IInputSystem* createInputSystem() override;
+		virtual VT::IInputSystem* createInputSystem() const override;
 
 		virtual uint32_t getMonitorCount() const override { return m_monitorInfos.size(); }
 		virtual const VT::MonitorInfo& getMonitorInfo(uint32_t index) const override { return m_monitorInfos[index]; }
+
+		virtual VT::IImGuiPlatformBackend* createImGuiPlatformBackend() const override;
 
 		VT_PLATFORM_TYPE(VT_PLARFORM_WIN32_TYPE)
 	};

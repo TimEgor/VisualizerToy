@@ -7,11 +7,13 @@
 
 #include "InputSystem/Win32InputSystem.h"
 
+#include "Debugging/Win32ImGuiPlatformBackend.h"
+
 bool VT_WIN32::Win32Platform::initWindowClass()
 {
 	WNDCLASS wndClass{};
 	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = sizeof(Win32Window*);
+	wndClass.cbWndExtra = sizeof(Win32Window::WindowData);
 	wndClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
 	wndClass.hCursor = LoadCursor(0, IDC_ARROW);
 	wndClass.hIcon = LoadIcon(0, IDI_APPLICATION);
@@ -59,17 +61,22 @@ bool VT_WIN32::Win32Platform::init()
 	return true;
 }
 
-VT::IWindow* VT_WIN32::Win32Platform::createWindow()
+VT::IWindow* VT_WIN32::Win32Platform::createWindow() const
 {
 	return new Win32Window();
 }
 
-VT::IWindowEventSystem* VT_WIN32::Win32Platform::createWindowEventSystem()
+VT::IWindowEventSystem* VT_WIN32::Win32Platform::createWindowEventSystem() const
 {
 	return new Win32WindowEventSystem();
 }
 
-VT::IInputSystem* VT_WIN32::Win32Platform::createInputSystem()
+VT::IInputSystem* VT_WIN32::Win32Platform::createInputSystem() const
 {
 	return new Win32InputSystem();
+}
+
+VT::IImGuiPlatformBackend* VT_WIN32::Win32Platform::createImGuiPlatformBackend() const
+{
+	return new Win32ImGuiPlatformBackend();
 }

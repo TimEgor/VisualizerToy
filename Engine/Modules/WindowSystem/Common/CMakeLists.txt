@@ -8,8 +8,8 @@ include(${VT_ROOT_PATH}/CMake/Module.cmake)
 vt_add_common_module_target(WindowSystem INTERFACE "VT_Engine/UserInterfaces/WindowSystem")
 
 target_link_libraries(WindowSystem_COMMON
-	INTERFACE
+INTERFACE
 		Math
-		ObjectPool
-		EventSystem_COMMON
+		Engine_COMMON
+		InputSystem
 )

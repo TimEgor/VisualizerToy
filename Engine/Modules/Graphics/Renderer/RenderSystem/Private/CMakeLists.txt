@@ -13,6 +13,8 @@ target_link_libraries(RenderSystem
 		Engine_COMMON
 		EntityComponentSystem
 
+		DebugUiSystem_COMMON
+
 		MeshSystem_ECS
 		Scene_ECS
 		LightSystem_ECS

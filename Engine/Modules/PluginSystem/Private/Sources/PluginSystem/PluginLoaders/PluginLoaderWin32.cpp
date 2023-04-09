@@ -21,6 +21,11 @@ void VT::PluginLoaderWin32::outputLoadingError(const FileName& name)
 		0, NULL);
 
 	OutputDebugStringA(stringFormat("LoadLibrary \"%s\" error message:\n %s\n", name.c_str(), lpMsgBuf).c_str());
+
+	if (lpMsgBuf)
+	{
+		LocalFree(lpMsgBuf);
+	}
 #endif // _MSC_VER
 }
 

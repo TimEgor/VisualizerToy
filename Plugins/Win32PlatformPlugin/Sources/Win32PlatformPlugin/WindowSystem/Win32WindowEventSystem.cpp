@@ -10,38 +10,42 @@
 
 LRESULT VT_WIN32::Win32WindowEventSystem::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	VT::IEventSystem* eventSystem = VT::EngineInstance::getInstance()->getEnvironment()->m_eventSystem;
+	VT::EngineEnvironment* environment = VT::EngineInstance::getInstance()->getEnvironment();
+	VT::IEventSystem* eventSystem = environment->m_eventSystem;
+	eventSystem->dispatchEvent(Win32WindowProcedureEvent::getEventType(), Win32WindowProcedureEvent(hwnd, msg, wParam, lParam));
 
-	Win32Window* window = reinterpret_cast<Win32Window*>(GetWindowLongPtr(hwnd, 0));
+	Win32Window::WindowData* windowData = reinterpret_cast<Win32Window::WindowData*>(GetWindowLongPtr(hwnd, 0));
 
-	switch (msg)
+	if (windowData && windowData->m_header == Win32Window::WindowData::HeaderSignature)
 	{
-	case WM_DESTROY:
-		VT::EngineInstance::getInstance()->stop();
-		PostQuitMessage(0);
-		return 0;
+		switch (msg)
+		{
+		case WM_DESTROY:
+			VT::EngineInstance::getInstance()->stop();
+			PostQuitMessage(0);
+			return 0;
 
-	case WM_ENTERSIZEMOVE:
-		VT::EngineInstance::getInstance()->pauseRendering(true);
-		return 0;
+		case WM_ENTERSIZEMOVE:
+			VT::EngineInstance::getInstance()->pauseRendering(true);
+			break;
 
-	case WM_EXITSIZEMOVE:
-	{
-		//GlobalEngineInstance::getInstance()->pauseRendering(false);
-		//Renderer* renderer = GlobalEngineInstance::getInstance()->getEnvironment()->m_graphicManager->getCurrentRenderer();
-		//if (renderer)
-		//{
-		//	renderer->updateSwapChain(*window);
-		//}
-		return 0;
-	}
-	case WM_SIZE:
-		VT::WindowSizeEvent event(window, window->getWindowSize());
-		window->updateSize();
+		case WM_EXITSIZEMOVE:
+		{
+			//GlobalEngineInstance::getInstance()->pauseRendering(false);
+			//Renderer* renderer = GlobalEngineInstance::getInstance()->getEnvironment()->m_graphicManager->getCurrentRenderer();
+			//if (renderer)
+			//{
+			//	renderer->updateSwapChain(*window);
+			//}
 
-		eventSystem->dispatchEvent(VT::WindowSizeEvent::getEventType(), event);
-
-		return 0;
+			break;
+		}
+		case WM_SIZE:
+		{
+			windowData->m_vtWindow->updateSize();
+			break;
+		}
+		}
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -66,13 +70,11 @@ void VT_WIN32::Win32WindowEventSystem::updateWindowEvents()
 bool VT_WIN32::Win32WindowEventSystem::init()
 {
 	VT::IEventSystem* eventSystem = VT::EngineInstance::getInstance()->getEnvironment()->m_eventSystem;
-	VT_CHECK_RETURN_FALSE(eventSystem->registerEvent(VT::WindowSizeEvent::getEventType()));
-
-	return true;
+	return eventSystem->registerEvent(Win32WindowProcedureEvent::getEventType());
 }
 
 void VT_WIN32::Win32WindowEventSystem::release()
 {
 	VT::IEventSystem* eventSystem = VT::EngineInstance::getInstance()->getEnvironment()->m_eventSystem;
-	eventSystem->unregisterEvent(VT::WindowSizeEvent::getEventType());
+	eventSystem->unregisterEvent(Win32WindowProcedureEvent::getEventType());
 }

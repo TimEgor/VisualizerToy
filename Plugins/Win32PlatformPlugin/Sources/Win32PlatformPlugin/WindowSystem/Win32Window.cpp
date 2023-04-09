@@ -1,5 +1,6 @@
 #include "Win32Window.h"
 
+#include "Core/String/Format.h"
 #include "Win32PlatformPlugin/Win32PlatformUtils.h"
 
 bool VT_WIN32::Win32Window::init(const char* title, const VT::WindowSize& size)
@@ -16,7 +17,7 @@ bool VT_WIN32::Win32Window::init(const char* title, const VT::WindowSize& size)
 		return false;
 	}
 
-	SetWindowLongPtr(m_hWnd, 0, reinterpret_cast<LONG_PTR>(this));
+	SetWindowLongPtr(m_hWnd, 0, reinterpret_cast<LONG_PTR>(&m_windowData));
 
 	ShowCursor(true);
 	

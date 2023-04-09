@@ -44,32 +44,33 @@ endfunction()
 
 ### vt_get_all_sources_subdirs
 function(vt_get_all_sources_subdirs SOURCE_DIR_PATH SUBDIRS_NAMES SOURCE_FILES)
-	set(SUBDIR_GPOUP_SRCS)
+	set(SUBDIR_GROUP_SRCS)
 	
-	vt_get_directory_sources(${SOURCE_DIR_PATH} SUBDIR_GPOUP_SRCS)
+	vt_get_directory_sources(${SOURCE_DIR_PATH} SUBDIR_GROUP_SRCS)
 
 	foreach(SUBDIR_NAME ${SUBDIRS_NAMES})
 		set(SUBDIR_SRCS)
 		vt_get_all_sources_recurse("${SOURCE_DIR_PATH}/${SUBDIR_NAME}" ${SUBDIR_NAME} SUBDIR_SRCS)
 
-		list(APPEND SUBDIR_GPOUP_SRCS ${SUBDIR_SRCS})
+		list(APPEND SUBDIR_GROUP_SRCS ${SUBDIR_SRCS})
 	endforeach()
 
-	list(APPEND SUBDIR_GPOUP_SRCS ${${SOURCE_FILES}})
-	set(${SOURCE_FILES} ${SUBDIR_GPOUP_SRCS} PARENT_SCOPE)
+	list(APPEND SUBDIR_GROUP_SRCS ${${SOURCE_FILES}})
+
+	set(${SOURCE_FILES} ${SUBDIR_GROUP_SRCS} PARENT_SCOPE)
 endfunction()
 
 ### vt_get_all_sources_recurse
 function(vt_get_all_sources_recurse SOURCE_DIR_PATH GROUP_NAME SOURCE_FILES)
-	set(GPOUP_CMAKE_FILE_PATH "${SOURCE_DIR_PATH}/${GROUP_NAME}.cmake")
+	set(GROUP_CMAKE_FILE_PATH "${SOURCE_DIR_PATH}/${GROUP_NAME}.cmake")
 
-	if(EXISTS ${GPOUP_CMAKE_FILE_PATH})
-		include(${GPOUP_CMAKE_FILE_PATH})
+	if(EXISTS ${GROUP_CMAKE_FILE_PATH})
+		include(${GROUP_CMAKE_FILE_PATH})
 	else()
 		vt_get_subdirs_names(${SOURCE_DIR_PATH} SUBDIRS_NAMES)
 		vt_get_all_sources_subdirs(${SOURCE_DIR_PATH} "${SUBDIRS_NAMES}" GROUP_SRCS)
 	endif()
-
+	
 	list(APPEND GROUP_SRCS ${${SOURCE_FILES}})
 	set(${SOURCE_FILES} ${GROUP_SRCS} PARENT_SCOPE)
 endfunction()

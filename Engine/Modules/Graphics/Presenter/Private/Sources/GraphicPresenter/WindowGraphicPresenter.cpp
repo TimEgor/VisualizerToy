@@ -5,22 +5,17 @@
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
 #include "Engine/EngineInstance.h"
-#include "EventSystem/IEventSystem.h"
 
 #include "GraphicDevice/IGraphicDevice.h"
 
-#include "WindowSystem/IWindowSystem.h"
 #include "SwapChain/ISwapChain.h"
 
-bool VT::WindowGraphicPresenter::init(const char* windowTitle, const WindowSize& windowSize, const SwapChainDesc& swapChainDesc)
+bool VT::WindowGraphicPresenter::init(const IWindow* window, const SwapChainDesc& swapChainDesc)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
-	VT_CHECK_RETURN_FALSE_ASSERT(environment && environment->m_windowSystem && environment->m_graphicDevice);
+	VT_CHECK_RETURN_FALSE_ASSERT(environment && environment->m_graphicDevice);
 
-	m_window = environment->m_windowSystem->createWindow(windowTitle, windowSize);
-	VT_CHECK_RETURN_FALSE_ASSERT(m_window);
-
-	m_swapChain = environment->m_graphicDevice->createSwapChain(swapChainDesc, m_window);
+	m_swapChain = environment->m_graphicDevice->createSwapChain(swapChainDesc, window);
 	VT_CHECK_RETURN_FALSE_ASSERT_MSG(m_swapChain, "Swap chain hasn't been created.");
 
 	return true;
@@ -35,12 +30,6 @@ void VT::WindowGraphicPresenter::release()
 	{
 		environment->m_graphicDevice->destroySwapChain(m_swapChain);
 		m_swapChain = nullptr;
-	}
-
-	if (m_window)
-	{
-		environment->m_windowSystem->destroyWindow(m_window);
-		m_window = nullptr;
 	}
 }
 

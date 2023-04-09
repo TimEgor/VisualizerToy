@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/TypeHashMacros.h"
+#include "InputSystem/Keys.h"
 #include "Math/Vector.h"
 
 namespace VT

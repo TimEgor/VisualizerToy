@@ -19,6 +19,7 @@ namespace VT
 	class LightPrepearingPass;
 	class LightPass;
 	class PresentPass;
+	class DebugUiPass;
 
 	class RenderSystem final : public IRenderSystem
 	{
@@ -38,6 +39,7 @@ namespace VT
 		GBufferPass* m_gBufferPass = nullptr;
 		LightPrepearingPass* m_lightPrepearingPass = nullptr;
 		LightPass* m_lightPass = nullptr;
+		DebugUiPass* m_debugUiPass = nullptr;
 		//PresentPass* m_presentPass = nullptr;
 
 	public:

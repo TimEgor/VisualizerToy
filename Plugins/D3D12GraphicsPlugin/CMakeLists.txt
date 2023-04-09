@@ -24,6 +24,8 @@ target_link_libraries(D3D12GraphicsPlugin
 		WindowSystem_COMMON
 		Platform
 
+		ImGui
+
 		d3d12
 		dxgi
 		dxguid

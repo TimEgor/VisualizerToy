@@ -1,3 +1,4 @@
 set(MODULES_SET
-	ImGui	ImGui
+	DebugUiSystem_COMMON	DebugUiSystem/Common
+	ImGui_COMMON			ImGui/Common
 )

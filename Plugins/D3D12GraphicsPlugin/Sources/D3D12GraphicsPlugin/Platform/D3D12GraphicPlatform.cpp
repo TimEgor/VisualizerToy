@@ -2,12 +2,14 @@
 
 #include "Core/UtilitiesMacros.h"
 
-#include "D3D12GraphicsPlugin/Device/D3D12GraphicDevice.h"
-#include "D3D12GraphicsPlugin/Render/D3D12RenderContext.h"
-
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
 #include "Engine/EngineEnvironment.h"
+
+#include "D3D12GraphicsPlugin/Device/D3D12GraphicDevice.h"
+#include "D3D12GraphicsPlugin/Render/D3D12RenderContext.h"
+
+#include "D3D12GraphicsPlugin/Debugging/D3D12ImGuiRenderBackend.h"
 
 bool VT_D3D12::D3D12GraphicPlatform::init(bool isSwapChainEnabled)
 {
@@ -31,4 +33,9 @@ VT::IGraphicDevice* VT_D3D12::D3D12GraphicPlatform::createGraphicDevice()
 VT::IRenderContext* VT_D3D12::D3D12GraphicPlatform::createRenderContext()
 {
 	return new D3D12RenderContext();
+}
+
+VT::IImGuiRenderBackend* VT_D3D12::D3D12GraphicPlatform::createImGuiRenderBackend() const
+{
+	return new D3D12ImGuiRenderBackend();
 }

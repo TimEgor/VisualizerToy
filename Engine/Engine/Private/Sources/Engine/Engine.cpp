@@ -22,6 +22,8 @@
 #include "MeshSystem/MeshSystem.h"
 #include "RenderSystem/RenderSystem.h"
 
+#include "DebugUiSystem/DebugUiSystem.h"
+
 #include <cassert>
 
 bool VT::Engine::init(const EngineInitParam& initParam)
@@ -83,6 +85,10 @@ bool VT::Engine::init(const EngineInitParam& initParam)
 	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_renderSystem
 		&& m_engineEnvironment->m_renderSystem->init());
 
+	m_engineEnvironment->m_debugUiSystem = new DebugUiSystem();
+	VT_CHECK_INITIALIZATION(m_engineEnvironment->m_debugUiSystem
+		&& m_engineEnvironment->m_debugUiSystem->init());
+
 	// Game systems
 
 	m_engineEnvironment->m_gameSystem = new GameSystem();
@@ -106,6 +112,8 @@ void VT::Engine::release()
 	{
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_levelSystem);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_gameSystem);
+
+		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_debugUiSystem);
 
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_renderSystem);
 		VT_SAFE_DESTROY_WITH_RELEASING(m_engineEnvironment->m_meshSystem);

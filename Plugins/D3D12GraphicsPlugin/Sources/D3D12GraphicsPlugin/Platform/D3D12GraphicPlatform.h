@@ -18,6 +18,8 @@ namespace VT_D3D12
 		virtual VT::IGraphicDevice* createGraphicDevice() override;
 		virtual VT::IRenderContext* createRenderContext() override;
 
+		virtual VT::IImGuiRenderBackend* createImGuiRenderBackend() const override;
+
 		VT_GRAPHIC_PLATFORM_TYPE(VT_GRAPHIC_PLARFORM_D3D12_TYPE)
 	};
 }

@@ -22,6 +22,8 @@ namespace VT
 	class IGameSystem;
 	class ILevelSystem;
 
+	class IDebugUiSystem;
+
 	struct EngineEnvironment final
 	{
 		IPlatform* m_platform = nullptr;
@@ -43,5 +45,7 @@ namespace VT
 
 		IGameSystem* m_gameSystem = nullptr;
 		ILevelSystem* m_levelSystem = nullptr;
+
+		IDebugUiSystem* m_debugUiSystem = nullptr;
 	};
 }

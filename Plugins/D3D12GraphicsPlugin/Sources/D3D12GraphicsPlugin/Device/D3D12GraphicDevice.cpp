@@ -1,12 +1,14 @@
 #include "D3D12GraphicDevice.h"
 
-#include "D3D12UploadingContext.h"
 #include "Core/UtilitiesMacros.h"
+#include "Core/Memory.h"
 #include "Core/String/Format.h"
 #include "Core/Output.h"
 
 #include "WindowSystem/IWindow.h"
 #include "InputLayout/InputLayout.h"
+
+#include "D3D12UploadingContext.h"
 
 #include "D3D12GraphicsPlugin/SwapChain/D3D12SwapChain.h"
 #include "D3D12GraphicsPlugin/Buffer/D3D12GPUBuffer.h"
