@@ -24,11 +24,15 @@ bool VT_WIN32::Win32Window::init(const char* title, const VT::WindowSize& size)
 	show();
 	UpdateWindow(m_hWnd);
 
+	VT_CHECK_INITIALIZATION(initEvents());
+
     return true;
 }
 
 void VT_WIN32::Win32Window::release()
 {
+	releaseEvents();
+
 	if (m_hWnd)
 	{
 		DestroyWindow(m_hWnd);

@@ -2,11 +2,13 @@
 
 #include "D3D12DeviceObject.h"
 #include "ManagedGraphicDevice/ManagedGraphicDevice.h"
+#include "Math/Vector.h"
 
 #define VT_GRAPHIC_DEVICE_D3D12_TYPE
 
 namespace VT_D3D12
 {
+	class D3D12SwapChain;
 	class D3D12GPUBuffer;
 	class D3D12Fence;
 	class D3D12ResourceBase;
@@ -51,6 +53,9 @@ namespace VT_D3D12
 		VT::GraphicResourceStateValueType chooseInitialVTResourceState(bool isHostVisible, bool havingInitialData, VT::GraphicResourceStateValueType targetInitialState);
 		void uploadBufferResourceData(bool useUploadingContext, D3D12GPUBuffer* dstResource, const VT::InitialGPUBufferData& data);
 
+		void createSwapChainResources(D3D12SwapChain* swapChain, const VT::Texture2DDesc& textureDesc, uint32_t texturesCount);
+		void releaseSwapChainResources(VT::ISwapChain* swapChain);
+
 	protected:
 		virtual bool initDevice(bool isSwapChainEnabled) override;
 		virtual void releaseDevice() override;
@@ -64,6 +69,7 @@ namespace VT_D3D12
 
 		//SwapChain
 		virtual VT::ISwapChain* createSwapChain(const VT::SwapChainDesc& desc, const VT::IWindow* window) override;
+		virtual bool resizeSwapChain(VT::ISwapChain* swapChain, const VT::Vector2UInt16& newSize) override;
 		virtual void destroySwapChain(VT::ISwapChain* swapChain) override;
 
 		//Buffer

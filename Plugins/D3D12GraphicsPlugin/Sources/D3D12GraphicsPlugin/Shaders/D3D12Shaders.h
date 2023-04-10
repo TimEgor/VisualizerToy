@@ -19,6 +19,7 @@ namespace VT_D3D12
 		virtual ~D3D12ShaderBase() = default;
 
 		CodeBlobComPtr getDXCShaderCodeBlob() const { return m_dxcShaderCodeBlob; }
+		CodeBlobComPtr& getDXCShaderCodeBlobRef() { return m_dxcShaderCodeBlob; }
 	};
 
 	class D3D12VertexShader final : public VT::ManagedGraphicDevice::ManagedVertexShaderBase, public D3D12ShaderBase

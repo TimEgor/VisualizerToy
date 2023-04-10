@@ -19,8 +19,10 @@ namespace VT_D3D12
 		uint32_t m_currentTextureIndex = 0;
 
 	public:
-		D3D12SwapChain(const VT::SwapChainDesc& desc, D3D12DeviceComPtr d3d12Device, DXGISwapChainComPtr dxgiSwapChain,
-			D3D12Texture2D* textures, D3D12ResourceDescriptor* targetViews, uint32_t textureCount);
+		D3D12SwapChain::D3D12SwapChain(const VT::SwapChainDesc& desc, D3D12DeviceComPtr d3d12Device,
+			DXGISwapChainComPtr dxgiSwapChain, uint32_t textureCount)
+			: SwapChainBase(desc), D3D12DeviceObject(d3d12Device),
+			m_dxgiSwapChain(dxgiSwapChain), m_textureCount(textureCount) {}
 
 		virtual uint32_t getTextureCount() const override;
 		virtual VT::ITexture2D* getTargetTexture(uint32_t index) override;
@@ -32,6 +34,8 @@ namespace VT_D3D12
 		virtual void present() override;
 
 		DXGISwapChainComPtr getDXGISwapChain() const { return m_dxgiSwapChain; }
+
+		void setResources(D3D12Texture2D* textures, D3D12ResourceDescriptor* targetViews);
 
 		virtual void* getNativeHandle() const override { return getDXGISwapChain().Get(); }
 	};

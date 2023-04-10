@@ -35,12 +35,13 @@ namespace VT_D3D12
 	public:
 		D3D12UploadingContext(D3D12CommandQueueComPtr d3d12UploadingCommandQueue, D3D12GraphicsCommandListComPtr d3d12CommandList,
 			D3D12CommandAllocatorComPtr d3d12CommandAllocator, D3D12Fence syncFence);
-		~D3D12UploadingContext() { wait(); }
 
 		void reset();
 		void submit();
 		void wait();
 
 		void uploadResource(D3D12ResourceBase* scrResource, D3D12ResourceBase* dstResource, const D3D12_SUBRESOURCE_DATA& data);
+
+		D3D12Fence& getSyncFence() { return m_syncFence; }
 	};
 }

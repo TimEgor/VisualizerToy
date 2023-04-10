@@ -41,7 +41,7 @@ namespace VT
 		virtual InstancedEventID registerInstancedEvent(InstancedEventType eventType) = 0;
 		virtual bool unregisterInstancedEvent(InstancedEventID eventID) = 0;
 
-		virtual InstancedEventDispatcherID addInstanceEventDispatcher(EventType type, const InstancedEventDispatcher& dispatcher) = 0;
+		virtual InstancedEventDispatcherID addInstanceEventDispatcher(InstancedEventID eventID, const InstancedEventDispatcher& dispatcher) = 0;
 		virtual void removeInstancedEventDispatcher(InstancedEventDispatcherID dispatcherID) = 0;
 
 		virtual bool dispatchInstancedEvent(InstancedEventID eventID, const IInstancedEvent& event) const = 0;

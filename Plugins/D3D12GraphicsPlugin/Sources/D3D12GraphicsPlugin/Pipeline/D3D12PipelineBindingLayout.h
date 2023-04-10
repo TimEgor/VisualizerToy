@@ -17,6 +17,7 @@ namespace VT_D3D12
 			: m_d3d12RootSignature(d3d12RootSignature), m_hash(hash) {}
 
 		D3D12RootSignatureComPtr getD3D12RootSignature() const { return m_d3d12RootSignature; }
+		D3D12RootSignatureComPtr& getD3D12RootSignatureRef() { return m_d3d12RootSignature; }
 
 		virtual VT::PipelineBindingLayoutHash getHash() const override { return m_hash; }
 

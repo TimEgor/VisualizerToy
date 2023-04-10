@@ -10,6 +10,7 @@ vt_add_module_target(GraphicDevice INTERFACE "VT_Engine/Graphics/Device")
 target_link_libraries(GraphicDevice
 	INTERFACE
 		Core
+		Math
 		GPUBuffer
 		Textures
 )

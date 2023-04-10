@@ -18,5 +18,8 @@ namespace VT_D3D12
 		virtual ~D3D12ResourceBase() = default;
 
 		D3D12ResourceComPtr getD3D12Resource() const { return m_d3d12Resource; }
+
+		D3D12ResourceComPtr& getD3D12ResourceRef() { return m_d3d12Resource; }
+		D3D12MemAllocationComPtr& getD3D12MemAllocationRef() { return m_d3d12MemAllocation; }
 	};
 }

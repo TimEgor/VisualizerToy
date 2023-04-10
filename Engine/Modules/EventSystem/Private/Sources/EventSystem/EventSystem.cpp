@@ -2,13 +2,20 @@
 
 bool VT::EventSystem::init()
 {
-	return m_dispatchers.init();
+	VT_CHECK_INITIALIZATION(m_dispatchers.init());
+
+	VT_CHECK_INITIALIZATION(m_instancedEvents.init());
+	VT_CHECK_INITIALIZATION(m_instancedDispatchers.init());
 }
 
 void VT::EventSystem::release()
 {
 	m_dispatchers.release();
 	m_dispatcherOrders = DispatcherOrdersCollection();
+
+	m_instancedEvents.release();
+	m_instancedDispatchers.release();
+	m_instancedDispatcherOrders = InstancedDispatcherOrdersCollection();
 }
 
 bool VT::EventSystem::registerEvent(EventType type)
@@ -172,7 +179,7 @@ void VT::EventSystem::removeInstancedEventDispatcher(InstancedEventDispatcherID 
 	}
 	else
 	{
-		InstancedEventDispatcherID firstOrderDispatcherID = m_instancedDispatcherOrders.at(dispatcherData->m_eventID);
+		InstancedEventDispatcherID& firstOrderDispatcherID = m_instancedDispatcherOrders.at(dispatcherData->m_eventID);
 		assert(firstOrderDispatcherID == dispatcherID);
 
 		firstOrderDispatcherID = dispatcherData->m_prevSiblingID;

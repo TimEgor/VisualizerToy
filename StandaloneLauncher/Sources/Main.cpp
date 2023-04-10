@@ -139,27 +139,31 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 		while (!engine->isStoped())
 		{
-			engine->beginFrame();
-
 			graphicDevice->waitContexts();
 			graphicDevice->resetContexts();
+
+			engine->beginFrame();
 
 			debugUi->update();
 
 			engine->updateFrame();
 
-			renderSystem->collectRenderingData(*levelSystem->getCurrentLevel());
-			renderSystem->waitFrame();
+			if (!engine->isRenderingPaused())
+			{
+				renderSystem->collectRenderingData(*levelSystem->getCurrentLevel());
+				renderSystem->waitFrame();
 
-			graphicPresenter->updateNextTargetTextureIndex();
-			const uint32_t frameIndex = graphicPresenter->getCurrentTargetTextureIndex();
+				graphicPresenter->updateNextTargetTextureIndex();
+				const uint32_t frameIndex = graphicPresenter->getCurrentTargetTextureIndex();
 
-			renderSystem->render(
-				graphicPresenter->getTargetTexture(frameIndex),
-				graphicPresenter->getTargetTextureView(frameIndex)
-			);
+				renderSystem->render(
+					graphicPresenter->getTargetTexture(frameIndex),
+					graphicPresenter->getTargetTextureView(frameIndex)
+				);
 
-			graphicPresenter->present();
+				graphicPresenter->present();
+			}
+
 			graphicDevice->submitContexts();
 
 			engine->endFrame();

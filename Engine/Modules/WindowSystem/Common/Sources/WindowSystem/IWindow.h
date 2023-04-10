@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Core/TypeHashMacros.h"
-#include "InputSystem/Keys.h"
 #include "Math/Vector.h"
+
+#include "EventSystem/IEventSystem.h"
 
 namespace VT
 {
@@ -35,6 +36,23 @@ namespace VT
 
 	constexpr WindowArea DefaultWindowArea = WindowArea{ 0, 0, 0, 0 };
 
+	class IWindow;
+
+	struct WindowEventBase : public IInstancedEvent
+	{
+		IWindow* m_window = nullptr;
+
+		WindowEventBase(IWindow* window) : m_window(window) {}
+	};
+
+	struct WindowSizeEvent final : public WindowEventBase
+	{
+		WindowSizeEvent(IWindow* window)
+			: WindowEventBase(window) {}
+
+		VT_INSTANCED_EVENT_TYPE(WINDOW_SIZE_EVENT_TYPE);
+	};
+
 	using WindowType = HashTyped::Type;
 
 	class IWindow : public HashTyped
@@ -53,6 +71,8 @@ namespace VT
 		virtual const WindowSize& getWindowSize() const = 0;
 		virtual const WindowSize& getClientAreaSize() const = 0;
 		virtual const WindowArea& getCutoutsArea() const = 0;
+
+		virtual InstancedEventID getWindowSizeEventID() const = 0;
 
 		virtual void* getNativeHandle() const = 0;
 

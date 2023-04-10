@@ -21,6 +21,7 @@ namespace VT_D3D12
 		virtual ~D3D12PipelineState() = default;
 
 		D3D12PipelineStateComPtr getD3D12Pipeline() const { return m_d3d12PipelineState; }
+		D3D12PipelineStateComPtr& getD3D12PipelineRef() { return m_d3d12PipelineState; }
 	};
 
 	class D3D12GraphicPipelineState final : public VT::ManagedGraphicDevice::ManagedGraphicPipelineStateBase, public D3D12PipelineState

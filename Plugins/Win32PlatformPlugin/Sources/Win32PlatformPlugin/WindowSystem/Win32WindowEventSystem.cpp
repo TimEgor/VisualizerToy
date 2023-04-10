@@ -18,6 +18,8 @@ LRESULT VT_WIN32::Win32WindowEventSystem::wndProc(HWND hwnd, UINT msg, WPARAM wP
 
 	if (windowData && windowData->m_header == Win32Window::WindowData::HeaderSignature)
 	{
+		Win32Window* window = windowData->m_vtWindow;
+
 		switch (msg)
 		{
 		case WM_DESTROY:
@@ -31,18 +33,16 @@ LRESULT VT_WIN32::Win32WindowEventSystem::wndProc(HWND hwnd, UINT msg, WPARAM wP
 
 		case WM_EXITSIZEMOVE:
 		{
-			//GlobalEngineInstance::getInstance()->pauseRendering(false);
-			//Renderer* renderer = GlobalEngineInstance::getInstance()->getEnvironment()->m_graphicManager->getCurrentRenderer();
-			//if (renderer)
-			//{
-			//	renderer->updateSwapChain(*window);
-			//}
+			VT::WindowSizeEvent event(window);
+			eventSystem->dispatchInstancedEvent(window->getWindowSizeEventID(), event);
+
+			VT::EngineInstance::getInstance()->pauseRendering(false);
 
 			break;
 		}
 		case WM_SIZE:
 		{
-			windowData->m_vtWindow->updateSize();
+			window->updateSize();
 			break;
 		}
 		}

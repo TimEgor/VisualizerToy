@@ -23,6 +23,7 @@ namespace VT_D3D12
 		void incrementValue() { ++m_value; }
 
 		D3D12FenceComPtr getD3D12Fence() const { return m_d3d12Fence; }
+		D3D12FenceComPtr& getD3D12FenceRef() { return m_d3d12Fence; }
 		HANDLE getEventHandle() const { return m_winEvent; }
 	};
 }

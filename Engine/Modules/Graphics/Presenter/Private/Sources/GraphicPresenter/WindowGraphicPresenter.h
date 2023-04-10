@@ -1,6 +1,8 @@
 #pragma once
 
 #include "GraphicPresenter/IPresenter.h"
+#include "EventSystem/IEventSystem.h"
+#include "WindowSystem/IWindow.h"
 
 namespace VT
 {
@@ -14,6 +16,9 @@ namespace VT
 	{
 	private:
 		ISwapChain* m_swapChain = nullptr;
+		InstancedEventDispatcherID m_windowSizeEventDispatcher = InvalidInstancedEventDispatcherID;
+
+		void onWindowSizeEvent(const WindowSizeEvent& event);
 
 	public:
 		WindowGraphicPresenter() = default;

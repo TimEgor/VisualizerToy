@@ -10,6 +10,14 @@
 
 #include "SwapChain/ISwapChain.h"
 
+void VT::WindowGraphicPresenter::onWindowSizeEvent(const WindowSizeEvent& event)
+{
+	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
+	assert(environment && environment->m_graphicDevice);
+
+	environment->m_graphicDevice->resizeSwapChain(m_swapChain, event.m_window->getClientAreaSize());
+}
+
 bool VT::WindowGraphicPresenter::init(const IWindow* window, const SwapChainDesc& swapChainDesc)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
@@ -18,6 +26,11 @@ bool VT::WindowGraphicPresenter::init(const IWindow* window, const SwapChainDesc
 	m_swapChain = environment->m_graphicDevice->createSwapChain(swapChainDesc, window);
 	VT_CHECK_RETURN_FALSE_ASSERT_MSG(m_swapChain, "Swap chain hasn't been created.");
 
+	m_windowSizeEventDispatcher = environment->m_eventSystem->addInstanceEventDispatcher(window->getWindowSizeEventID(),
+		[this](const IInstancedEvent& event) { onWindowSizeEvent(reinterpret_cast<const WindowSizeEvent&>(event)); }
+	);
+	VT_CHECK_INITIALIZATION(m_windowSizeEventDispatcher != InvalidEventDispatcherID);
+
 	return true;
 }
 
@@ -25,6 +38,12 @@ void VT::WindowGraphicPresenter::release()
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	VT_CHECK_RETURN_ASSERT(environment && environment->m_windowSystem && environment->m_graphicResourceManager);
+
+	if (m_windowSizeEventDispatcher != InvalidInstancedEventDispatcherID)
+	{
+		environment->m_eventSystem->removeInstancedEventDispatcher(m_windowSizeEventDispatcher);
+		m_windowSizeEventDispatcher = InvalidInstancedEventDispatcherID;
+	}
 
 	if (m_swapChain)
 	{

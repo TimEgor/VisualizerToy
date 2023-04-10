@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core/TypeHashMacros.h"
+#include "Math/Vector.h"
+
 #include "GPUBuffer/IGPUBuffer.h"
 #include "Textures/TextureCommon.h"
 
@@ -65,6 +67,7 @@ namespace VT
 
 		//SwapChain
 		virtual ISwapChain* createSwapChain(const SwapChainDesc& desc, const IWindow* window) = 0;
+		virtual bool resizeSwapChain(ISwapChain* swapChain, const Vector2UInt16& newSize) = 0;
 		virtual void destroySwapChain(ISwapChain* swapChain) = 0;
 
 		//
