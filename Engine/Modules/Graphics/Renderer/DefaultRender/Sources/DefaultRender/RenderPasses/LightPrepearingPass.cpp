@@ -12,13 +12,14 @@
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
 
-#include "RenderSystem/RenderingData.h"
-#include "RenderSystem/RenderPassEnvironment.h"
-#include "RenderSystem/LightSources/PointLightData.h"
+#include "GraphRender/RenderPassEnvironment.h"
+#include "GraphRender/RenderPassGraphBuilder.h"
+#include "DefaultRender/LightSources/PointLightData.h"
 #include "LightingVolumeData.h"
 
 #include "Math/ComputeMatrix.h"
 #include "Math/ComputeVector.h"
+
 #include "Textures/ITexture2D.h"
 
 // need to be sync with val in the shaders
@@ -87,7 +88,7 @@ bool VT::LightPrepearingPass::initBoundingBoxCalcData(IGraphicResourceManager* r
 	return true;
 }
 
-void VT::LightPrepearingPass::sortPointLights(const RenderingData::PointLightDataCollection& data, const CameraTransforms& cameraTransform)
+void VT::LightPrepearingPass::sortPointLights(const LightPrepearingRenderPassData::PointLightCollection& data, const CameraTransforms& cameraTransform)
 {
 	COMPUTE_MATH::ComputeMatrix viewTransformMatrix = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(cameraTransform.m_viewTransform);
 	COMPUTE_MATH::ComputeVector resultPosition;
@@ -134,7 +135,7 @@ void VT::LightPrepearingPass::sortPointLights(const RenderingData::PointLightDat
 }
 
 void VT::LightPrepearingPass::fillPointLightBuffer(IGPUBuffer* pointLightBuffer,
-	const RenderingData::PointLightDataCollection& lightData)
+	const LightPrepearingRenderPassData::PointLightCollection& lightData)
 {
 	PointLightData* mappedLights = nullptr;
 	pointLightBuffer->mapData(reinterpret_cast<void**>(&mappedLights));
@@ -150,11 +151,8 @@ void VT::LightPrepearingPass::fillPointLightBuffer(IGPUBuffer* pointLightBuffer,
 	pointLightBuffer->unmapData();
 }
 
-void VT::LightPrepearingPass::fillPointLightZSliceBuffer(IGPUBuffer* zSliceBuffer)
+void VT::LightPrepearingPass::fillPointLightZSliceBuffer(IGPUBuffer* zSliceBuffer, uint16_t slicesCount)
 {
-	assert(m_lightVolumeData);
-
-	const uint16_t slicesCount = m_lightVolumeData->getSlicesCount();
 	const float sliceDepth = 1.0f / slicesCount;
 
 	LightVolumeData::ZSlice* slicesMappedData = nullptr;
@@ -225,7 +223,8 @@ void VT::LightPrepearingPass::computeTilesDepth(IRenderContext* context, ShaderR
 }
 
 void VT::LightPrepearingPass::computeTilesBoudingBoxes(IRenderContext* context, ShaderResourceViewReference tilesBbUAV,
-	ShaderResourceViewReference tilesDepthSRV, ShaderResourceViewReference cameraTransformsSRV, ShaderResourceViewReference lightVolumeSRV)
+	ShaderResourceViewReference tilesDepthSRV, ShaderResourceViewReference cameraTransformsSRV,
+	ShaderResourceViewReference lightVolumeSRV, const Vector2UInt16& tilesCount)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
@@ -245,15 +244,15 @@ void VT::LightPrepearingPass::computeTilesBoudingBoxes(IRenderContext* context, 
 
 	context->setPipelineState(pipelineState->getTypedObject());
 
-	const uint32_t threadGroupCountX = (m_lightVolumeData->getTilesCounts().m_x + TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE - 1)
+	const uint32_t threadGroupCountX = (tilesCount.m_x + TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE - 1)
 		/ TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE;
-	const uint32_t threadGroupCountY = (m_lightVolumeData->getTilesCounts().m_y + TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE - 1)
+	const uint32_t threadGroupCountY = (tilesCount.m_y + TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE - 1)
 		/ TILES_BOUNDING_BOXES_CALC_THREAD_GROUP_SIZE;
 	context->dispatch(threadGroupCountX, threadGroupCountY, 1);
 }
 
 void VT::LightPrepearingPass::clearPointLightTileMasks(IRenderContext* context, ShaderResourceViewReference tilesUAV,
-	ShaderResourceViewReference lightVolumeSRV)
+	ShaderResourceViewReference lightVolumeSRV, const Vector2UInt16& tilesCount)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
@@ -271,9 +270,9 @@ void VT::LightPrepearingPass::clearPointLightTileMasks(IRenderContext* context, 
 
 	context->setPipelineState(pipelineState->getTypedObject());
 
-	const uint32_t threadGroupCountX = (m_lightVolumeData->getTilesCounts().m_x + POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE - 1)
+	const uint32_t threadGroupCountX = (tilesCount.m_x + POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE - 1)
 		/ POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE;
-	const uint32_t threadGroupCountY = (m_lightVolumeData->getTilesCounts().m_y + POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE - 1)
+	const uint32_t threadGroupCountY = (tilesCount.m_y + POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE - 1)
 		/ POINT_LIGHT_MASK_CLEARING_THREAD_GROUP_SIZE;
 	context->dispatch(threadGroupCountX, threadGroupCountY, 1);
 }
@@ -336,9 +335,21 @@ void VT::LightPrepearingPass::release()
 	m_lightVolumeBBCalcBindingLayout = nullptr;
 }
 
-void VT::LightPrepearingPass::execute(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
+void VT::LightPrepearingPass::fillRenderPassDependency(RenderPassGraphBuilder& builder) const
 {
-	const RenderingData::PointLightDataCollection& pointLightCollection = passContext.m_renderingData.getPointLighDataCollection();
+	builder.addRenderPassWriteResource(this, "lv_point_light_buffer", RenderPassEnvironmentResourceType::BUFFER);
+	builder.addRenderPassWriteResource(this, "lv_point_light_zslice_buffer", RenderPassEnvironmentResourceType::BUFFER);
+
+	builder.addRenderPassReadResource(this, "gb_depth_texture", RenderPassEnvironmentResourceType::TEXTURE);
+}
+
+void VT::LightPrepearingPass::execute(RenderDrawingContext& drawContext, const RenderPassEnvironment& passEnvironment, const IRenderPassData* data)
+{
+	assert(data);
+
+	const LightPrepearingRenderPassData& lightPrepearingData = data->getData<LightPrepearingRenderPassData>();
+
+	const LightPrepearingRenderPassData::PointLightCollection& pointLightCollection = lightPrepearingData.getLightData();
 	if (pointLightCollection.empty())
 	{
 		return;
@@ -364,20 +375,20 @@ void VT::LightPrepearingPass::execute(const RenderPassContext& passContext, cons
 	IGPUBuffer* pointLights = pointLightBuffer->getTypedResource();
 	IGPUBuffer* zSlices = zSliceBuffer->getTypedResource();
 
-	sortPointLights(pointLightCollection, passContext.m_renderingData.getCameraTransform());
+	sortPointLights(pointLightCollection, lightPrepearingData.getCameraTransform());
 
 	fillPointLightBuffer(pointLights, pointLightCollection);
-	fillPointLightZSliceBuffer(zSlices);
+	fillPointLightZSliceBuffer(zSlices, lightPrepearingData.getSlicesCount());
 
-	computeTilesDepth(passContext.m_context, tilesDepthUAV, lightVolumeSRV,
+	computeTilesDepth(drawContext.m_context, tilesDepthUAV, lightVolumeSRV,
 		depthSourceSRV, depthSource->getTextureCast<ITexture2D>());
 
-	computeTilesBoudingBoxes(passContext.m_context, tilesBbUAV, tilesDepthSRV,
-		passContext.m_renderingData.getCameraTransformBufferView(), lightVolumeSRV);
+	computeTilesBoudingBoxes(drawContext.m_context, tilesBbUAV, tilesDepthSRV,
+		lightPrepearingData.getCameraTransformView(), lightVolumeSRV, lightPrepearingData.getTilesCount());
 
-	clearPointLightTileMasks(passContext.m_context, tilesUAV, lightVolumeSRV);
+	clearPointLightTileMasks(drawContext.m_context, tilesUAV, lightVolumeSRV, lightPrepearingData.getTilesCount());
 
-	computePointLightTileMasks(passContext.m_context, pointLightCollection.size(),
+	computePointLightTileMasks(drawContext.m_context, pointLightCollection.size(),
 		pointLightsSRV, tilesUAV, tilesBbSRV,
-		passContext.m_renderingData.getCameraTransformBufferView(), lightVolumeSRV);
+		lightPrepearingData.getCameraTransformView(), lightVolumeSRV);
 }

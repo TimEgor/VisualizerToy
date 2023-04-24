@@ -39,7 +39,6 @@ void VT_D3D12::D3D12GraphicPlugin::onUnloaded()
 
 	if (!graphicPlatform)
 	{
-		assert(false && "D3D12GraphicPlugin::onUnloaded() : Engine environment graphicPlatform is null.");
 		return;
 	}
 	
@@ -49,5 +48,5 @@ void VT_D3D12::D3D12GraphicPlugin::onUnloaded()
 		return;
 	}
 
-	VT_SAFE_DESTROY_WITH_RELEASING(graphicPlatform);
+	VT_SAFE_DESTROY_WITH_RELEASING(environment->m_graphicPlatform);
 }

@@ -11,13 +11,13 @@
 #include "MeshSystem/IMeshSystem.h"
 #include "MeshSystem/IMesh.h"
 
-#include "RenderSystem/GraphicRenderContext.h"
-#include "RenderSystem/RenderPassEnvironment.h"
+#include "RenderContext/GraphicRenderContext.h"
+#include "GraphRender/RenderPassEnvironment.h"
+#include "GraphRender/RenderPassGraphBuilder.h"
 
 #include "Textures/ITexture2D.h"
 
 #include "Math/Vector.h"
-#include "RenderSystem/RenderingData.h"
 
 bool VT::LightPass::initPipelineData()
 {
@@ -159,9 +159,20 @@ void VT::LightPass::release()
 	m_screenRectGeom = nullptr;
 }
 
-void VT::LightPass::execute(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
+void VT::LightPass::fillRenderPassDependency(RenderPassGraphBuilder& builder) const
 {
-	assert(passContext.m_context);
+	builder.addRenderPassReadResource(this, "gb_color_texture", RenderPassEnvironmentResourceType::TEXTURE);
+	builder.addRenderPassReadResource(this, "gb_normal_texture", RenderPassEnvironmentResourceType::TEXTURE);
+	builder.addRenderPassReadResource(this, "gb_position_texture", RenderPassEnvironmentResourceType::TEXTURE);
+	builder.addRenderPassReadResource(this, "lv_point_light_buffer", RenderPassEnvironmentResourceType::BUFFER);
+	builder.addRenderPassReadResource(this, "lv_point_light_zslice_buffer", RenderPassEnvironmentResourceType::BUFFER);
+}
+
+void VT::LightPass::execute(RenderDrawingContext& drawContext, const RenderPassEnvironment& passEnvironment, const IRenderPassData* data)
+{
+	assert(data);
+
+	const LightRenderPassData& lightData = data->getData<LightRenderPassData>();
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
@@ -169,20 +180,20 @@ void VT::LightPass::execute(const RenderPassContext& passContext, const RenderPa
 	pipelineStateInfo.m_vertexShader = m_pipelineData.m_presentVertexShader->getTypedObject();
 	pipelineStateInfo.m_pixelShader = m_pipelineData.m_presentPointLightPixelShader->getTypedObject();
 
-	const Texture2DDesc& targetTextureDesc = passContext.m_target->getDesc();
+	const Texture2DDesc& targetTextureDesc = drawContext.m_target->getDesc();
 	pipelineStateInfo.m_targetFormats.push_back(targetTextureDesc.m_format);
 
 	GraphicRenderContextTarget targets[] = {
 		{
-			passContext.m_target,
-			passContext.m_targetView,
+			drawContext.m_target,
+			drawContext.m_targetView,
 			Viewport(targetTextureDesc.m_width, targetTextureDesc.m_height),
 			Scissors(targetTextureDesc.m_width, targetTextureDesc.m_height),
 			{ 0.0f, 0.0f, 0.0f, 1.0f }
 		}
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 1, targets, nullptr);
+	GraphicRenderContextUtils::setRenderingTargets(drawContext.m_context, 1, targets, nullptr);
 
 	IMesh* screenGeom = m_screenRectGeom->getMesh();
 	const MeshVertexData& vertexData = screenGeom->getVertexData();
@@ -201,24 +212,24 @@ void VT::LightPass::execute(const RenderPassContext& passContext, const RenderPa
 	ShaderResourceViewReference lightVolumeSlicesSRV = passEnvironment.getShaderResourceView("lv_point_light_zslice_srv");
 	ShaderResourceViewReference lightVolumeSRV = passEnvironment.getShaderResourceView("lv_info_srv");
 
-	passContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	passContext.m_context->setGraphicBindingLayout(m_pipelineData.m_bindingLayout->getTypedObject());
+	drawContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
+	drawContext.m_context->setGraphicBindingLayout(m_pipelineData.m_bindingLayout->getTypedObject());
 
-	passContext.m_context->setGraphicBindingParameterValue(0, 0, passContext.m_renderingData.getCameraTransformBufferView()->getResourceView()->getBindingHeapOffset());
-	passContext.m_context->setGraphicBindingParameterValue(1, 0, lightVolumeSRV->getResourceView()->getBindingHeapOffset());
-
-	passContext.m_context->setGraphicBindingParameterValue(2, 0, colorSRV->getResourceView()->getBindingHeapOffset());
-	passContext.m_context->setGraphicBindingParameterValue(2, 1, normalSRV->getResourceView()->getBindingHeapOffset());
-	passContext.m_context->setGraphicBindingParameterValue(2, 2, positionSRV->getResourceView()->getBindingHeapOffset());
-
-	passContext.m_context->setGraphicBindingParameterValue(3, 0, pointLightsSRV->getResourceView()->getBindingHeapOffset());
-	passContext.m_context->setGraphicBindingParameterValue(3, 1, tilesSRV->getResourceView()->getBindingHeapOffset());
-	passContext.m_context->setGraphicBindingParameterValue(3, 2, lightVolumeSlicesSRV->getResourceView()->getBindingHeapOffset());
-
-	passContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
-	GraphicRenderContextUtils::setPipelineState(passContext.m_context, pipelineState);
-	GraphicRenderContextUtils::setVertexBuffers(passContext.m_context, vertexData.m_bindings.size(),
+	drawContext.m_context->setGraphicBindingParameterValue(0, 0, lightData.getCameraTransformView()->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(1, 0, lightVolumeSRV->getResourceView()->getBindingHeapOffset());
+	
+	drawContext.m_context->setGraphicBindingParameterValue(2, 0, colorSRV->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(2, 1, normalSRV->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(2, 2, positionSRV->getResourceView()->getBindingHeapOffset());
+	
+	drawContext.m_context->setGraphicBindingParameterValue(3, 0, pointLightsSRV->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(3, 1, tilesSRV->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(3, 2, lightVolumeSlicesSRV->getResourceView()->getBindingHeapOffset());
+	
+	drawContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
+	GraphicRenderContextUtils::setPipelineState(drawContext.m_context, pipelineState);
+	GraphicRenderContextUtils::setVertexBuffers(drawContext.m_context, vertexData.m_bindings.size(),
 		vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
-	GraphicRenderContextUtils::setIndexBuffer(passContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
-	passContext.m_context->drawIndexed(indexData.m_indexCount);
+	GraphicRenderContextUtils::setIndexBuffer(drawContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
+	drawContext.m_context->drawIndexed(indexData.m_indexCount);
 }

@@ -1,5 +1,6 @@
 #include "ModelConverterFBX.h"
 
+#include "Core/Platform.h"
 #include "Core/UtilitiesMacros.h"
 #include "FbxMemoryStream.h"
 #include "FbxFileSystemReadStream.h"
@@ -7,10 +8,8 @@
 
 #include <cassert>
 
-#include "Core/Platform.h"
-
 bool VT_MODEL_RC::ModelConverterFBX::convertModel(void* data, size_t dataSize,
-                                                  VT::IFileSystem& outFileSystem, const VT::FileName& outFilePath)
+	VT::IFileSystem& outFileSystem, const VT::FileName& outFilePath)
 {
 	FbxMemoryStream inputDataStream(m_fbxManager, data, dataSize);
 
@@ -38,7 +37,7 @@ bool VT_MODEL_RC::ModelConverterFBX::convertModel(const VT::IFileSystem& inFileS
 }
 
 bool VT_MODEL_RC::ModelConverterFBX::convertModel(FbxImporter* fbxImporter,
-                                                  VT::IFileSystem& outFileSystem, const VT::FileName& outFilePath)
+	VT::IFileSystem& outFileSystem, const VT::FileName& outFilePath)
 {
 	FbxScene* fbxScene = FbxScene::Create(m_fbxManager, "fbxScene");
 	if (!fbxImporter || !fbxScene)
@@ -96,7 +95,6 @@ void VT_MODEL_RC::ModelConverterFBX::release()
 	}
 
 	m_fbxIOSettings = nullptr;
-
 }
 
 void VT_MODEL_RC::ModelConverterFBX::convert(void* inData, size_t inDataSize, void** outData, size_t& outDataSize,

@@ -2,7 +2,7 @@
 
 #include "GraphicResourceManager/ObjectHandles.h"
 #include "MeshSystem/MeshHandle.h"
-#include "RenderSystem/IRenderPass.h"
+#include "GraphRender/IRenderPass.h"
 
 namespace VT
 {
@@ -34,6 +34,6 @@ namespace VT
 
 		virtual bool init() override;
 		virtual void release() override;
-		virtual void execute(const RenderPassContext& passContext, const RenderPassEnvironment& environment) override;
+		virtual void execute(RenderDrawingContext& drawContext, const RenderPassEnvironment& environment, const IRenderPassData* data) override;
 	};
 }

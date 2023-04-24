@@ -1,6 +1,6 @@
 #include "PreparingRenderingDataSystem.h"
 
-#include "RenderingData.h"
+#include "DefaultRender/DefaultRenderingData.h"
 #include "Scene/IScene.h"
 #include "LevelSystem/ILevel.h"
 #include "EntityComponentSystem/EntityComponentSystem.h"
@@ -9,7 +9,7 @@
 #include "MeshSystem/MeshComponent.h"
 #include "LightSystem/PointLightComponent.h"
 
-void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, const EntityComponentSystem* ecs, RenderingData& renderingData)
+void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData)
 {
 	auto ecsView = ecs->getView<SceneNodeIDComponent, MeshComponent>();
 
@@ -27,7 +27,7 @@ void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, cons
 	}
 }
 
-void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, const EntityComponentSystem* ecs, RenderingData& renderingData)
+void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData)
 {
 	auto ecsView = ecs->getView<SceneNodeIDComponent, PointLightComponent>();
 
@@ -40,7 +40,7 @@ void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, con
 	}
 }
 
-void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, RenderingData& renderingData)
+void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, DefaultRenderingData& renderingData)
 {
 	renderingData.clear();
 

@@ -30,7 +30,7 @@ namespace VT
 			: m_mesh(mesh), m_transformIndex(transformIndex) {}
 	};
 
-	class RenderingData final
+	class DefaultRenderingData final
 	{
 	public:
 		using MeshDataCollection = std::vector<MeshRenderingDataNode>;
@@ -50,7 +50,7 @@ namespace VT
 		ShaderResourceViewReference m_cameraTransformCBV;
 
 	public:
-		RenderingData() = default;
+		DefaultRenderingData() = default;
 
 		bool init();
 

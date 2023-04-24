@@ -36,18 +36,10 @@ void VT_RC::ResourceConverterPluginBase::onLoaded()
 void VT_RC::ResourceConverterPluginBase::onUnloaded()
 {
 	VT::EngineEnvironment* environment = VT::EngineInstance::getInstance()->getEnvironment();
-	if (!environment)
-	{
-		assert(false && "ResourceConverterBase::onUnloaded() : Engine environment is invalid.");
-		return;
-	}
-
 	VT::IResourceSystem* resSystem = environment->m_resourceSystem;
-	if (!resSystem)
+	if (resSystem)
 	{
-		assert(false && "ResourceConverterBase::onUnloaded() : Engine environment resourceSystem is invalid.");
-		return;
+		resSystem->removeResourceConverter(getConverterType());
 	}
 
-	resSystem->removeResourceConverter(getConverterType());
 }

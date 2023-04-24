@@ -1,7 +1,7 @@
 #pragma once
 
+#include "GraphRender/IRenderPass.h"
 #include "GraphicResourceManager/ObjectHandles.h"
-#include "RenderSystem/IRenderPass.h"
 #include "MeshSystem/MeshHandle.h"
 
 namespace VT
@@ -10,6 +10,20 @@ namespace VT
 
 	struct MeshVertexData;
 	struct MeshIndexData;
+
+	class LightRenderPassData final : public IRenderPassData
+	{
+	private:
+		ShaderResourceViewReference m_cameraTransformBufferView;
+
+	public:
+		LightRenderPassData(const ShaderResourceViewReference& cameraTransformView)
+			: m_cameraTransformBufferView(cameraTransformView) {}
+
+		const ShaderResourceViewReference& getCameraTransformView() const { return m_cameraTransformBufferView; }
+
+		VT_RENDER_PASS_DATA_TYPE(LIGHT_DATA_TYPE);
+	};
 
 	class LightPass final : public IRenderPass
 	{
@@ -35,6 +49,9 @@ namespace VT
 
 		virtual bool init() override;
 		virtual void release() override;
-		virtual void execute(const RenderPassContext& passContext, const RenderPassEnvironment& environment) override;
+
+		virtual void fillRenderPassDependency(RenderPassGraphBuilder& builder) const override;
+
+		virtual void execute(RenderDrawingContext& drawContext, const RenderPassEnvironment& environment, const IRenderPassData* data) override;
 	};
 }

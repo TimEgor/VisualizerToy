@@ -38,10 +38,8 @@ namespace VT_DUMMY_RS
 		}
 
 		VT::IResourceSystem* resourceSystem = environment->m_resourceSystem;
-
 		if (!resourceSystem)
 		{
-			assert(false && "DummyResourceSystemPlugin::onUnloaded() : Engine environment resourceSystem is null.");
 			return;
 		}
 
@@ -51,6 +49,6 @@ namespace VT_DUMMY_RS
 			return;
 		}
 
-		VT_SAFE_DESTROY_WITH_RELEASING(resourceSystem);
+		VT_SAFE_DESTROY_WITH_RELEASING(environment->m_resourceSystem);
 	}
 }

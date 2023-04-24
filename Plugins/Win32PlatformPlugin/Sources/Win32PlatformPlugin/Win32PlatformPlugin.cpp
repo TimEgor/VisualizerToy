@@ -36,8 +36,16 @@ void VT_WIN32::Win32PluginPlatform::onUnloaded()
 	}
 
 	VT::IPlatform* platform = environment->m_platform;
-	if (platform && platform->getType() == Win32Platform::getPlatformType())
+	if (!platform)
 	{
-		VT_SAFE_DESTROY_WITH_RELEASING(platform);
+		return;
 	}
+
+	if (platform->getType() == Win32Platform::getPlatformType())
+	{
+		assert(false && "Win32PluginPlatform::onUnloaded() : Engine environment platfotm isn't Win32.");
+		return;
+	}
+
+	VT_SAFE_DESTROY_WITH_RELEASING(environment->m_platform);
 }

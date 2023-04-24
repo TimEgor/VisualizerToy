@@ -9,8 +9,8 @@
 #include "GraphicDevice/IGraphicDevice.h"
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 
-#include "RenderSystem/RenderPassEnvironment.h"
-#include "RenderSystem/LightSources/PointLightData.h"
+#include "GraphRender/RenderPassEnvironment.h"
+#include "DefaultRender/LightSources/PointLightData.h"
 
 #include "Math/Box.h"
 #include "Math/ComputeVector.h"

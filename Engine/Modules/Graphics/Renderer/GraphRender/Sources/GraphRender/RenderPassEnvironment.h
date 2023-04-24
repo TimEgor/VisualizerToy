@@ -10,6 +10,18 @@ namespace VT
 	using RenderPassEnvironmentResourceName = FileName;
 	using RenderPassEnvironmentResourceID = FileNameID;
 
+	enum class RenderPassEnvironmentResourceType
+	{
+		UNKNOWN,
+
+		TEXTURE,
+		BUFFER,
+
+		SRV,
+		RTV,
+		DSV
+	};
+
 	class RenderPassEnvironment final
 	{
 		using TextureCollection = std::unordered_map<RenderPassEnvironmentResourceID, TextureReference>;

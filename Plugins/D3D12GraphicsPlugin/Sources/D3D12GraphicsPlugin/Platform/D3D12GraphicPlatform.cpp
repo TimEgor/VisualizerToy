@@ -21,7 +21,7 @@ void VT_D3D12::D3D12GraphicPlatform::release()
 	VT::IGraphicDevice* graphicDevice = VT::EngineInstance::getInstance()->getEnvironment()->m_graphicDevice;
 	if (graphicDevice && graphicDevice->getType() == D3D12GraphicDevice::getGraphicDeviceType())
 	{
-		VT_SAFE_DESTROY_WITH_RELEASING(graphicDevice);
+		VT_SAFE_DESTROY_WITH_RELEASING(VT::EngineInstance::getInstance()->getEnvironment()->m_graphicDevice);
 	}
 }
 

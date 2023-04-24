@@ -9,17 +9,17 @@
 #include "Engine/EngineEnvironment.h"
 
 #include "WindowSystem/IWindowSystem.h"
+#include "WindowSystem/IWindow.h"
+
+#include "ResourceSystem/IResourceSystem.h"
 
 #include "DebugUiSystem/IDebugUiSystem.h"
 
 #include "GraphicDevice/IGraphicDevice.h"
-
-#include "GraphicPresenter/WindowGraphicPresenter.h"
-#include "WindowSystem/IWindow.h"
-#include "SwapChain/ISwapChain.h"
-
 #include "RenderSystem/IRenderSystem.h"
-#include "ResourceSystem/IResourceSystem.h"
+#include "DefaultSceneRender/DefaultSceneRender.h"
+#include "SwapChain/ISwapChain.h"
+#include "GraphicPresenter/WindowGraphicPresenter.h"
 
 #include "MeshSystem/MeshSystem.h"
 
@@ -29,6 +29,7 @@
 #include "ArgParser/Parser.h"
 
 #include <vector>
+
 
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -127,8 +128,17 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		}
 	}
 
+	VT::DefaultSceneRender* sceneRender = new VT::DefaultSceneRender();
+	if (!sceneRender || !sceneRender->init())
 	{
+		return VT_LAUNCHER_RENDER_INIT_ERROR;
+	}
+
+	{
+
 		VT::IRenderSystem* renderSystem = engineEnvironment->m_renderSystem;
+		renderSystem->setRender(sceneRender);
+
 		VT::ILevelSystem* levelSystem = engineEnvironment->m_levelSystem;
 		VT::IGraphicDevice* graphicDevice = engineEnvironment->m_graphicDevice;
 		VT::IDebugUiSystem* debugUi = engineEnvironment->m_debugUiSystem;
@@ -150,13 +160,13 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 			if (!engine->isRenderingPaused())
 			{
-				renderSystem->collectRenderingData(*levelSystem->getCurrentLevel());
+				sceneRender->prepareRenderData(*levelSystem->getCurrentLevel());
 				renderSystem->waitFrame();
 
 				graphicPresenter->updateNextTargetTextureIndex();
 				const uint32_t frameIndex = graphicPresenter->getCurrentTargetTextureIndex();
 
-				renderSystem->render(
+				renderSystem->draw(
 					graphicPresenter->getTargetTexture(frameIndex),
 					graphicPresenter->getTargetTextureView(frameIndex)
 				);
@@ -173,6 +183,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	VT_SAFE_DESTROY(graphicPresenter);
+	VT_SAFE_DESTROY(sceneRender);
 
 	engineEnvironment->m_windowSystem->destroyWindow(window);
 

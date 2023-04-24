@@ -79,13 +79,13 @@ endfunction()
 
 ### vt_add_module
 function(vt_add_module CURRENT_TARGET_NAME LINK_MODIFIER MODULE MODULE_PATH BINARY_DIR)
-	message(">>> adding module: ${MODULE}")
+	message(">>> adding module: ${VT_COLOUR_BOLD_MAGENTA}${MODULE}${VT_COLOUR_RESET}")
 	vt_add_module_internal(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE} ${MODULE_PATH}/${MODULE} ${BINARY_DIR})
 endfunction()
 
 ### vt_add_module_by_path
 function(vt_add_module_by_path CURRENT_TARGET_NAME LINK_MODIFIER MODULE_NAME MODULE_PATH BINARY_DIR)
-	message(">>> adding module: ${MODULE_NAME} (${MODULE_PATH})")
+	message(">>> adding module: ${VT_COLOUR_BOLD_MAGENTA}${MODULE_NAME}${VT_COLOUR_RESET} (${MODULE_PATH})")
 	vt_add_module_internal(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${MODULE_NAME} ${MODULE_PATH} ${BINARY_DIR})
 endfunction()
 
@@ -132,7 +132,7 @@ endfunction()
 ### vt_add_plugin
 function(vt_add_plugin CURRENT_TARGET_NAME PLUGINS_SET PLUGINS_PATH BINARY_DIR)
 	foreach(PLUGIN ${PLUGINS_SET})
-		message(">>> adding plugin: ${PLUGIN}")
+		message(">>> adding plugin: ${VT_COLOUR_BOLD_BLUE}${PLUGIN}${VT_COLOUR_RESET}")
 		add_subdirectory(${PLUGINS_PATH}/${PLUGIN} ${BINARY_DIR}/${PLUGIN})
 	endforeach()
 endfunction()
@@ -154,7 +154,7 @@ function(vt_add_plugins_by_path CURRENT_TARGET_NAME PLUGINS_SET PLUGINS_PATH BIN
 
 	array2d_begin_loop(advanced "${PLUGINS_SET}" 2 "PLUGIN_NAME;PLUGIN_PATH")
 	while(advanced)
-		message(">>> adding plugin: ${PLUGIN_NAME} (${PLUGIN_PATH})")
+		message(">>> adding plugin: ${VT_COLOUR_BOLD_BLUE}${PLUGIN_NAME}${VT_COLOUR_RESET} (${PLUGIN_PATH})")
 		add_subdirectory(${PLUGIN_PATH}/${PLUGIN_NAME} ${BINARY_DIR}/${PLUGIN_NAME})
 		array2d_advance()
 	endwhile()
@@ -184,7 +184,7 @@ function(vt_add_third_party_module CURRENT_TARGET_NAME LINK_MODIFIER THIRD_PARTY
 	endif()
 
 	foreach(TARGET ${TARGETS})
-		message(">>> adding third party module: ${TARGET} (${THIRD_PARTY_MODULE_NAME})")
+		message(">>> adding third party module: ${VT_COLOUR_BOLD_YELLOW}${TARGET}${VT_COLOUR_RESET} (${THIRD_PARTY_MODULE_NAME})")
 		vt_link_module(${CURRENT_TARGET_NAME} ${LINK_MODIFIER} ${TARGET})
 	endforeach()
 endfunction()

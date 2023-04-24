@@ -9,6 +9,7 @@ namespace VT
 	{
 	public:
 		IDebugUiSystem() = default;
+		virtual ~IDebugUiSystem() {}
 
 		virtual bool init() = 0;
 		virtual void release() = 0;

@@ -8,7 +8,7 @@
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "Textures/ITexture2D.h"
 
-#include "RenderSystem/RenderPassEnvironment.h"
+#include "GraphRender/RenderPassEnvironment.h"
 
 bool VT::GBuffer::init(const Vector2UInt16& bufferResolution)
 {

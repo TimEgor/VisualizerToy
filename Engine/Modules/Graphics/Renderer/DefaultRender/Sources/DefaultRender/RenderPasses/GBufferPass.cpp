@@ -6,16 +6,18 @@
 
 #include "GraphicDevice/IGraphicDevice.h"
 
+#include "GraphRender/RenderPassEnvironment.h"
+#include "GraphRender/RenderPassGraphBuilder.h"
+
 #include "GraphicResourceManager/IGraphicResourceManager.h"
+#include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
+#include "RenderContext/GraphicRenderContext.h"
+
 #include "Math/ComputeMath.h"
 #include "Math/ComputeMatrix.h"
-#include "MeshSystem/IMesh.h"
-#include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
-#include "RenderSystem/GraphicRenderContext.h"
-#include "RenderSystem/RenderingData.h"
-#include "RenderSystem/RenderPassEnvironment.h"
-#include "Textures/ITexture2D.h"
 
+#include "MeshSystem/IMesh.h"
+#include "Textures/ITexture2D.h"
 
 bool VT::GBufferPass::initRenderingData()
 {
@@ -76,9 +78,20 @@ void VT::GBufferPass::release()
 	m_materialDrawingData.m_pixelShader = nullptr;
 }
 
-void VT::GBufferPass::execute(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
+void VT::GBufferPass::fillRenderPassDependency(RenderPassGraphBuilder& builder) const
 {
-	assert(passContext.m_context);
+	builder.addRenderPassWriteResource(this, "gb_color_texture", RenderPassEnvironmentResourceType::TEXTURE);
+	builder.addRenderPassWriteResource(this, "gb_normal_texture", RenderPassEnvironmentResourceType::TEXTURE);
+	builder.addRenderPassWriteResource(this, "gb_position_texture", RenderPassEnvironmentResourceType::TEXTURE);
+	builder.addRenderPassWriteResource(this, "gb_depth_texture", RenderPassEnvironmentResourceType::TEXTURE);
+}
+
+void VT::GBufferPass::execute(RenderDrawingContext& drawContext, const RenderPassEnvironment& passEnvironment, const IRenderPassData* data)
+{
+	assert(drawContext.m_context);
+	assert(data);
+
+	const GBufferRenderPassData& gBufferRenderingData = data->getData<GBufferRenderPassData>();
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
@@ -149,19 +162,20 @@ void VT::GBufferPass::execute(const RenderPassContext& passContext, const Render
 		0
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 3, renderTargets, &depthStencilTarget);
+	GraphicRenderContextUtils::setRenderingTargets(drawContext.m_context, 3, renderTargets, &depthStencilTarget);
 
 	pipelineStateInfo.m_depthStencilTest.m_enabled = true;
 	pipelineStateInfo.m_depthStencilTest.m_format = depthTextureDesc.m_format;
 
-	const RenderingData::TransformDataCollection& transforms = passContext.m_renderingData.getTransformDataCollection();
-	const RenderingData::MeshDataCollection& meshes = passContext.m_renderingData.getMeshDataCollection();
+	const GBufferRenderPassData::TransformCollection& transforms = gBufferRenderingData.getTransformData();
+	const GBufferRenderPassData::MeshCollection& meshes = gBufferRenderingData.getMeshData();
 	const size_t meshesCount = meshes.size();
 
-	passContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	passContext.m_context->setGraphicBindingLayout(m_passData.m_bindingLayout->getTypedObject());
+	drawContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
+	drawContext.m_context->setGraphicBindingLayout(m_passData.m_bindingLayout->getTypedObject());
 
-	passContext.m_context->setGraphicBindingParameterValue(0, 0, passContext.m_renderingData.getCameraTransformBufferView()->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(0, 0,
+		gBufferRenderingData.getCameraTransformView()->getResourceView()->getBindingHeapOffset());
 
 	Matrix44* mappingObjectTransform = nullptr;
 	m_passData.m_perObjectTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingObjectTransform));
@@ -192,14 +206,14 @@ void VT::GBufferPass::execute(const RenderPassContext& passContext, const Render
 
 		//
 
-		passContext.m_context->setGraphicBindingParameterValue(1, 0, m_passData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
-		passContext.m_context->setGraphicBindingParameterValue(1, 1, meshDataIndex);
+		drawContext.m_context->setGraphicBindingParameterValue(1, 0, m_passData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
+		drawContext.m_context->setGraphicBindingParameterValue(1, 1, meshDataIndex);
 
-		passContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
-		GraphicRenderContextUtils::setPipelineState(passContext.m_context, pipelineState);
-		GraphicRenderContextUtils::setVertexBuffers(passContext.m_context, vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
-		GraphicRenderContextUtils::setIndexBuffer(passContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
-		passContext.m_context->drawIndexed(indexData.m_indexCount);
+		drawContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
+		GraphicRenderContextUtils::setPipelineState(drawContext.m_context, pipelineState);
+		GraphicRenderContextUtils::setVertexBuffers(drawContext.m_context, vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
+		GraphicRenderContextUtils::setIndexBuffer(drawContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
+		drawContext.m_context->drawIndexed(indexData.m_indexCount);
 	}
 
 	m_passData.m_perObjectTransformBuffer->getTypedResource()->unmapData();

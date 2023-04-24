@@ -13,12 +13,7 @@ target_link_libraries(RenderSystem
 		Engine_COMMON
 		EntityComponentSystem
 
-		DebugUiSystem_COMMON
-
-		MeshSystem_ECS
-		Scene_ECS
-		LightSystem_ECS
-
+		Render
 		RenderContext
 
 		GraphicDevice
@@ -26,6 +21,8 @@ target_link_libraries(RenderSystem
 		GraphicPlatform
 		GraphicSynchronization
 		Math
+
+		DebugUiSystem
 
 	PUBLIC
 		Core

@@ -1,4 +1,4 @@
-#include "RenderingData.h"
+#include "DefaultRenderingData.h"
 
 #include "Engine/EngineEnvironment.h"
 #include "Engine/EngineInstance.h"
@@ -12,7 +12,7 @@
 #include "Math/Consts.h"
 
 
-bool VT::RenderingData::init()
+bool VT::DefaultRenderingData::init()
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
@@ -28,7 +28,7 @@ bool VT::RenderingData::init()
 
 }
 
-void VT::RenderingData::clear()
+void VT::DefaultRenderingData::clear()
 {
 	m_transforms.clear();
 	m_meshes.clear();
@@ -36,18 +36,18 @@ void VT::RenderingData::clear()
 	m_pointLights.clear();
 }
 
-void VT::RenderingData::addMesh(const MeshConstReference& mesh, const Matrix44& transform)
+void VT::DefaultRenderingData::addMesh(const MeshConstReference& mesh, const Matrix44& transform)
 {
 	m_transforms.push_back(transform);
 	m_meshes.emplace_back(mesh, m_transforms.size() - 1);
 }
 
-void VT::RenderingData::addPointLight(const Vector3& color, float radius, const Vector3& position)
+void VT::DefaultRenderingData::addPointLight(const Vector3& color, float radius, const Vector3& position)
 {
 	m_pointLights.emplace_back(color, radius, position);
 }
 
-void VT::RenderingData::setCameraTransforms()
+void VT::DefaultRenderingData::setCameraTransforms()
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicDevice* device = environment->m_graphicDevice;

@@ -11,8 +11,8 @@
 #include "MeshSystem/IMeshSystem.h"
 #include "MeshSystem/IMesh.h"
 
-#include "RenderSystem/GraphicRenderContext.h"
-#include "RenderSystem/RenderPassEnvironment.h"
+#include "RenderContext/GraphicRenderContext.h"
+#include "GraphRender/RenderPassEnvironment.h"
 
 #include "Textures/ITexture2D.h"
 
@@ -155,9 +155,9 @@ void VT::PresentPass::release()
 	m_screenRectGeom = nullptr;
 }
 
-void VT::PresentPass::execute(const RenderPassContext& passContext, const RenderPassEnvironment& passEnvironment)
+void VT::PresentPass::execute(RenderDrawingContext& drawContext, const RenderPassEnvironment& passEnvironment, const IRenderPassData* data)
 {
-	assert(passContext.m_context);
+	assert(drawContext.m_context);
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
@@ -165,20 +165,20 @@ void VT::PresentPass::execute(const RenderPassContext& passContext, const Render
 	pipelineStateInfo.m_vertexShader = m_pipelineData.m_presentVertexShader->getTypedObject();
 	pipelineStateInfo.m_pixelShader = m_pipelineData.m_presentPixelShader->getTypedObject();
 
-	const Texture2DDesc& targetTextureDesc = passContext.m_target->getDesc();
+	const Texture2DDesc& targetTextureDesc = drawContext.m_target->getDesc();
 	pipelineStateInfo.m_targetFormats.push_back(targetTextureDesc.m_format);
 
 	GraphicRenderContextTarget targets[] = {
 		{
-			passContext.m_target,
-			passContext.m_targetView,
+			drawContext.m_target,
+			drawContext.m_targetView,
 			Viewport(targetTextureDesc.m_width, targetTextureDesc.m_height),
 			Scissors(targetTextureDesc.m_width, targetTextureDesc.m_height),
 			{ 0.0f, 0.0f, 0.0f, 1.0f }
 		}
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(passContext.m_context, 1, targets, nullptr);
+	GraphicRenderContextUtils::setRenderingTargets(drawContext.m_context, 1, targets, nullptr);
 
 	IMesh* screenGeom = m_screenRectGeom->getMesh();
 	const MeshVertexData& vertexData = screenGeom->getVertexData();
@@ -189,15 +189,15 @@ void VT::PresentPass::execute(const RenderPassContext& passContext, const Render
 
 	ShaderResourceViewReference colorSRV = passEnvironment.getShaderResourceView("gb_color_srv");
 
-	passContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
-	passContext.m_context->setGraphicBindingLayout(m_pipelineData.m_bindingLayout->getTypedObject());
+	drawContext.m_context->setDescriptorHeap(environment->m_graphicDevice->getBindlessResourceDescriptionHeap());
+	drawContext.m_context->setGraphicBindingLayout(m_pipelineData.m_bindingLayout->getTypedObject());
 
-	passContext.m_context->setGraphicBindingParameterValue(0, 0, colorSRV->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(0, 0, colorSRV->getResourceView()->getBindingHeapOffset());
 
-	passContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
-	GraphicRenderContextUtils::setPipelineState(passContext.m_context, pipelineState);
-	GraphicRenderContextUtils::setVertexBuffers(passContext.m_context, vertexData.m_bindings.size(),
+	drawContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
+	GraphicRenderContextUtils::setPipelineState(drawContext.m_context, pipelineState);
+	GraphicRenderContextUtils::setVertexBuffers(drawContext.m_context, vertexData.m_bindings.size(),
 		vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
-	GraphicRenderContextUtils::setIndexBuffer(passContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
-	passContext.m_context->drawIndexed(indexData.m_indexCount);
+	GraphicRenderContextUtils::setIndexBuffer(drawContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
+	drawContext.m_context->drawIndexed(indexData.m_indexCount);
 }

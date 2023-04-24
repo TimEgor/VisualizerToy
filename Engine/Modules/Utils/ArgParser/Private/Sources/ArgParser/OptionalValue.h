@@ -12,6 +12,7 @@ namespace VT
 	public:
 		BaseOptionValue(const char* argStr)
 			: m_argStr(argStr) {}
+		virtual ~BaseOptionValue() {}
 
 		virtual void parse(const char* valStr) = 0;
 	};

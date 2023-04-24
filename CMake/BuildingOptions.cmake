@@ -1,4 +1,4 @@
-if (NOT DEFINED OPTIONS_SET)
+if (NOT DEFINED VT_OPTIONS_SET)
 	if (NOT DEFINED VT_ROOT_PATH)
 		message(FATAL_ERROR "Error: 'VT_ROOT_PATH' hasn't been defined.")
 	endif()
@@ -20,5 +20,7 @@ if (NOT DEFINED OPTIONS_SET)
 
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${VT_ROOT_PATH}/Libs/FindModules)
 
-	set(OPTIONS_SET)
-endif() #OPTIONS_SET
+	include(${VT_ROOT_PATH}/CMake/Colors.cmake)
+
+	set(VT_OPTIONS_SET)
+endif() #VT_OPTIONS_SET

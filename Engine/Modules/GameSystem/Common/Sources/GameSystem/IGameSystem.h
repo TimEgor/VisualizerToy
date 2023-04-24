@@ -10,7 +10,7 @@ namespace VT
 	{
 	public:
 		IGameSystem() = default;
-		virtual ~IGameSystem() = default;
+		virtual ~IGameSystem() {}
 
 		virtual bool init() = 0;
 		virtual void release() = 0;
