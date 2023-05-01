@@ -16,4 +16,5 @@ target_link_libraries(DefaultSceneRender
 		MeshSystem_ECS
 		Scene_ECS
 		LightSystem_ECS
+		Camera_ECS
 )

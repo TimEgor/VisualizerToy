@@ -260,5 +260,9 @@ endfunction()
 
 ### vt_add_ecs_module
 function(vt_add_ecs_module CURRENT_MODULE_NAME)
-	vt_add_module_by_path(${CURRENT_MODULE_NAME} PUBLIC ${CURRENT_MODULE_NAME}_ECS ${CMAKE_CURRENT_LIST_DIR}/../ECS ${CMAKE_CURRENT_BINARY_DIR}/../${CURRENT_MODULE_NAME}_ECS)
+	vt_add_ecs_module_link(${CURRENT_MODULE_NAME} PUBLIC)
+endfunction()
+
+function(vt_add_ecs_module_link CURRENT_MODULE_NAME LINK_MODIFIER)
+	vt_add_module_by_path(${CURRENT_MODULE_NAME} ${LINK_MODIFIER} ${CURRENT_MODULE_NAME}_ECS ${CMAKE_CURRENT_LIST_DIR}/../ECS ${CMAKE_CURRENT_BINARY_DIR}/../${CURRENT_MODULE_NAME}_ECS)
 endfunction()

@@ -135,7 +135,6 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	{
-
 		VT::IRenderSystem* renderSystem = engineEnvironment->m_renderSystem;
 		renderSystem->setRender(sceneRender);
 

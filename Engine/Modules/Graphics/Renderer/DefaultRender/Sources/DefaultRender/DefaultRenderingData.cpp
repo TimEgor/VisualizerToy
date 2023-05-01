@@ -16,6 +16,7 @@ bool VT::DefaultRenderingData::init()
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
+	IGraphicDevice* device = environment->m_graphicDevice;
 
 	GPUBufferDesc transformBufferDesc{};
 
@@ -23,6 +24,8 @@ bool VT::DefaultRenderingData::init()
 	transformBufferDesc.isHostVisible = true;
 	m_cameraTransformBuffer = resManager->createGPUBuffer(transformBufferDesc, CommonGraphicResourceState::GRAPHIC_STATE_COMMON_READ);
 	m_cameraTransformCBV = resManager->createBufferResourceDescriptor(m_cameraTransformBuffer);
+
+	device->setResourceName(m_cameraTransformBuffer->getResource(), "CameraTransform");
 
 	return true;
 
@@ -47,42 +50,24 @@ void VT::DefaultRenderingData::addPointLight(const Vector3& color, float radius,
 	m_pointLights.emplace_back(color, radius, position);
 }
 
-void VT::DefaultRenderingData::setCameraTransforms()
+void VT::DefaultRenderingData::setCameraTransforms(const CameraTransforms& cameraTransforms)
 {
-	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
-	IGraphicDevice* device = environment->m_graphicDevice;
+	m_cameraTransforms = cameraTransforms;
 
-	const Vector3 cameraPos(0.0f, 0.0f, -6.0f);
-
-	COMPUTE_MATH::ComputeMatrix viewTransform = COMPUTE_MATH::matrixLookToLH(
-		COMPUTE_MATH::loadComputeVectorFromVector3(cameraPos),
-		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3UnitZ),
-		COMPUTE_MATH::loadComputeVectorFromVector3(Vector3UnitY)
-	);
-
-	m_cameraTransforms.m_cameraPosition = cameraPos;
-
-	m_cameraTransforms.nearPlane = 0.1f;
-	m_cameraTransforms.farPlane = 1000.0f;
-
-	COMPUTE_MATH::ComputeMatrix projectionTransform = COMPUTE_MATH::matrixPerspectiveFovLH(45.0f * VT_DEG_TO_RAD,
-		1.0f, m_cameraTransforms.nearPlane, m_cameraTransforms.farPlane);
-
-	m_cameraTransforms.m_viewTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(viewTransform);
-	m_cameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
-	m_cameraTransforms.m_invProjectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(COMPUTE_MATH::matrixInverse(projectionTransform));
-
-	viewTransform = COMPUTE_MATH::matrixTranspose(viewTransform);
-	projectionTransform = COMPUTE_MATH::matrixTranspose(projectionTransform);
+	COMPUTE_MATH::ComputeMatrix viewTransform = COMPUTE_MATH::matrixTranspose(
+		COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(m_cameraTransforms.m_viewTransform));
+	COMPUTE_MATH::ComputeMatrix projectionTransform = COMPUTE_MATH::matrixTranspose(
+		COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(m_cameraTransforms.m_projectionTransform));
+	COMPUTE_MATH::ComputeMatrix invProjectionTransform = COMPUTE_MATH::matrixTranspose(
+		COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(m_cameraTransforms.m_invProjectionTransform));
 
 	CameraTransforms renderingCameraTransforms = m_cameraTransforms;
 	renderingCameraTransforms.m_viewTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(viewTransform);
 	renderingCameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
+	renderingCameraTransforms.m_invProjectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(invProjectionTransform);
 
 	CameraTransforms* mappingCameraTransforms = nullptr;
 	m_cameraTransformBuffer->getTypedResource()->mapData(reinterpret_cast<void**>(&mappingCameraTransforms));
 	memcpy(mappingCameraTransforms, &renderingCameraTransforms, sizeof(CameraTransforms));
 	m_cameraTransformBuffer->getTypedResource()->unmapData();
-
-	device->setResourceName(m_cameraTransformBuffer->getResource(), "CameraTransform");
 }

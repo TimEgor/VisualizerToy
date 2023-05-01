@@ -259,6 +259,7 @@ void VT_WIN32::Win32InputSystem::update()
 
 	m_prevMousePos = m_mousePos;
 	m_mousePos = VT::Vector2UInt16(static_cast<uint16_t>(mousePos.x), static_cast<uint16_t>(mousePos.y));
+	m_mouseMovementDelta = VT::Vector2Int16(static_cast<int16_t>(m_mousePos.m_x - m_prevMousePos.m_x), static_cast<int16_t>(m_mousePos.m_y - m_prevMousePos.m_y));
 }
 
 bool VT_WIN32::Win32InputSystem::isKeyDown(VT::Key key) const
@@ -271,11 +272,6 @@ bool VT_WIN32::Win32InputSystem::isKeyUp(VT::Key key) const
 {
 	uint8_t index = m_vtKeyMap.at(key);
 	return !(m_keys[index] & 0x80);
-}
-
-VT::Vector2Int16 VT_WIN32::Win32InputSystem::getMouseMovementOffset() const
-{
-	return VT::Vector2Int16{ static_cast<int16_t>(m_mousePos.m_x - m_prevMousePos.m_x), static_cast<int16_t>(m_mousePos.m_y - m_prevMousePos.m_y) };
 }
 
 bool VT_WIN32::Win32InputSystem::isMouseMoved() const

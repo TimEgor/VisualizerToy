@@ -14,7 +14,7 @@ float3 calcViewTilePosition(in float2 tilePosition, in float depth, in float4x4 
 {
 	const float2 invertTilePosition = float2(tilePosition.x, 1.0f - tilePosition.y);
 	const float2 tileScreenPosition = invertTilePosition * 2.0f - 1.0;
-	const float4 tileViewPosition = mul(invProj, float4(tileScreenPosition, depth, 1.0f));
+	const float4 tileViewPosition = mul(float4(tileScreenPosition, depth, 1.0f), invProj);
 
 	return float4(tileViewPosition / tileViewPosition.w).xyz;
 }

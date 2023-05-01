@@ -12,6 +12,7 @@
 namespace VT
 {
 	using VT_Entity = entt::entity;
+	constexpr VT_Entity InvalidEntity = VT_Entity{};
 
 	class EntityComponentSystem final
 	{
@@ -46,6 +47,13 @@ namespace VT
 		ComponentType& getComponent(VT_Entity entity)
 		{
 			ComponentType& component = m_registry.get<ComponentType>(entity);
+			return component;
+		}
+
+		template <typename ComponentType>
+		const ComponentType& getComponent(VT_Entity entity) const
+		{
+			const ComponentType& component = m_registry.get<ComponentType>(entity);
 			return component;
 		}
 

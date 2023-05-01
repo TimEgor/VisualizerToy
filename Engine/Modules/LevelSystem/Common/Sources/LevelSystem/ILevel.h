@@ -26,6 +26,9 @@ namespace VT
 		virtual const IScene* getScene() const = 0;
 		virtual IScene* getScene() = 0;
 
+		virtual void setCameraEntity(VT_Entity entity) = 0;
+		virtual VT_Entity getCameraEntity() const = 0;
+
 		virtual LevelID getID() const = 0;
 	};
 }

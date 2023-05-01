@@ -1,18 +1,16 @@
 #pragma once
 
 #include "GameSystem/GameModuleBase.h"
-
-namespace VT
-{
-	struct NodeTransforms;
-}
+#include "EntityComponentSystem/EntityComponentSystem.h"
+#include "Scene/Node.h"
 
 namespace VT_DEMO_TEST
 {
 	class TestDemoGameModule final : public VT::GameModuleBase
 	{
 	private:
-		VT::NodeTransforms* m_transforms = nullptr;
+		VT::NodeID m_cubeNodeID = VT::InvalidNodeID;
+		VT::VT_Entity m_cameraEntity = VT::InvalidEntity;
 		float m_time = 0.0f;
 
 	public:

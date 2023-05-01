@@ -17,6 +17,7 @@ namespace VT_WIN32
 
 		VT::Vector2UInt16 m_mousePos = VT::Vector2UInt16Zero;
 		VT::Vector2UInt16 m_prevMousePos = VT::Vector2UInt16Zero;
+		VT::Vector2Int16 m_mouseMovementDelta = VT::Vector2Int16Zero;
 
 		uint8_t* m_keys = nullptr;
 
@@ -35,9 +36,9 @@ namespace VT_WIN32
 		virtual bool isKeyDown(VT::Key key) const override;
 		virtual bool isKeyUp(VT::Key key) const override;
 
-		virtual VT::Vector2UInt16 getMousePosition() const override { return m_mousePos; }
-		virtual VT::Vector2UInt16 getPrevMousePosition() const override { return m_prevMousePos; }
-		virtual VT::Vector2Int16 getMouseMovementOffset() const override;
+		virtual const VT::Vector2UInt16& getMousePosition() const override { return m_mousePos; }
+		virtual const VT::Vector2UInt16& getPrevMousePosition() const override { return m_prevMousePos; }
+		virtual const VT::Vector2Int16& getMouseMovementOffset() const override { return m_mouseMovementDelta; }
 		virtual bool isMouseMoved() const override;
 
 		VT::Key convertKeyWin32ToVt(size_t win32Key);

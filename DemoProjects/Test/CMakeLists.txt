@@ -22,11 +22,17 @@ set_target_properties(DemoTest PROPERTIES
 
 set(VT_ENGINE_ECS TRUE)
 
-set(MODULES_SET
+set(ENGINE_MODULES_SET
 	Engine_COMMON		Engine/Common)
 
 vt_add_modules_by_path(DemoTest PUBLIC
-	"${MODULES_SET}" ${VT_ROOT_PATH}/Engine/ ${CMAKE_CURRENT_BINARY_DIR}/Core)
+	"${ENGINE_MODULES_SET}" ${VT_ROOT_PATH}/Engine/ ${CMAKE_CURRENT_BINARY_DIR}/Core)
+
+message("\n----------------------")
+message("\n>>>>>> DEMO MODULES <<<<<<<")
+
+vt_add_modules_by_path_include(DemoTest PUBLIC
+	"Modules.cmake" ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Modules)
 
 message("\n----------------------")
 

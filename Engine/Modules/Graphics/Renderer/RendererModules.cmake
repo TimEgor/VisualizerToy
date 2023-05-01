@@ -1,4 +1,5 @@
 set(MODULES_SET
+	Camera				Camera/Camera
 	DefaultRender		DefaultRender
 	DefaultSceneRender	DefaultSceneRender
 	GraphRender			GraphRender

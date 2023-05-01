@@ -57,3 +57,13 @@ void VT::Level::removeEntity(VT_Entity entity)
 		}
 	);
 }
+
+void VT::Level::setCameraEntity(VT_Entity entity)
+{
+	m_cameraEntity = entity;
+}
+
+VT::VT_Entity VT::Level::getCameraEntity() const
+{
+	return m_cameraEntity;
+}

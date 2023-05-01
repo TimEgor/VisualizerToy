@@ -8,6 +8,11 @@
 #include "Scene/SceneNodeIDComponent.h"
 #include "MeshSystem/MeshComponent.h"
 #include "LightSystem/PointLightComponent.h"
+#include "Camera/PerspectiveCameraComponent.h"
+
+#include "Math/ComputeMatrix.h"
+#include "Math/ComputeVector.h"
+#include "Math/Consts.h"
 
 void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData)
 {
@@ -20,10 +25,11 @@ void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, cons
 			continue;
 		}
 
-		const NodeTransforms* nodeTransforms = scene->getNodeTransforms(sceneNodeIDComponent.getNodeID());
-		assert(nodeTransforms);
+		NodeID nodeID = sceneNodeIDComponent.getNodeID();
+		assert(!scene->isNodeDirty(nodeID));
 
-		renderingData.addMesh(meshComponent.m_mesh, nodeTransforms->m_globalTransform.m_matrix);
+		const Transform& nodeWorldTransform = scene->getNodeWorldTransform(nodeID);
+		renderingData.addMesh(meshComponent.m_mesh, nodeWorldTransform.m_matrix);
 	}
 }
 
@@ -33,11 +39,45 @@ void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, con
 
 	for (const auto& [entity, sceneNodeIDComponent, pointLightComponent] : ecsView.each())
 	{
-		const NodeTransforms* nodeTransforms = scene->getNodeTransforms(sceneNodeIDComponent.getNodeID());
-		assert(nodeTransforms);
+		NodeID nodeID = sceneNodeIDComponent.getNodeID();
+		assert(!scene->isNodeDirty(nodeID));
 
-		renderingData.addPointLight(pointLightComponent.m_color, pointLightComponent.m_radius, nodeTransforms->m_globalTransform.getOrigin());
+		const Transform& nodeWorldTransform = scene->getNodeWorldTransform(nodeID);
+		renderingData.addPointLight(pointLightComponent.m_color, pointLightComponent.m_radius, nodeWorldTransform.getOrigin());
 	}
+}
+
+void VT::PreparingRenderingDataSystem::prepareCameraData(VT_Entity cameraEntity, const IScene* scene, const EntityComponentSystem* ecs,
+	DefaultRenderingData& renderingData)
+{
+	const PerspectiveCameraComponent& cameraComponent = ecs->getComponent<PerspectiveCameraComponent>(cameraEntity);
+	const SceneNodeIDComponent& nodeIDComponent = ecs->getComponent<SceneNodeIDComponent>(cameraEntity);
+
+	const Transform& cameraWorldTransform = scene->getNodeWorldTransform(nodeIDComponent.getNodeID());
+
+	const Vector3& cameraPos = cameraWorldTransform.getOrigin();
+
+	COMPUTE_MATH::ComputeMatrix viewTransform = COMPUTE_MATH::matrixLookToLH(
+		COMPUTE_MATH::loadComputeVectorFromVector3(cameraPos),
+		COMPUTE_MATH::loadComputeVectorFromVector3(cameraWorldTransform.getAxisZ()),
+		COMPUTE_MATH::loadComputeVectorFromVector3(cameraWorldTransform.getAxisY())
+	);
+
+	CameraTransforms cameraTransforms;
+
+	cameraTransforms.m_cameraPosition = cameraPos;
+
+	cameraTransforms.nearPlane = cameraComponent.m_cameraData.m_nearClipPlane;
+	cameraTransforms.farPlane = cameraComponent.m_cameraData.m_farClipPlane;
+
+	COMPUTE_MATH::ComputeMatrix projectionTransform = COMPUTE_MATH::matrixPerspectiveFovLH(cameraComponent.m_cameraData.m_FoV * VT_DEG_TO_RAD,
+		1.0f, cameraTransforms.nearPlane, cameraTransforms.farPlane);
+
+	cameraTransforms.m_viewTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(viewTransform);
+	cameraTransforms.m_projectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(projectionTransform);
+	cameraTransforms.m_invProjectionTransform = COMPUTE_MATH::saveComputeMatrixToMatrix4x4(COMPUTE_MATH::matrixInverse(projectionTransform));
+
+	renderingData.setCameraTransforms(cameraTransforms);
 }
 
 void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, DefaultRenderingData& renderingData)
@@ -47,8 +87,7 @@ void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, DefaultR
 	const IScene* scene = level.getScene();
 	const EntityComponentSystem* ecs = level.getEntityComponentSystem();
 
-	renderingData.setCameraTransforms();
-
 	prepareMeshData(scene, ecs, renderingData);
 	prepareLightData(scene, ecs, renderingData);
+	prepareCameraData(level.getCameraEntity(), scene, ecs, renderingData);
 }

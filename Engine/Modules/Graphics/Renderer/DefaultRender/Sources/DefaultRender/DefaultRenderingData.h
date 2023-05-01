@@ -59,7 +59,7 @@ namespace VT
 
 		void addPointLight(const Vector3& color, float radius, const Vector3& position);
 
-		void setCameraTransforms();
+		void setCameraTransforms(const CameraTransforms& cameraTransforms);
 
 		const TransformDataCollection& getTransformDataCollection() const { return m_transforms; }
 		const MeshDataCollection& getMeshDataCollection() const { return m_meshes; }

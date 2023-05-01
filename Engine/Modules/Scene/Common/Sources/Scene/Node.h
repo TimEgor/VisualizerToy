@@ -12,6 +12,6 @@ namespace VT
 	struct NodeTransforms final
 	{
 		Transform m_localTransform;
-		Transform m_globalTransform;
+		Transform m_worldTransform;
 	};
 }

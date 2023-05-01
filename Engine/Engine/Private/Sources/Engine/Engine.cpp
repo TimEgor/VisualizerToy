@@ -139,6 +139,8 @@ void VT::Engine::beginFrame()
 	assert(m_engineEnvironment->m_windowSystem);
 	m_engineEnvironment->m_windowSystem->updateWindowEvents();
 
+	m_engineEnvironment->m_inputSystem->update();
+
 	m_currentFrameTime = Clock::getCurrentTime();
 	m_deltaTime = Clock::calkTimePointDelta(m_currentFrameTime, m_prevFrameStartTime);
 }
@@ -154,6 +156,8 @@ void VT::Engine::updateFrame()
 
 	assert(m_engineEnvironment->m_gameSystem);
 	m_engineEnvironment->m_gameSystem->update(m_deltaTime);
+
+	m_engineEnvironment->m_levelSystem->getCurrentLevel()->getScene()->recalculateTransforms();
 }
 
 void VT::Engine::startTimer()

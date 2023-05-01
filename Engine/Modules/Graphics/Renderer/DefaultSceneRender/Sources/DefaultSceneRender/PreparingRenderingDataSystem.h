@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EntityComponentSystem/EntityComponentSystem.h"
+
 namespace VT
 {
 	class EntityComponentSystem;
@@ -12,6 +14,7 @@ namespace VT
 	private:
 		static void prepareMeshData(const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData);
 		static void prepareLightData(const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData);
+		static void prepareCameraData(VT_Entity cameraEntity, const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData);
 
 	public:
 		PreparingRenderingDataSystem() = default;

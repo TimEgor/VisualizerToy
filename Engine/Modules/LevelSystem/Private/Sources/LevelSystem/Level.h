@@ -17,7 +17,9 @@ namespace VT
 		EntityComponentSystem* m_entityComponentSystem = nullptr;
 		Scene* m_scene = nullptr;
 
-		LevelID m_id;
+		LevelID m_id = 0;
+
+		VT_Entity m_cameraEntity = InvalidEntity;
 
 	public:
 		Level(LevelID id)
@@ -35,6 +37,9 @@ namespace VT
 		virtual EntityComponentSystem* getEntityComponentSystem() override { return m_entityComponentSystem; }
 		virtual const IScene* getScene() const override { return m_scene; }
 		virtual IScene* getScene() override { return m_scene; }
+
+		virtual void setCameraEntity(VT_Entity entity) override;
+		virtual VT_Entity getCameraEntity() const override;
 
 		virtual LevelID getID() const override { return m_id; }
 	};

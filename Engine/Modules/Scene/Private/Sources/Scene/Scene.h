@@ -18,6 +18,8 @@ namespace VT
 		NodeID m_lastSiblingNodeID = InvalidNodeID; // It is available only for first child node.
 
 		NodeLevelType m_level = InvalidNodeLevel;
+
+		IScene::DirtyState m_dirtyState = static_cast<IScene::DirtyState>(IScene::DirtyStateVariants::NONE);
 	};
 
 	class Scene final : public IScene
@@ -37,11 +39,20 @@ namespace VT
 		NodeTransformPool m_nodeTransforms;
 		DirtyLevelCollection m_dirtyNodeLevels;
 
-		mutable SharedMutex m_lockMutex;
-
 		NodeID addNodeInfo(NodeInfo* parentNodeInfo, NodeID parentNodeID);
 		void collectRemovingNodes(NodeID nodeID, RemovingNodeCollection& nodes) const;
-		void markDirtyNode(NodeID nodeID);
+		void setDirtyState(NodeID nodeID, NodeInfo& nodeInfo, DirtyStateVariants state);
+
+		void updateNodeTransform(NodeID nodeId);
+		void updateNodeTransform(NodeID nodeId, NodeInfo& nodeInfo);
+		void updateNodeTransform(NodeID nodeId, NodeTransforms& transforms);
+
+		void updateNodeTransformInternal(NodeTransforms& transforms, NodeInfo& nodeInfo);
+		void updateRootNodeTransformInternal(DirtyState state, NodeTransforms& transforms);
+		void updateChildNodeTransformInternal(DirtyState state, NodeTransforms& transforms, const Transform& parentWorldTransform);
+
+		const NodeTransforms* getNodeTransforms(NodeID nodeId) const;
+		NodeTransforms* getNodeTransforms(NodeID nodeId);
 
 	public:
 		Scene() = default;
@@ -57,10 +68,19 @@ namespace VT
 		virtual NodeID getFirstChildNodeID(NodeID parentNodeID) const override;
 		virtual NodeID getNextSiblingNodeID(NodeID nodeID) const override;
 
-		virtual NodeTransforms* getNodeTransforms(NodeID nodeID) override;
-		virtual const NodeTransforms* getNodeTransforms(NodeID nodeID) const override;
+		virtual const Transform& getNodeWorldTransform(NodeID nodeId) const override;
+		virtual Transform& getNodeWorldTransformRaw(NodeID nodeId, bool checkState) override;
+		virtual void setNodeWorldTransform(NodeID nodeId, const Transform& transform) override;
+
+		virtual const Transform& getNodeLocalTransform(NodeID nodeId) const override;
+		virtual Transform& getNodeLocalTransformRaw(NodeID nodeId, bool checkState) override;
+		virtual void setNodeLocalTransform(NodeID nodeId, const Transform& transform) override;
+
+		virtual bool isNodeDirty(NodeID nodeId) const override;
+		virtual DirtyState getNodeDirtyState(NodeID nodeId) const override;
+		virtual void setDirtyState(NodeID nodeId, DirtyStateVariants checkState) override;
 
 		virtual void recalculateTransforms() override;
-		virtual void markDirty(NodeID nodeID) override;
+		virtual void recalculateNodeTransform(NodeID nodeId) override;
 	};
 }
