@@ -35,18 +35,51 @@ void VT::GraphicRenderContextUtils::setRenderingTargets(IRenderContext* context,
 	context->setRenderTargets(targetsCount, rtvDescriptors, depthStencilView);
 	context->setScissors(targetsCount, scissors);
 	context->setViewports(targetsCount, viewports);
+}
+
+void VT::GraphicRenderContextUtils::setRenderingTargets(IRenderContext* context, uint32_t targetsCount,
+	const GraphicRenderContextTarget* renderTargets)
+{
+	setRenderingTargets(context, targetsCount, renderTargets, nullptr);
+}
+
+void VT::GraphicRenderContextUtils::setClearingRenderingTargets(IRenderContext* context, uint32_t targetsCount,
+	const GraphicRenderContextTarget* renderTargets, const DepthStencilContextTarget* depthStencilTarget,
+	const GraphicRenderTargetClearingValue* clearingValues, float depthClearingValue, uint32_t stencilClearinglValue)
+{
+	setRenderingTargets(context, targetsCount, renderTargets, depthStencilTarget);
 
 	for (uint32_t i = 0; i < targetsCount; ++i)
 	{
 		const GraphicRenderContextTarget& target = renderTargets[i];
-		context->clearRenderTarget(target.m_targetView, target.m_clearValue);
+		context->clearRenderTarget(target.m_targetView, clearingValues[i].m_vals);
 	}
 
 	if (depthStencilTarget)
 	{
-		context->clearDepthStencilTarget(depthStencilView, depthStencilTarget->m_depthClearValue, depthStencilTarget->m_stencilClearValue);
+		context->clearDepthStencilTarget(depthStencilTarget->m_targetView, depthClearingValue, stencilClearinglValue);
 	}
+}
 
+void VT::GraphicRenderContextUtils::setClearingRenderingTargets(IRenderContext* context, uint32_t targetsCount,
+	const GraphicRenderContextTarget* renderTargets, const GraphicRenderTargetClearingValue* clearingValues)
+{
+	setClearingRenderingTargets(context, targetsCount, renderTargets, nullptr, clearingValues, 0.0f, 0);
+}
+
+void VT::GraphicRenderContextUtils::clearRenderTargets(IRenderContext* context, uint32_t targetsCount,
+	const IGraphicResourceDescriptor** targetViews, const GraphicRenderTargetClearingValue* clearingValues)
+{
+	for (uint32_t i = 0; i < targetsCount; ++i)
+	{
+		context->clearRenderTarget(targetViews[i], clearingValues[i].m_vals);
+	}
+}
+
+void VT::GraphicRenderContextUtils::clearDepthStencil(IRenderContext* context,
+	const IGraphicResourceDescriptor* depthStencilView, float depthClearingValue, uint32_t stencilClearinglValue)
+{
+	context->clearDepthStencilTarget(depthStencilView, depthClearingValue, stencilClearinglValue);
 }
 
 void VT::GraphicRenderContextUtils::prepareTextureForRendering(IRenderContext* context, Texture2DReference texture)

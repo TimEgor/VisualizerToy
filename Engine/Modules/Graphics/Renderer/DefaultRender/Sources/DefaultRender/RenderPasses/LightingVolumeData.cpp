@@ -1,6 +1,7 @@
 #include "LightingVolumeData.h"
 
 #include "Core/UtilitiesMacros.h"
+#include "DefaultRender/LightSources/DirectionalLightData.h"
 
 #include "Engine/EngineInstance.h"
 #include "Engine/IEngine.h"
@@ -31,6 +32,8 @@ bool VT::LightVolumeData::init(const Vector2UInt16& targetSize)
 	VT_CHECK_RETURN_FALSE(initPointLightBuffer(device, resManager));
 	VT_CHECK_RETURN_FALSE(initPointLightTileMaskBuffer(device, resManager));
 	VT_CHECK_RETURN_FALSE(initPointLightZSliceBuffer(device, resManager));
+
+	VT_CHECK_RETURN_FALSE(initDirectionalLightBuffer(device, resManager));
 
 	VT_CHECK_RETURN_FALSE(initTilesDepthBuffer(device, resManager));
 	VT_CHECK_RETURN_FALSE(initTilesBoundingBoxesBuffer(device, resManager));
@@ -91,6 +94,24 @@ bool VT::LightVolumeData::initPointLightZSliceBuffer(IGraphicDevice* device, IGr
 	VT_CHECK_RETURN_FALSE(m_pointLightZSliceBufferSRV);
 
 	device->setResourceName(m_pointLightZSliceBuffer->getResource(), "lv_pointLightsSlices");
+
+	return true;
+}
+
+bool VT::LightVolumeData::initDirectionalLightBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager)
+{
+	GPUBufferDesc bufferDesc{};
+	bufferDesc.isHostVisible = true;
+	bufferDesc.m_byteSize = sizeof(DirectionalLightData) * MAX_DIR_LIGHT_NUM;
+	bufferDesc.m_byteStride = sizeof(DirectionalLightData);
+	bufferDesc.m_flag = GPUBufferFlag::STRUCTURED;
+	bufferDesc.m_usage = GRAPHIC_USAGE_SHADER_RESOURCE;
+	m_directionalLightBuffer = resManager->createGPUBuffer(bufferDesc, CommonGraphicResourceState::GRAPHIC_STATE_COMMON_READ);
+	VT_CHECK_RETURN_FALSE(m_directionalLightBuffer);
+	m_directionalLightBufferSRV = resManager->createShaderResourceDescriptor(m_directionalLightBuffer.getObject());
+	VT_CHECK_RETURN_FALSE(m_directionalLightBufferSRV);
+
+	device->setResourceName(m_pointLightBuffer->getResource(), "lv_dirLights");
 
 	return true;
 }
@@ -185,6 +206,8 @@ void VT::LightVolumeData::fillEnvironment(RenderPassEnvironment& environment) co
 	environment.addBuffer("lv_point_light_tile_mask_buffer", m_pointLightTileMasksBuffer);
 	environment.addBuffer("lv_point_light_zslice_buffer", m_pointLightZSliceBuffer);
 
+	environment.addBuffer("lv_dir_light_buffer", m_directionalLightBuffer);
+
 	environment.addBuffer("lv_tilesDepth_buffer", m_tilesDepthBuffer);
 	environment.addBuffer("lv_tilesBB_buffer", m_tilesBoundingBoxesBuffer);
 	environment.addBuffer("lv_info_buffer", m_lightVolumeInfoBuffer);
@@ -193,6 +216,8 @@ void VT::LightVolumeData::fillEnvironment(RenderPassEnvironment& environment) co
 	environment.addShaderResourceView("lv_point_light_tile_mask_srv", m_pointLightTileMasksBufferSRV);
 	environment.addShaderResourceView("lv_point_light_tile_mask_uav", m_pointLightTileMasksBufferUAV);
 	environment.addShaderResourceView("lv_point_light_zslice_srv", m_pointLightZSliceBufferSRV);
+
+	environment.addShaderResourceView("lv_dir_light_srv", m_directionalLightBufferSRV);
 
 	environment.addShaderResourceView("lv_tilesDepth_srv", m_tilesDepthBufferSRV);
 	environment.addShaderResourceView("lv_tilesDepth_uav", m_tilesDepthBufferUAV);

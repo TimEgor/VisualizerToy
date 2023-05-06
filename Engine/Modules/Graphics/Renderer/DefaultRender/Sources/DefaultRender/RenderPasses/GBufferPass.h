@@ -6,6 +6,8 @@
 
 namespace VT
 {
+	struct RenderDrawingContext;
+
 	class GBufferRenderPassData final : public IRenderPassData
 	{
 	public:

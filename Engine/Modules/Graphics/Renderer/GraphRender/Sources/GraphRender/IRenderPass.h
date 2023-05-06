@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
-#include "Render/RenderDrawingContext.h"
+#include "Core/HashedType.h"
 
 #include <cassert>
 
@@ -15,9 +14,11 @@ namespace VT
 
 	class RenderPassGraphBuilder;
 
-	using RenderPassDataType = HashTyped::Type;
+	struct RenderDrawingContext;
 
-	class IRenderPassData : public HashTyped
+	using RenderPassDataType = HashedType::Type;
+
+	class IRenderPassData : public HashedType
 	{
 	public:
 		IRenderPassData() = default;

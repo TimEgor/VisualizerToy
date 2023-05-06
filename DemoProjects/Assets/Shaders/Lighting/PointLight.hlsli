@@ -9,6 +9,7 @@ struct PointLight
 	float3 m_color;
 	float m_range;
 	float3 m_position;
+	float m_intensity;
 };
 
 struct PointLightTileMask

@@ -14,9 +14,11 @@ namespace VT
 	{
 	public:
 		using PointLightCollection = DefaultRenderingData::PointLightDataCollection;
+		using DirectionalLightCollection = DefaultRenderingData::DirectionalLightDataCollection;
 
 	private:
 		const PointLightCollection& m_pointLightCollection;
+		const DirectionalLightCollection& m_directionalLightCollection;
 		const CameraTransforms& m_cameraTransform;
 		ShaderResourceViewReference m_cameraTransformBufferView;
 
@@ -24,12 +26,15 @@ namespace VT
 		uint16_t m_slicesCount = 0;
 
 	public:
-		LightPrepearingRenderPassData(const Vector2UInt16& tilesCount, uint16_t slicesCount, const PointLightCollection& lights,
+		LightPrepearingRenderPassData(const Vector2UInt16& tilesCount, uint16_t slicesCount,
+			const PointLightCollection& pointLights, const DirectionalLightCollection& dirLights,
 			const CameraTransforms& cameraTransform, const ShaderResourceViewReference& cameraTransformView)
-			: m_tilesCount(tilesCount), m_slicesCount(slicesCount), m_pointLightCollection(lights),
+			: m_tilesCount(tilesCount), m_slicesCount(slicesCount),
+			m_pointLightCollection(pointLights), m_directionalLightCollection(dirLights),
 			m_cameraTransform(cameraTransform), m_cameraTransformBufferView(cameraTransformView) {}
 
-		const PointLightCollection& getLightData() const { return m_pointLightCollection; }
+		const PointLightCollection& getPointLightData() const { return m_pointLightCollection; }
+		const DirectionalLightCollection& getDirectionalLightDatas() const { return m_directionalLightCollection; }
 
 		const CameraTransforms& getCameraTransform() const { return m_cameraTransform; }
 		const ShaderResourceViewReference& getCameraTransformView() const { return m_cameraTransformBufferView; }
@@ -74,6 +79,8 @@ namespace VT
 		void sortPointLights(const LightPrepearingRenderPassData::PointLightCollection& data, const CameraTransforms& cameraTransform);
 		void fillPointLightBuffer(IGPUBuffer* pointLightBuffer, const LightPrepearingRenderPassData::PointLightCollection& data);
 		void fillPointLightZSliceBuffer(IGPUBuffer* zBinsBuffer, uint16_t slicesCount);
+
+		void fillDirLightBuffer(IGPUBuffer* dirLightBuffer, const LightPrepearingRenderPassData::DirectionalLightCollection& data);
 
 		void computeTilesDepth(IRenderContext* context, ShaderResourceViewReference tilesDepthUAV,
 			ShaderResourceViewReference lightVolumeSRV, ShaderResourceViewReference depthSourceSRV, ITexture2D* depthSource);

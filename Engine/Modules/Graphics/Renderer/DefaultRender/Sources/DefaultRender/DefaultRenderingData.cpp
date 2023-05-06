@@ -9,7 +9,6 @@
 
 #include "Math/ComputeMatrix.h"
 #include "Math/ComputeVector.h"
-#include "Math/Consts.h"
 
 
 bool VT::DefaultRenderingData::init()
@@ -37,6 +36,7 @@ void VT::DefaultRenderingData::clear()
 	m_meshes.clear();
 
 	m_pointLights.clear();
+	m_directionalLights.clear();
 }
 
 void VT::DefaultRenderingData::addMesh(const MeshConstReference& mesh, const Matrix44& transform)
@@ -45,9 +45,14 @@ void VT::DefaultRenderingData::addMesh(const MeshConstReference& mesh, const Mat
 	m_meshes.emplace_back(mesh, m_transforms.size() - 1);
 }
 
-void VT::DefaultRenderingData::addPointLight(const Vector3& color, float radius, const Vector3& position)
+void VT::DefaultRenderingData::addPointLight(const Vector3& color, float radius, float intensity, const Vector3& position)
 {
-	m_pointLights.emplace_back(color, radius, position);
+	m_pointLights.emplace_back(color, radius, intensity, position);
+}
+
+void VT::DefaultRenderingData::addDirectionalLight(const Vector3& color, float intensity, const Vector3& dir)
+{
+	m_directionalLights.emplace_back(color, intensity, dir);
 }
 
 void VT::DefaultRenderingData::setCameraTransforms(const CameraTransforms& cameraTransforms)

@@ -1,4 +1,5 @@
 #include "PointLight.hlsli"
+#include "DirectionalLight.hlsli"
 #include "LightVolume.hlsli"
 
 #include "../Common/CameraData.hlsli"
@@ -24,10 +25,17 @@ struct PointLightBindings
 	uint m_zSliceBufferIndex;
 };
 
+struct DirLightBindings
+{
+	uint m_lightBufferIndex;
+	uint m_dirLightsCount;
+};
+
 ConstantBuffer<UniqueBinding> cameraTransformsBinding : register(b0);
 ConstantBuffer<UniqueBinding> lightVolumeBinding : register(b1);
 ConstantBuffer<GBufferBindings> gBufferBindings : register(b2);
 ConstantBuffer<PointLightBindings> pointLightBindings : register(b3);
+ConstantBuffer<DirLightBindings> dirLightBindings : register(b4);
 SamplerState textureSampler : register(s0);
 
 float liminanceAttenuation(in float3 lightRay, float lightRadius)
@@ -39,14 +47,22 @@ float3 calcPointLight(in float3 position, in float3 normal, in float3 color, in 
 {
 	const float3 rayToLight = light.m_position - position;
 	const float3 rayDir = normalize(rayToLight);
-	const float dirAngle = saturate(dot(normal, rayDir));
 
 	const float attenuation = liminanceAttenuation(rayToLight, light.m_range) * length(normal);
 	
 	const float lightNormalAngle = saturate(dot(normal, rayDir));
 	const float3 luminanceColor = lightNormalAngle * light.m_color * color;
 
-	return luminanceColor * attenuation;
+	return luminanceColor * attenuation * light.m_intensity;
+}
+
+float3 calcDirLight(in float3 position, in float3 normal, in float3 color, in DirectionalLight light)
+{
+	const float3 rayDir = -light.m_dir;
+	const float lightNormalAngle = saturate(dot(normal, rayDir));
+	const float3 luminanceColor = lightNormalAngle * light.m_color * color;
+
+	return luminanceColor * light.m_intensity;
 }
 
 float4 PS(PSInput input) : SV_TARGET0
@@ -57,6 +73,8 @@ float4 PS(PSInput input) : SV_TARGET0
 	StructuredBuffer<PointLight> pointLights = ResourceDescriptorHeap[pointLightBindings.m_lightBufferIndex];
 	StructuredBuffer<PointLightTileMask> tileMasks = ResourceDescriptorHeap[pointLightBindings.m_tileMasksBufferIndex];
 	StructuredBuffer<ZSlice> zSlice = ResourceDescriptorHeap[pointLightBindings.m_zSliceBufferIndex];
+
+	StructuredBuffer<DirectionalLight> directionalLights = ResourceDescriptorHeap[dirLightBindings.m_lightBufferIndex];
 
 	Texture2D<float4> colorInput = ResourceDescriptorHeap[gBufferBindings.m_colorTextureInfo];
 	Texture2D<float4> normalInput = ResourceDescriptorHeap[gBufferBindings.m_normalTextureInfo];
@@ -95,6 +113,12 @@ float4 PS(PSInput input) : SV_TARGET0
 				//resultColor += float4(light.m_color, 1.0f);
 			}
 		}
+	}
+
+	for (uint lightIndex = 0; lightIndex < dirLightBindings.m_dirLightsCount; ++lightIndex)
+	{
+		const DirectionalLight light = directionalLights[lightIndex];
+		resultColor.xyz += calcDirLight(position, normal, color, light);
 	}
 
 	return resultColor;

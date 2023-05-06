@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphRender/IRenderPass.h"
+#include "DefaultRender/DefaultRenderingData.h"
 #include "GraphicResourceManager/ObjectHandles.h"
 #include "MeshSystem/MeshHandle.h"
 
@@ -13,14 +14,21 @@ namespace VT
 
 	class LightRenderPassData final : public IRenderPassData
 	{
+	public:
+		using DirectionalLightCollection = DefaultRenderingData::DirectionalLightDataCollection;
+
 	private:
+		const DirectionalLightCollection& m_directionalLightCollection;
 		ShaderResourceViewReference m_cameraTransformBufferView;
 
 	public:
-		LightRenderPassData(const ShaderResourceViewReference& cameraTransformView)
-			: m_cameraTransformBufferView(cameraTransformView) {}
+		LightRenderPassData(const DirectionalLightCollection& directionalLightCollection,
+			const ShaderResourceViewReference& cameraTransformView)
+			: m_directionalLightCollection(directionalLightCollection),
+			m_cameraTransformBufferView(cameraTransformView) {}
 
 		const ShaderResourceViewReference& getCameraTransformView() const { return m_cameraTransformBufferView; }
+		const DirectionalLightCollection& getDirectionalLightCollection() const { return m_directionalLightCollection; }
 
 		VT_RENDER_PASS_DATA_TYPE(LIGHT_DATA_TYPE);
 	};

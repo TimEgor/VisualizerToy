@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "LightSources/DirectionalLightData.h"
+
 namespace VT
 {
 	struct CameraTransforms final
@@ -37,12 +39,14 @@ namespace VT
 		using TransformDataCollection = std::vector<Matrix44>;
 
 		using PointLightDataCollection = std::vector<PointLightData>;
+		using DirectionalLightDataCollection = std::vector<DirectionalLightData>;
 
 	private:
 		MeshDataCollection m_meshes;
 		TransformDataCollection m_transforms;
 
 		PointLightDataCollection m_pointLights;
+		DirectionalLightDataCollection m_directionalLights;
 
 		CameraTransforms m_cameraTransforms;
 
@@ -57,7 +61,8 @@ namespace VT
 		void clear();
 		void addMesh(const MeshConstReference& mesh, const Matrix44& transform);
 
-		void addPointLight(const Vector3& color, float radius, const Vector3& position);
+		void addPointLight(const Vector3& color, float radius, float intensity, const Vector3& position);
+		void addDirectionalLight(const Vector3& color, float intensity, const Vector3& dir);
 
 		void setCameraTransforms(const CameraTransforms& cameraTransforms);
 
@@ -65,6 +70,7 @@ namespace VT
 		const MeshDataCollection& getMeshDataCollection() const { return m_meshes; }
 
 		const PointLightDataCollection& getPointLighDataCollection() const { return m_pointLights; }
+		const DirectionalLightDataCollection& getDirectionalLightDataCollection() const { return m_directionalLights; }
 
 		const CameraTransforms& getCameraTransform() const { return m_cameraTransforms; }
 		GPUBufferReference getCameraTransformBuffer() const { return m_cameraTransformBuffer; }

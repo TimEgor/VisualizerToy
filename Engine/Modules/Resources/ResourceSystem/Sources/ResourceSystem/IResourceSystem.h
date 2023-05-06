@@ -14,10 +14,10 @@
 
 namespace VT
 {
-	using ResourceSystemType = HashTyped::Type;
+	using ResourceSystemType = HashedType::Type;
 	using ResourceSystemTypeHash = uint32_t;
 
-	class IResourceSystem : public HashTyped
+	class IResourceSystem : public HashedType
 	{
 	public:
 		using LoadingResourceCallback = std::function<void(ResourceDataReference)>;

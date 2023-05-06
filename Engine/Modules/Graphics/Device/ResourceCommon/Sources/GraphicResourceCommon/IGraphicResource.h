@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 #include "GraphicObject/IGraphicObject.h"
 #include "GraphicSynchronization/IFence.h"
 #include "Format.h"
@@ -41,10 +41,10 @@ namespace VT
 		COUNT
 	};
 
-	using GraphicResourceType = HashTyped::Type;
+	using GraphicResourceType = HashedType::Type;
 	using GraphicResourceTypeHash = uint32_t;
 
-	class IGraphicResource : public IGraphicObject, public HashTyped
+	class IGraphicResource : public IGraphicObject, public HashedType
 	{
 	public:
 		IGraphicResource() = default;

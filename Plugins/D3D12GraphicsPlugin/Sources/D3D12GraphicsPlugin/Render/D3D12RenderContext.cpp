@@ -258,3 +258,14 @@ void VT_D3D12::D3D12RenderContext::dispatch(uint32_t threadGroupX, uint32_t thre
 {
 	m_commandList->getD3D12CommandList()->Dispatch(threadGroupX, threadGroupY, threadGroupZ);
 }
+
+void VT_D3D12::D3D12RenderContext::beginEvent(const char* eventName)
+{
+	const uint32_t eventNameSize = static_cast<uint32_t>(strlen(eventName));
+	m_commandList->getD3D12CommandList()->BeginEvent(1, eventName, eventNameSize + 1);
+}
+
+void VT_D3D12::D3D12RenderContext::endEvent()
+{
+	m_commandList->getD3D12CommandList()->EndEvent();
+}

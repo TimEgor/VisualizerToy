@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 #include "Keys.h"
 #include "Math/Vector.h"
 
 namespace VT
 {
-	using InputSystemType = HashTyped::Type;
+	using InputSystemType = HashedType::Type;
 
-	class IInputSystem : public HashTyped
+	class IInputSystem : public HashedType
 	{
 	public:
 		IInputSystem() = default;

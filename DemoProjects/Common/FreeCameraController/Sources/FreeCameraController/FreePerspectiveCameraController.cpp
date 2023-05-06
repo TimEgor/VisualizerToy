@@ -53,6 +53,20 @@ void VT_DEMO_COMMON::FreePerspectiveCameraController::updateCamera(VT::VT_Entity
 
 	VT::COMPUTE_MATH::ComputeMatrix cameraTransform = VT::COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(VT::Matrix44Identity);
 
+	float pitchAngle = asin(-cameraEntityWorldTransform.m_matrix.m_32);
+	float yawAngle = 0.0f;
+	float rollAngle = 0.0f;
+	if (cosf(pitchAngle) > VT::VT_EPSILON)
+	{
+		yawAngle = atan2f(cameraEntityWorldTransform.m_matrix.m_31, cameraEntityWorldTransform.m_matrix.m_33);
+		rollAngle = atan2f(cameraEntityWorldTransform.m_matrix.m_12, cameraEntityWorldTransform.m_matrix.m_22);
+	}
+	else
+	{
+		yawAngle = 0.0f;
+		rollAngle = atan2f(-cameraEntityWorldTransform.m_matrix.m_21, cameraEntityWorldTransform.m_matrix.m_11);
+	}
+
 	if (inputSystem->isKeyDown(VT::Key::MOUSE_MIDDLE))
 	{
 		const VT::Vector2Int16& mouseDelta = inputSystem->getMouseMovementOffset();
@@ -98,21 +112,6 @@ void VT_DEMO_COMMON::FreePerspectiveCameraController::updateCamera(VT::VT_Entity
 		}
 
 
-		float pitchAngle = asin(-cameraEntityWorldTransform.m_matrix.m_32);
-		float yawAngle = 0.0f;
-		float rollAngle = 0.0f;
-		if (cosf(pitchAngle) > VT::VT_EPSILON)
-		{
-			yawAngle = atan2f(cameraEntityWorldTransform.m_matrix.m_31, cameraEntityWorldTransform.m_matrix.m_33);
-			rollAngle = atan2f(cameraEntityWorldTransform.m_matrix.m_12, cameraEntityWorldTransform.m_matrix.m_22);
-		}
-		else
-		{
-			yawAngle = 0.0f;
-			rollAngle = atan2f(-cameraEntityWorldTransform.m_matrix.m_21, cameraEntityWorldTransform.m_matrix.m_11);
-		}
-
-
 		if (inputSystem->isKeyDown(VT::Key::MOUSE_RIGHT))
 		{
 			const VT::Vector2Int16& mouseDelta = inputSystem->getMouseMovementOffset();
@@ -122,7 +121,7 @@ void VT_DEMO_COMMON::FreePerspectiveCameraController::updateCamera(VT::VT_Entity
 			pitchAngle = std::min(pitchAngle, VT::VT_HALF_PI);
 			pitchAngle = std::max(pitchAngle, -VT::VT_HALF_PI);
 
-			yawAngle += -mouseDelta.m_x * DefaultCameraRotationSpeed * deltaTime * VT::VT_DEG_TO_RAD;
+			yawAngle += mouseDelta.m_x * DefaultCameraRotationSpeed * deltaTime * VT::VT_DEG_TO_RAD;
 
 			if (yawAngle >= VT::VT_2_PI)
 			{
@@ -134,9 +133,9 @@ void VT_DEMO_COMMON::FreePerspectiveCameraController::updateCamera(VT::VT_Entity
 			}
 		}
 
-		cameraTransform = VT::COMPUTE_MATH::matrixMultiply(cameraTransform, VT::COMPUTE_MATH::matrixRotationRollPithYaw(pitchAngle, yawAngle, 0.0f));
 	}
 
+	cameraTransform = VT::COMPUTE_MATH::matrixMultiply(cameraTransform, VT::COMPUTE_MATH::matrixRotationRollPithYaw(pitchAngle, yawAngle, 0.0f));
 	cameraTransform = VT::COMPUTE_MATH::matrixMultiply(cameraTransform, VT::COMPUTE_MATH::matrixTranslation(cameraEntityPosition));
 	cameraEntityWorldTransform.m_matrix = VT::COMPUTE_MATH::saveComputeMatrixToMatrix4x4(cameraTransform);
 

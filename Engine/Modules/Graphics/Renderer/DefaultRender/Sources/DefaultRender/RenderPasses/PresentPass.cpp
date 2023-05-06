@@ -11,6 +11,7 @@
 #include "MeshSystem/IMeshSystem.h"
 #include "MeshSystem/IMesh.h"
 
+#include "Render/RenderDrawingContext.h"
 #include "RenderContext/GraphicRenderContext.h"
 #include "GraphRender/RenderPassEnvironment.h"
 
@@ -173,12 +174,13 @@ void VT::PresentPass::execute(RenderDrawingContext& drawContext, const RenderPas
 			drawContext.m_target,
 			drawContext.m_targetView,
 			Viewport(targetTextureDesc.m_width, targetTextureDesc.m_height),
-			Scissors(targetTextureDesc.m_width, targetTextureDesc.m_height),
-			{ 0.0f, 0.0f, 0.0f, 1.0f }
+			Scissors(targetTextureDesc.m_width, targetTextureDesc.m_height)
 		}
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(drawContext.m_context, 1, targets, nullptr);
+	GraphicRenderTargetClearingValue clearingValue = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	GraphicRenderContextUtils::setClearingRenderingTargets(drawContext.m_context, 1, targets, &clearingValue);
 
 	IMesh* screenGeom = m_screenRectGeom->getMesh();
 	const MeshVertexData& vertexData = screenGeom->getVertexData();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 #include "Math/Vector.h"
 
 #include "GPUBuffer/IGPUBuffer.h"
@@ -46,9 +46,9 @@ namespace VT
 		IFence* m_fence = nullptr;
 	};
 
-	using GraphicDeviceType = HashTyped::Type;
+	using GraphicDeviceType = HashedType::Type;
 
-	class IGraphicDevice : public HashTyped
+	class IGraphicDevice : public HashedType
 	{
 	public:
 		IGraphicDevice() = default;

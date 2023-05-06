@@ -75,11 +75,12 @@ bool VT::DefaultRender::init()
 
 	m_passDatas.m_lightPrepearingPassData = new LightPrepearingRenderPassData(
 		m_renderPassData.m_lightVolumeData->getTilesCounts(), m_renderPassData.m_lightVolumeData->getSlicesCount(),
-		m_renderingData.getPointLighDataCollection(), m_renderingData.getCameraTransform(),
-		m_renderingData.getCameraTransformBufferView());
+		m_renderingData.getPointLighDataCollection(), m_renderingData.getDirectionalLightDataCollection(),
+		m_renderingData.getCameraTransform(), m_renderingData.getCameraTransformBufferView());
 	VT_CHECK_INITIALIZATION(m_passDatas.m_lightPrepearingPassData);
 
-	m_passDatas.m_lightRenderPassData = new LightRenderPassData(m_renderingData.getCameraTransformBufferView());
+	m_passDatas.m_lightRenderPassData = new LightRenderPassData(
+		m_renderingData.getDirectionalLightDataCollection(), m_renderingData.getCameraTransformBufferView());
 	VT_CHECK_INITIALIZATION(m_passDatas.m_lightRenderPassData);
 
 	addRenderPassData(m_passes.m_gBufferPassID, m_passDatas.m_gBufferPassData);

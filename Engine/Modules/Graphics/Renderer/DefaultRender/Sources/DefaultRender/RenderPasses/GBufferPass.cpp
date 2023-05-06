@@ -11,12 +11,15 @@
 
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
+
+#include "Render/RenderDrawingContext.h"
 #include "RenderContext/GraphicRenderContext.h"
 
 #include "Math/ComputeMath.h"
 #include "Math/ComputeMatrix.h"
 
 #include "MeshSystem/IMesh.h"
+#include "RenderContext/RenderContextEvent.h"
 #include "Textures/ITexture2D.h"
 
 bool VT::GBufferPass::initRenderingData()
@@ -91,6 +94,8 @@ void VT::GBufferPass::execute(RenderDrawingContext& drawContext, const RenderPas
 	assert(drawContext.m_context);
 	assert(data);
 
+	RenderContextEvent passEvent(drawContext.m_context, "GBufferPass");
+
 	const GBufferRenderPassData& gBufferRenderingData = data->getData<GBufferRenderPassData>();
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
@@ -136,33 +141,38 @@ void VT::GBufferPass::execute(RenderDrawingContext& drawContext, const RenderPas
 			colorNativeTexture,
 			colorRTV.getObject()->getResourceView(),
 			Viewport(colorTextureDesc.m_width, colorTextureDesc.m_height),
-			Scissors(colorTextureDesc.m_width, colorTextureDesc.m_height),
-			{ 0.0f, 0.0f, 0.0f, 1.0f }
+			Scissors(colorTextureDesc.m_width, colorTextureDesc.m_height)
 		},
 		{
 			normalNativeTexture,
 			normalRTV.getObject()->getResourceView(),
 			Viewport(normalTextureDesc.m_width, normalTextureDesc.m_height),
-			Scissors(normalTextureDesc.m_width, normalTextureDesc.m_height),
-			{ 0.0f, 0.0f, 0.0f, 1.0f }
+			Scissors(normalTextureDesc.m_width, normalTextureDesc.m_height)
 		},
 		{
 			positionNativeTexture,
 			positionRTV.getObject()->getResourceView(),
 			Viewport(positionTextureDesc.m_width, positionTextureDesc.m_height),
-			Scissors(positionTextureDesc.m_width, positionTextureDesc.m_height),
-			{ 0.0f, 0.0f, 0.0f, 1.0f }
+			Scissors(positionTextureDesc.m_width, positionTextureDesc.m_height)
 		}
+	};
+
+	GraphicRenderTargetClearingValue targetClearingValues[] = {
+		{ 0.0f, 0.0f, 0.0f, 1.0f },
+		{ 0.0f, 0.0f, 0.0f, 1.0f },
+		{ 0.0f, 0.0f, 0.0f, 1.0f }
 	};
 
 	DepthStencilContextTarget depthStencilTarget{
 		depthNativeTexture,
-		depthDSV.getObject()->getResourceView(),
-		1.0f,
-		0
+		depthDSV.getObject()->getResourceView()
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(drawContext.m_context, 3, renderTargets, &depthStencilTarget);
+	GraphicRenderContextUtils::setClearingRenderingTargets(
+		drawContext.m_context, 3,
+		renderTargets, &depthStencilTarget,
+		targetClearingValues, 1.0f, 0
+	);
 
 	pipelineStateInfo.m_depthStencilTest.m_enabled = true;
 	pipelineStateInfo.m_depthStencilTest.m_format = depthTextureDesc.m_format;
@@ -207,11 +217,11 @@ void VT::GBufferPass::execute(RenderDrawingContext& drawContext, const RenderPas
 		//
 
 		drawContext.m_context->setGraphicBindingParameterValue(1, 0, m_passData.m_perObjectTransformSRV->getResourceView()->getBindingHeapOffset());
-		drawContext.m_context->setGraphicBindingParameterValue(1, 1, meshDataIndex);
+		drawContext.m_context->setGraphicBindingParameterValue(1, 1, static_cast<uint32_t>(meshDataIndex));
 
 		drawContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
 		GraphicRenderContextUtils::setPipelineState(drawContext.m_context, pipelineState);
-		GraphicRenderContextUtils::setVertexBuffers(drawContext.m_context, vertexData.m_bindings.size(), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
+		GraphicRenderContextUtils::setVertexBuffers(drawContext.m_context, static_cast<uint32_t>(vertexData.m_bindings.size()), vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
 		GraphicRenderContextUtils::setIndexBuffer(drawContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
 		drawContext.m_context->drawIndexed(indexData.m_indexCount);
 	}

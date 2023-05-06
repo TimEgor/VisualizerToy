@@ -11,6 +11,8 @@ namespace VT
 	constexpr uint32_t MAX_POINT_LIGHT_NUM = 256;
 	constexpr uint32_t POINT_LIGHT_MASK_SIZE = MAX_POINT_LIGHT_NUM / 8;
 
+	constexpr uint32_t MAX_DIR_LIGHT_NUM = 32;
+
 	class IGraphicDevice;
 	class IGraphicResourceManager;
 	class RenderPassEnvironment;
@@ -42,6 +44,8 @@ namespace VT
 		GPUBufferReference m_pointLightTileMasksBuffer;
 		GPUBufferReference m_pointLightZSliceBuffer;
 
+		GPUBufferReference m_directionalLightBuffer;
+
 		GPUBufferReference m_tilesDepthBuffer;
 		GPUBufferReference m_tilesBoundingBoxesBuffer;
 		GPUBufferReference m_lightVolumeInfoBuffer;
@@ -50,6 +54,8 @@ namespace VT
 		ShaderResourceViewReference m_pointLightTileMasksBufferSRV;
 		ShaderResourceViewReference m_pointLightTileMasksBufferUAV;
 		ShaderResourceViewReference m_pointLightZSliceBufferSRV;
+
+		ShaderResourceViewReference m_directionalLightBufferSRV;
 
 		ShaderResourceViewReference m_tilesDepthBufferSRV;
 		ShaderResourceViewReference m_tilesDepthBufferUAV;
@@ -62,6 +68,8 @@ namespace VT
 		bool initPointLightBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
 		bool initPointLightTileMaskBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
 		bool initPointLightZSliceBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
+
+		bool initDirectionalLightBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
 
 		bool initTilesDepthBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);
 		bool initTilesBoundingBoxesBuffer(IGraphicDevice* device, IGraphicResourceManager* resManager);

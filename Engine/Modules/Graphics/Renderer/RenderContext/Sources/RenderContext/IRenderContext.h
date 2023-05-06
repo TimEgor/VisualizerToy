@@ -87,5 +87,8 @@ namespace VT
 		virtual void drawIndexed(uint32_t indexCount) = 0;
 
 		virtual void dispatch(uint32_t threadGroupX, uint32_t threadGroupY, uint32_t threadGroupZ) = 0;
+
+		virtual void beginEvent(const char* eventName) = 0;
+		virtual void endEvent() = 0;
 	};
 }

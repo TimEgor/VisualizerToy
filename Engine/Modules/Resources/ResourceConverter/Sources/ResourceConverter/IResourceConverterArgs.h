@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 
 namespace VT
 {
-	using ResourceConverterArgsType = HashTyped::Type;
+	using ResourceConverterArgsType = HashedType::Type;
 	using ResourceConverterArgsHash = uint32_t;
 
-	class IResourceConverterArgs : public HashTyped
+	class IResourceConverterArgs : public HashedType
 	{
 	public:
 		IResourceConverterArgs() = default;

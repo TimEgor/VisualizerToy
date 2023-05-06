@@ -4,7 +4,7 @@
 
 namespace VT
 {
-	class HashTyped
+	class HashedType
 	{
 	public:
 		using Type = uint32_t;
@@ -12,8 +12,8 @@ namespace VT
 		inline static constexpr Type InvalidType = 0;
 
 	public:
-		HashTyped() = default;
-		virtual ~HashTyped() {}
+		HashedType() = default;
+		virtual ~HashedType() {}
 
 		inline static constexpr Type calcType(const char* type) { return crc32(type); }
 	};

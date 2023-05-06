@@ -8,6 +8,8 @@
 
 #include "GraphicDevice/IGraphicDevice.h"
 #include "RenderContext/IRenderContext.h"
+#include "RenderContext/RenderContextEvent.h"
+#include "Render/RenderDrawingContext.h"
 
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
@@ -93,7 +95,7 @@ void VT::LightPrepearingPass::sortPointLights(const LightPrepearingRenderPassDat
 	COMPUTE_MATH::ComputeMatrix viewTransformMatrix = COMPUTE_MATH::loadComputeMatrixFromMatrix4x4(cameraTransform.m_viewTransform);
 	COMPUTE_MATH::ComputeVector resultPosition;
 
-	const uint32_t lightsCount = data.size();
+	const uint32_t lightsCount = static_cast<uint32_t>(data.size());
 	m_sortedPointLights.clear();
 	m_sortedPointLights.reserve(lightsCount);
 
@@ -137,11 +139,16 @@ void VT::LightPrepearingPass::sortPointLights(const LightPrepearingRenderPassDat
 void VT::LightPrepearingPass::fillPointLightBuffer(IGPUBuffer* pointLightBuffer,
 	const LightPrepearingRenderPassData::PointLightCollection& lightData)
 {
+	const uint32_t lightsCount = static_cast<uint32_t>(m_sortedPointLights.size());
+	if (lightsCount == 0)
+	{
+		return;
+	}
+
 	PointLightData* mappedLights = nullptr;
 	pointLightBuffer->mapData(reinterpret_cast<void**>(&mappedLights));
 
-	const uint16_t lightsCount = m_sortedPointLights.size();
-	for (uint16_t i = 0; i < lightsCount; ++i)
+	for (uint32_t i = 0; i < lightsCount; ++i)
 	{
 		// TODO: need to improve this mapping
 		const PointLightData* light = &lightData[m_sortedPointLights[i].m_lightIndex];
@@ -195,9 +202,26 @@ void VT::LightPrepearingPass::fillPointLightZSliceBuffer(IGPUBuffer* zSliceBuffe
 	zSliceBuffer->unmapData();
 }
 
+void VT::LightPrepearingPass::fillDirLightBuffer(IGPUBuffer* dirLightBuffer,
+	const LightPrepearingRenderPassData::DirectionalLightCollection& lightData)
+{
+	const uint32_t lightsCount = static_cast<uint32_t>(lightData.size());
+	if (lightsCount == 0)
+	{
+		return;
+	}
+
+	PointLightData* mappedLights = nullptr;
+	dirLightBuffer->mapData(reinterpret_cast<void**>(&mappedLights));
+	memcpy(mappedLights, lightData.data(), sizeof(DirectionalLightData) * lightsCount);
+	dirLightBuffer->unmapData();
+}
+
 void VT::LightPrepearingPass::computeTilesDepth(IRenderContext* context, ShaderResourceViewReference tilesDepthUAV,
 	ShaderResourceViewReference lightVolumeSRV, ShaderResourceViewReference depthSourceSRV, ITexture2D* depthSource)
 {
+	RenderContextEvent passEvent(context, "TilesDepthsComputation");
+
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
 	ComputePipelineStateInfo pipelineStateInfo{};
@@ -228,6 +252,8 @@ void VT::LightPrepearingPass::computeTilesBoudingBoxes(IRenderContext* context, 
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
+	RenderContextEvent passEvent(context, "TilesBBsComputation");
+
 	ComputePipelineStateInfo pipelineStateInfo{};
 	pipelineStateInfo.m_computeShader = m_lightVolumeBBCalcShader->getTypedObject();
 
@@ -256,6 +282,8 @@ void VT::LightPrepearingPass::clearPointLightTileMasks(IRenderContext* context, 
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 
+	RenderContextEvent passEvent(context, "PointLightTileMasksClearing");
+
 	ComputePipelineStateInfo pipelineStateInfo{};
 	pipelineStateInfo.m_computeShader = m_pointLightMaskClearingShader->getTypedObject();
 
@@ -282,6 +310,8 @@ void VT::LightPrepearingPass::computePointLightTileMasks(IRenderContext* context
 	ShaderResourceViewReference cameraTransformsSRV, ShaderResourceViewReference lightVolumeSRV)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
+
+	RenderContextEvent passEvent(context, "PointLightTileMasksComputation");
 
 	ComputePipelineStateInfo pipelineStateInfo{};
 	pipelineStateInfo.m_computeShader = m_pointLightCullingShader->getTypedObject();
@@ -340,6 +370,8 @@ void VT::LightPrepearingPass::fillRenderPassDependency(RenderPassGraphBuilder& b
 	builder.addRenderPassWriteResource(this, "lv_point_light_buffer", RenderPassEnvironmentResourceType::BUFFER);
 	builder.addRenderPassWriteResource(this, "lv_point_light_zslice_buffer", RenderPassEnvironmentResourceType::BUFFER);
 
+	builder.addRenderPassWriteResource(this, "lv_dir_light_buffer", RenderPassEnvironmentResourceType::BUFFER);
+
 	builder.addRenderPassReadResource(this, "gb_depth_texture", RenderPassEnvironmentResourceType::TEXTURE);
 }
 
@@ -347,9 +379,11 @@ void VT::LightPrepearingPass::execute(RenderDrawingContext& drawContext, const R
 {
 	assert(data);
 
+	RenderContextEvent passEvent(drawContext.m_context, "LightingPreparePass");
+
 	const LightPrepearingRenderPassData& lightPrepearingData = data->getData<LightPrepearingRenderPassData>();
 
-	const LightPrepearingRenderPassData::PointLightCollection& pointLightCollection = lightPrepearingData.getLightData();
+	const LightPrepearingRenderPassData::PointLightCollection& pointLightCollection = lightPrepearingData.getPointLightData();
 	if (pointLightCollection.empty())
 	{
 		return;
@@ -357,6 +391,8 @@ void VT::LightPrepearingPass::execute(RenderDrawingContext& drawContext, const R
 
 	GPUBufferReference pointLightBuffer = passEnvironment.getBuffer("lv_point_light_buffer");
 	GPUBufferReference zSliceBuffer = passEnvironment.getBuffer("lv_point_light_zslice_buffer");
+
+	GPUBufferReference dirLightBuffer = passEnvironment.getBuffer("lv_dir_light_buffer");
 
 	ShaderResourceViewReference pointLightsSRV = passEnvironment.getShaderResourceView("lv_point_light_srv");
 
@@ -375,10 +411,14 @@ void VT::LightPrepearingPass::execute(RenderDrawingContext& drawContext, const R
 	IGPUBuffer* pointLights = pointLightBuffer->getTypedResource();
 	IGPUBuffer* zSlices = zSliceBuffer->getTypedResource();
 
+	IGPUBuffer* dirLights = dirLightBuffer->getTypedResource();
+
 	sortPointLights(pointLightCollection, lightPrepearingData.getCameraTransform());
 
 	fillPointLightBuffer(pointLights, pointLightCollection);
 	fillPointLightZSliceBuffer(zSlices, lightPrepearingData.getSlicesCount());
+
+	fillDirLightBuffer(dirLights, lightPrepearingData.getDirectionalLightDatas());
 
 	computeTilesDepth(drawContext.m_context, tilesDepthUAV, lightVolumeSRV,
 		depthSourceSRV, depthSource->getTextureCast<ITexture2D>());
@@ -388,7 +428,7 @@ void VT::LightPrepearingPass::execute(RenderDrawingContext& drawContext, const R
 
 	clearPointLightTileMasks(drawContext.m_context, tilesUAV, lightVolumeSRV, lightPrepearingData.getTilesCount());
 
-	computePointLightTileMasks(drawContext.m_context, pointLightCollection.size(),
+	computePointLightTileMasks(drawContext.m_context, static_cast<uint32_t>(pointLightCollection.size()),
 		pointLightsSRV, tilesUAV, tilesBbSRV,
 		lightPrepearingData.getCameraTransformView(), lightVolumeSRV);
 }

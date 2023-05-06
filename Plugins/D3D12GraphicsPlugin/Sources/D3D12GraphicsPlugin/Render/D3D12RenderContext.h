@@ -57,5 +57,8 @@ namespace VT_D3D12
 		virtual void drawIndexed(uint32_t indexCount) override;
 
 		virtual void dispatch(uint32_t threadGroupX, uint32_t threadGroupY, uint32_t threadGroupZ) override;
+
+		virtual void beginEvent(const char* eventName) override;
+		virtual void endEvent() override;
 	};
 }

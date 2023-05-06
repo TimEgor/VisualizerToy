@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 
 namespace VT
 {
-	using EventType = HashTyped::Type;
-	constexpr EventType InvalidEventType = HashTyped::InvalidType;
+	using EventType = HashedType::Type;
+	constexpr EventType InvalidEventType = HashedType::InvalidType;
 
-	class IEvent : public HashTyped
+	class IEvent : public HashedType
 	{
 	public:
 		IEvent() = default;
@@ -16,10 +16,10 @@ namespace VT
 		virtual EventType getType() const = 0;
 	};
 
-	using InstancedEventType = HashTyped::Type;
-	constexpr EventType InvalidInstancedEventType = HashTyped::InvalidType;
+	using InstancedEventType = HashedType::Type;
+	constexpr EventType InvalidInstancedEventType = HashedType::InvalidType;
 
-	class IInstancedEvent : public HashTyped
+	class IInstancedEvent : public HashedType
 	{
 	public:
 		IInstancedEvent() = default;

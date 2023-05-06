@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 
 namespace VT
 {
@@ -9,9 +9,9 @@ namespace VT
 
 	class IImGuiRenderBackend;
 
-	using GraphicPlatformType = HashTyped::Type;
+	using GraphicPlatformType = HashedType::Type;
 
-	class IGraphicPlatform : public HashTyped
+	class IGraphicPlatform : public HashedType
 	{
 	public:
 		IGraphicPlatform() = default;

@@ -8,6 +8,7 @@
 #include "Scene/SceneNodeIDComponent.h"
 #include "MeshSystem/MeshComponent.h"
 #include "LightSystem/PointLightComponent.h"
+#include "LightSystem/DirectionalLightComponent.h"
 #include "Camera/PerspectiveCameraComponent.h"
 
 #include "Math/ComputeMatrix.h"
@@ -33,7 +34,7 @@ void VT::PreparingRenderingDataSystem::prepareMeshData(const IScene* scene, cons
 	}
 }
 
-void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData)
+void VT::PreparingRenderingDataSystem::preparePointLightData(const IScene* scene, const EntityComponentSystem* ecs, DefaultRenderingData& renderingData)
 {
 	auto ecsView = ecs->getView<SceneNodeIDComponent, PointLightComponent>();
 
@@ -43,12 +44,27 @@ void VT::PreparingRenderingDataSystem::prepareLightData(const IScene* scene, con
 		assert(!scene->isNodeDirty(nodeID));
 
 		const Transform& nodeWorldTransform = scene->getNodeWorldTransform(nodeID);
-		renderingData.addPointLight(pointLightComponent.m_color, pointLightComponent.m_radius, nodeWorldTransform.getOrigin());
+		renderingData.addPointLight(pointLightComponent.m_color, pointLightComponent.m_radius, pointLightComponent.m_intensity, nodeWorldTransform.getOrigin());
+	}
+}
+
+void VT::PreparingRenderingDataSystem::prepareDirectionalLightData(const IScene* scene,
+	const EntityComponentSystem* ecs, DefaultRenderingData& renderingData)
+{
+	auto ecsView = ecs->getView<SceneNodeIDComponent, DirectionalLightComponent>();
+
+	for (const auto& [entity, sceneNodeIDComponent, dirLightComponent] : ecsView.each())
+	{
+		NodeID nodeID = sceneNodeIDComponent.getNodeID();
+		assert(!scene->isNodeDirty(nodeID));
+
+		const Transform& nodeWorldTransform = scene->getNodeWorldTransform(nodeID);
+		renderingData.addDirectionalLight(dirLightComponent.m_color, dirLightComponent.m_intensity, nodeWorldTransform.getAxisZ());
 	}
 }
 
 void VT::PreparingRenderingDataSystem::prepareCameraData(VT_Entity cameraEntity, const IScene* scene, const EntityComponentSystem* ecs,
-	DefaultRenderingData& renderingData)
+                                                         DefaultRenderingData& renderingData)
 {
 	const PerspectiveCameraComponent& cameraComponent = ecs->getComponent<PerspectiveCameraComponent>(cameraEntity);
 	const SceneNodeIDComponent& nodeIDComponent = ecs->getComponent<SceneNodeIDComponent>(cameraEntity);
@@ -88,6 +104,7 @@ void VT::PreparingRenderingDataSystem::prepareData(const ILevel& level, DefaultR
 	const EntityComponentSystem* ecs = level.getEntityComponentSystem();
 
 	prepareMeshData(scene, ecs, renderingData);
-	prepareLightData(scene, ecs, renderingData);
+	preparePointLightData(scene, ecs, renderingData);
+	prepareDirectionalLightData(scene, ecs, renderingData);
 	prepareCameraData(level.getCameraEntity(), scene, ecs, renderingData);
 }

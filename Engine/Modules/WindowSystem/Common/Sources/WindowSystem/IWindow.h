@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 #include "Math/Vector.h"
 
 #include "EventSystem/IEventSystem.h"
@@ -53,9 +53,9 @@ namespace VT
 		VT_INSTANCED_EVENT_TYPE(WINDOW_SIZE_EVENT_TYPE);
 	};
 
-	using WindowType = HashTyped::Type;
+	using WindowType = HashedType::Type;
 
-	class IWindow : public HashTyped
+	class IWindow : public HashedType
 	{
 	public:
 		IWindow() = default;

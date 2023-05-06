@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/TypeHashMacros.h"
+#include "Core/HashedType.h"
 #include "MonitorInfo.h"
 
 namespace VT
@@ -12,9 +12,9 @@ namespace VT
 
 	class IImGuiPlatformBackend;
 
-	using PlatformType = HashTyped::Type;
+	using PlatformType = HashedType::Type;
 
-	class IPlatform : public HashTyped
+	class IPlatform : public HashedType
 	{
 	public:
 		IPlatform() = default;

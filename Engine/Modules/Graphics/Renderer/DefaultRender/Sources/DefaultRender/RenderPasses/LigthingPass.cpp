@@ -8,14 +8,17 @@
 #include "GraphicResourceManager/IGraphicResourceManager.h"
 #include "GraphicResourceCommon/IGraphicResourceDescriptor.h"
 
-#include "MeshSystem/IMeshSystem.h"
-#include "MeshSystem/IMesh.h"
-
+#include "Render/RenderDrawingContext.h"
 #include "RenderContext/GraphicRenderContext.h"
+#include "RenderContext/RenderContextEvent.h"
+
 #include "GraphRender/RenderPassEnvironment.h"
 #include "GraphRender/RenderPassGraphBuilder.h"
 
 #include "Textures/ITexture2D.h"
+
+#include "MeshSystem/IMeshSystem.h"
+#include "MeshSystem/IMesh.h"
 
 #include "Math/Vector.h"
 
@@ -25,10 +28,11 @@ bool VT::LightPass::initPipelineData()
 	IGraphicResourceManager* resManager = environment->m_graphicResourceManager;
 
 	PipelineBindingLayoutDesc bindingDesc{};
-	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::PIXEL_STAGE);
-	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::PIXEL_STAGE);
-	bindingDesc.m_descriptorBindings.emplace_back(3, 2, 0, ShaderStageVisibility::PIXEL_STAGE);
-	bindingDesc.m_descriptorBindings.emplace_back(3, 3, 0, ShaderStageVisibility::PIXEL_STAGE);
+	bindingDesc.m_descriptorBindings.emplace_back(1, 0, 0, ShaderStageVisibility::PIXEL_STAGE); //cameraTransformsBinding
+	bindingDesc.m_descriptorBindings.emplace_back(1, 1, 0, ShaderStageVisibility::PIXEL_STAGE); //lightVolumeBinding
+	bindingDesc.m_descriptorBindings.emplace_back(3, 2, 0, ShaderStageVisibility::PIXEL_STAGE); //gBufferBindings
+	bindingDesc.m_descriptorBindings.emplace_back(3, 3, 0, ShaderStageVisibility::PIXEL_STAGE); //pointLightBindings
+	bindingDesc.m_descriptorBindings.emplace_back(2, 4, 0, ShaderStageVisibility::PIXEL_STAGE); //dirLightBindings
 
 	m_pipelineData.m_bindingLayout = resManager->getPipelineBindingLayout(bindingDesc);
 
@@ -166,11 +170,14 @@ void VT::LightPass::fillRenderPassDependency(RenderPassGraphBuilder& builder) co
 	builder.addRenderPassReadResource(this, "gb_position_texture", RenderPassEnvironmentResourceType::TEXTURE);
 	builder.addRenderPassReadResource(this, "lv_point_light_buffer", RenderPassEnvironmentResourceType::BUFFER);
 	builder.addRenderPassReadResource(this, "lv_point_light_zslice_buffer", RenderPassEnvironmentResourceType::BUFFER);
+	builder.addRenderPassReadResource(this, "lv_dir_light_buffer", RenderPassEnvironmentResourceType::BUFFER);
 }
 
 void VT::LightPass::execute(RenderDrawingContext& drawContext, const RenderPassEnvironment& passEnvironment, const IRenderPassData* data)
 {
 	assert(data);
+
+	RenderContextEvent passEvent(drawContext.m_context, "LightPass");
 
 	const LightRenderPassData& lightData = data->getData<LightRenderPassData>();
 
@@ -188,12 +195,13 @@ void VT::LightPass::execute(RenderDrawingContext& drawContext, const RenderPassE
 			drawContext.m_target,
 			drawContext.m_targetView,
 			Viewport(targetTextureDesc.m_width, targetTextureDesc.m_height),
-			Scissors(targetTextureDesc.m_width, targetTextureDesc.m_height),
-			{ 0.0f, 0.0f, 0.0f, 1.0f }
+			Scissors(targetTextureDesc.m_width, targetTextureDesc.m_height)
 		}
 	};
 
-	GraphicRenderContextUtils::setRenderingTargets(drawContext.m_context, 1, targets, nullptr);
+	GraphicRenderTargetClearingValue clearingValues = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	GraphicRenderContextUtils::setClearingRenderingTargets(drawContext.m_context, 1, targets, &clearingValues);
 
 	IMesh* screenGeom = m_screenRectGeom->getMesh();
 	const MeshVertexData& vertexData = screenGeom->getVertexData();
@@ -208,6 +216,8 @@ void VT::LightPass::execute(RenderDrawingContext& drawContext, const RenderPassE
 
 	ShaderResourceViewReference pointLightsSRV = passEnvironment.getShaderResourceView("lv_point_light_srv");
 	ShaderResourceViewReference tilesSRV = passEnvironment.getShaderResourceView("lv_point_light_tile_mask_srv");
+
+	ShaderResourceViewReference dirLightsSRV = passEnvironment.getShaderResourceView("lv_dir_light_srv");
 
 	ShaderResourceViewReference lightVolumeSlicesSRV = passEnvironment.getShaderResourceView("lv_point_light_zslice_srv");
 	ShaderResourceViewReference lightVolumeSRV = passEnvironment.getShaderResourceView("lv_info_srv");
@@ -225,10 +235,13 @@ void VT::LightPass::execute(RenderDrawingContext& drawContext, const RenderPassE
 	drawContext.m_context->setGraphicBindingParameterValue(3, 0, pointLightsSRV->getResourceView()->getBindingHeapOffset());
 	drawContext.m_context->setGraphicBindingParameterValue(3, 1, tilesSRV->getResourceView()->getBindingHeapOffset());
 	drawContext.m_context->setGraphicBindingParameterValue(3, 2, lightVolumeSlicesSRV->getResourceView()->getBindingHeapOffset());
+
+	drawContext.m_context->setGraphicBindingParameterValue(4, 0, dirLightsSRV->getResourceView()->getBindingHeapOffset());
+	drawContext.m_context->setGraphicBindingParameterValue(4, 1, static_cast<uint32_t>(lightData.getDirectionalLightCollection().size()));
 	
 	drawContext.m_context->setPrimitiveTopology(PrimitiveTopology::TRIANGLELIST);
 	GraphicRenderContextUtils::setPipelineState(drawContext.m_context, pipelineState);
-	GraphicRenderContextUtils::setVertexBuffers(drawContext.m_context, vertexData.m_bindings.size(),
+	GraphicRenderContextUtils::setVertexBuffers(drawContext.m_context, static_cast<uint32_t>(vertexData.m_bindings.size()),
 		vertexData.m_bindings.data(), vertexData.m_inputLayout->getDesc());
 	GraphicRenderContextUtils::setIndexBuffer(drawContext.m_context, indexData.m_indexBuffer, indexData.m_indexFormat);
 	drawContext.m_context->drawIndexed(indexData.m_indexCount);
