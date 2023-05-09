@@ -8,10 +8,10 @@ if (NOT DEFINED VT_COMMON_ENGINE)
 	add_library(GraphicDeviceModule INTERFACE)
 
 	vt_add_modules_by_path_include(GraphicDeviceModule INTERFACE "DeviceModules.cmake"
-	${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Modules)
+	${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 else()
 	add_library(GraphicDeviceModule_COMMON INTERFACE)
 
 	vt_add_modules_by_path_include(GraphicDeviceModule_COMMON INTERFACE "CommonDeviceModules.cmake"
-		${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Modules)
+		${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 endif()

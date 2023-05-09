@@ -11,6 +11,7 @@ set(MODULES_SET
 	Math					Math
 	Multithreading			Multithreading
 	ObjectPoolsModule		ObjectPools
+	Profile					Profile
 	Platform				Platform
 	PluginSystem_COMMON		PluginSystem/Common
 	ResourceModule			Resources

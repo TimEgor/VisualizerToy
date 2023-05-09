@@ -9,9 +9,12 @@ vt_add_module_target(GraphicPresenter STATIC "VT_Engine/Graphics/Presenter")
 vt_add_common_module(GraphicPresenter)
 
 target_link_libraries(GraphicPresenter
+	PRIVATE
+		GraphicDevice
+		Profile
+
 	PUBLIC
 		Engine_COMMON
-		GraphicDevice
 		SwapChain
 		WindowSystem_COMMON
 )

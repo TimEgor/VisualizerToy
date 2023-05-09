@@ -4,7 +4,7 @@ project(VT_DemoTest)
 
 set(VT_ROOT_PATH ${CMAKE_CURRENT_LIST_DIR}/../../)
 
-include(${VT_ROOT_PATH}/CMake/BuildingOptions.cmake)
+include(${VT_ROOT_PATH}/CMake/Core.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)
 include(${VT_ROOT_PATH}/CMake/SourceFilesGroups.cmake)
 

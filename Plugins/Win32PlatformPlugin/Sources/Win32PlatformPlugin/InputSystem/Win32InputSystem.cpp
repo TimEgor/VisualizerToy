@@ -279,7 +279,7 @@ bool VT_WIN32::Win32InputSystem::isMouseMoved() const
 	return ((m_mousePos.m_x != m_prevMousePos.m_x) || (m_mousePos.m_y != m_prevMousePos.m_y));
 }
 
-VT::Key VT_WIN32::Win32InputSystem::convertKeyWin32ToVt(size_t win32Key)
+VT::Key VT_WIN32::Win32InputSystem::convertKeyWin32ToVt(uint8_t win32Key)
 {
 	return m_win32KeyMap[win32Key];
 }

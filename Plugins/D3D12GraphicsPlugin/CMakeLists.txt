@@ -11,6 +11,9 @@ vt_add_third_party_module(D3D12GraphicsPlugin PRIVATE "D3D12MemoryAllocator" "D3
 vt_add_third_party_module(D3D12GraphicsPlugin PRIVATE "DirectX-Headers" "Microsoft::DirectX-Headers")
 
 target_link_libraries(D3D12GraphicsPlugin
+	PRIVATE
+		Profile
+
 	PUBLIC
 		Core
 

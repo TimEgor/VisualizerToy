@@ -10,6 +10,8 @@
 
 #include "SwapChain/ISwapChain.h"
 
+#include "Profile/Profile.h"
+
 void VT::WindowGraphicPresenter::onWindowSizeEvent(const WindowSizeEvent& event)
 {
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
@@ -85,5 +87,7 @@ VT::IGraphicResourceDescriptor* VT::WindowGraphicPresenter::getTargetTextureView
 void VT::WindowGraphicPresenter::present()
 {
 	assert(m_swapChain);
+
+	VT_PROFILE_BLOCK_EVENT("Window swapchain presenting");
 	m_swapChain->present();
 }

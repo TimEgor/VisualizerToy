@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef SIMD_MATH_DX
+#ifdef VT_SIMD_MATH_DX
 #include "Math/ComputeMatrix.h"
 
 namespace VT
@@ -332,4 +332,4 @@ namespace VT
 #pragma endregion
 	}
 }
-#endif
+#endif // VT_SIMD_MATH_DX

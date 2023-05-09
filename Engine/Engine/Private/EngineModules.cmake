@@ -13,6 +13,7 @@ set(MODULES_SET
 	ObjectPoolsModule		ObjectPools
 	Platform				Platform
 	PluginSystem			PluginSystem/Private
+	Profile					Profile
 	ResourceModule			Resources
 	Scene					Scene/Private
 	WindowSystem			WindowSystem/Private

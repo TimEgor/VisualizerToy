@@ -24,6 +24,8 @@ target_link_libraries(RenderSystem
 
 		DebugUiSystem
 
+		Profile
+
 	PUBLIC
 		Core
 		MeshSystem_COMMON

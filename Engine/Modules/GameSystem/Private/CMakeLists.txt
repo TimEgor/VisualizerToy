@@ -11,4 +11,5 @@ vt_add_common_module(GameSystem)
 target_link_libraries(GameSystem
 	PRIVATE
 		Engine_COMMON
+		Profile
 )

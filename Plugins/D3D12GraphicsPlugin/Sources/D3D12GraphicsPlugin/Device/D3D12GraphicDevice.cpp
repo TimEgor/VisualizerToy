@@ -252,7 +252,7 @@ void VT_D3D12::D3D12GraphicDevice::createSwapChainResources(D3D12SwapChain* swap
 	{
 		ID3D12Resource* d3d12TextureResource = nullptr;
 
-		d3d12SwapChain->GetBuffer(i, VT_IID(d3d12TextureResource), VT_PPV(d3d12TextureResource));
+		d3d12SwapChain->GetBuffer(static_cast<UINT>(i), VT_IID(d3d12TextureResource), VT_PPV(d3d12TextureResource));
 
 		D3D12Texture2D* d3d12Texture = new (&textures[i]) D3D12Texture2D(textureDesc, d3d12TextureResource);
 		d3d12Texture->setState(VT::TextureState::TEXTURE_STATE_PRESENTING);
@@ -1014,7 +1014,7 @@ bool VT_D3D12::D3D12GraphicDevice::createGraphicPipelineState(VT::ManagedGraphic
 	d3d12PipelineDesc.BlendState = blendDesc;
 	d3d12PipelineDesc.SampleMask = UINT_MAX;
 	d3d12PipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	d3d12PipelineDesc.NumRenderTargets = info.m_targetFormats.size();
+	d3d12PipelineDesc.NumRenderTargets = static_cast<uint32_t>(info.m_targetFormats.size());
 
 	if (info.m_depthStencilTest.m_enabled)
 	{
@@ -1144,7 +1144,7 @@ bool VT_D3D12::D3D12GraphicDevice::createPipelineBindingLayout(
 	D3D12_ROOT_SIGNATURE_DESC d3d12RootSignatureDesc{};
 	d3d12RootSignatureDesc.NumStaticSamplers = 1;
 	d3d12RootSignatureDesc.pStaticSamplers = &d3d12SamplerDesc;
-	d3d12RootSignatureDesc.NumParameters = d3d12RootParameters.size();
+	d3d12RootSignatureDesc.NumParameters = static_cast<uint32_t>(d3d12RootParameters.size());
 	d3d12RootSignatureDesc.pParameters = d3d12RootParameters.data();
 	d3d12RootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
 

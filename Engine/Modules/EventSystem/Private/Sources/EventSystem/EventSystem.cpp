@@ -6,6 +6,8 @@ bool VT::EventSystem::init()
 
 	VT_CHECK_INITIALIZATION(m_instancedEvents.init());
 	VT_CHECK_INITIALIZATION(m_instancedDispatchers.init());
+
+	return true;
 }
 
 void VT::EventSystem::release()

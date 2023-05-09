@@ -23,14 +23,18 @@ namespace VT
 	class IEngine
 	{
 	public:
+		using FrameID = uint64_t;
+
+	public:
 		IEngine() = default;
 		virtual ~IEngine() {}
 
 		virtual bool init(const EngineInitParam& initParam) = 0;
 		virtual void release() = 0;
 
-		virtual void beginFrame() = 0;
+		virtual FrameID beginFrame() = 0;
 		virtual void endFrame() = 0;
+		virtual FrameID getCurrentFrameID() const = 0;
 
 		virtual void updateFrame() = 0;
 

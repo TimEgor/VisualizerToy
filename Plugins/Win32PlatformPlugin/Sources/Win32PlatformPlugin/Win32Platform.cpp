@@ -41,11 +41,11 @@ void VT_WIN32::Win32Platform::collectMonitorInfo()
 			{
 				VT::MonitorInfo& info = reinterpret_cast<MonitorInfoCollection*>(param)->emplace_back();
 
-				info.m_resolution.m_x = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
-				info.m_resolution.m_y = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+				info.m_resolution.m_x = static_cast<uint16_t>(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left);
+				info.m_resolution.m_y = static_cast<uint16_t>(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top);
 
-				info.m_basePos.m_x = monitorInfo.rcMonitor.left;
-				info.m_basePos.m_y = monitorInfo.rcMonitor.top;
+				info.m_basePos.m_x = static_cast<uint16_t>(monitorInfo.rcMonitor.left);
+				info.m_basePos.m_y = static_cast<uint16_t>(monitorInfo.rcMonitor.top);
 			}
 
 			return TRUE;

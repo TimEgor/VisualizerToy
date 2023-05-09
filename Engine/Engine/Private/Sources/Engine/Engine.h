@@ -16,6 +16,8 @@ namespace VT
 		ClockTimePoint m_prevFrameStartTime;
 		float m_deltaTime = 0.0f;
 
+		FrameID m_currentFrameID = -1;
+
 		bool m_isStoped = false;
 		bool m_isRenderingPaused = false;
 
@@ -26,8 +28,9 @@ namespace VT
 		virtual bool init(const EngineInitParam& initParam) override;
 		virtual void release() override;
 
-		virtual void beginFrame() override;
+		virtual FrameID beginFrame() override;
 		virtual void endFrame() override;
+		virtual FrameID getCurrentFrameID() const override { return m_currentFrameID; }
 
 		virtual void updateFrame() override;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef SIMD_MATH_DX
+#ifdef VT_SIMD_MATH_DX
 #include "Math/Types.h"
 
 namespace VT
@@ -15,4 +15,4 @@ namespace VT
 		return DirectX::PackedVector::XMConvertHalfToFloat(f16);
 	}
 }
-#endif // SIMD_MATH_DX
+#endif // VT_SIMD_MATH_DX

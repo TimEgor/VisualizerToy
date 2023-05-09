@@ -6,6 +6,7 @@
 
 #include "GameSystem/GameModuleBase.h"
 #include "PluginSystem/IPluginSystem.h"
+#include "Profile/Profile.h"
 
 namespace VT
 {
@@ -28,6 +29,8 @@ void VT::GameSystem::release()
 
 void VT::GameSystem::update(float deltaTime)
 {
+	VT_PROFILE_BLOCK_EVENT("Game modules updating");
+
 	for (auto& module : m_modules)
 	{
 		module->update(deltaTime);

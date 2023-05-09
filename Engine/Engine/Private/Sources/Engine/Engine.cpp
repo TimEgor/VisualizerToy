@@ -4,6 +4,7 @@
 #include "LevelSystem/LevelSystem.h"
 
 #include "Core/UtilitiesMacros.h"
+#include "Core/String/Format.h"
 #include "Engine/EngineEnvironment.h"
 
 #include "EventSystem/EventSystem.h"
@@ -23,6 +24,8 @@
 #include "RenderSystem/RenderSystem.h"
 
 #include "DebugUiSystem/DebugUiSystem.h"
+
+#include "Profile/Profile.h"
 
 #include <cassert>
 
@@ -132,8 +135,12 @@ void VT::Engine::release()
 	}
 }
 
-void VT::Engine::beginFrame()
+VT::IEngine::FrameID VT::Engine::beginFrame()
 {
+	++m_currentFrameID;
+
+	VT_PROFILE_BEGIN_EVENT(stringFormat("Frame #%d", m_currentFrameID).c_str());
+
 	assert(m_engineEnvironment);
 
 	assert(m_engineEnvironment->m_windowSystem);
@@ -143,11 +150,14 @@ void VT::Engine::beginFrame()
 
 	m_currentFrameTime = Clock::getCurrentTime();
 	m_deltaTime = Clock::calkTimePointDelta(m_currentFrameTime, m_prevFrameStartTime);
+
+	return m_currentFrameID;
 }
 
 void VT::Engine::endFrame()
 {
 	m_prevFrameStartTime = m_currentFrameTime;
+	VT_PROFILE_END_EVENT();
 }
 
 void VT::Engine::updateFrame()

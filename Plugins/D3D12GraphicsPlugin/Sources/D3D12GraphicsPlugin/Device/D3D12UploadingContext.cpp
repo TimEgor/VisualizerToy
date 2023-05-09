@@ -2,10 +2,10 @@
 
 #include "D3D12GraphicsPlugin/Resource/D3D12Resource.h"
 
-#include <cassert>
+#include "Profile/Profile.h"
 
 VT_D3D12::D3D12UploadingContext::D3D12UploadingContext(D3D12CommandQueueComPtr d3d12UploadingCommandQueue,
-	D3D12GraphicsCommandListComPtr d3d12CommandList, D3D12CommandAllocatorComPtr d3d12CommandAllocator, D3D12Fence syncFence)
+                                                       D3D12GraphicsCommandListComPtr d3d12CommandList, D3D12CommandAllocatorComPtr d3d12CommandAllocator, D3D12Fence syncFence)
 	: m_uploadingCommandQueue(d3d12UploadingCommandQueue),
 	m_commandList(d3d12CommandList), m_allocator(d3d12CommandAllocator), m_syncFence(syncFence)
 {
@@ -39,6 +39,7 @@ void VT_D3D12::D3D12UploadingContext::submit()
 
 void VT_D3D12::D3D12UploadingContext::wait()
 {
+	VT_PROFILE_BLOCK_EVENT("Wait GPU Context");
 	m_syncFence.wait(m_lastSubmittedFenceValue);
 }
 

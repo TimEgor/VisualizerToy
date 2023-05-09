@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef SIMD_MATH_DX
+#ifdef VT_SIMD_MATH_DX
 #include "Math/ComputeVector.h"
 
 namespace VT
@@ -467,4 +467,4 @@ namespace VT
 		}
 	}
 }
-#endif // SIMD_MATH_DX
+#endif // VT_SIMD_MATH_DX

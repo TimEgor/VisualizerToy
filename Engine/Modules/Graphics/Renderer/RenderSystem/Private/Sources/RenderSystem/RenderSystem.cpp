@@ -15,6 +15,7 @@
 #include "Textures/ITexture2D.h"
 
 #include "MeshSystem/IMeshSystem.h"
+#include "Profile/Profile.h"
 #include "Render/IRender.h"
 
 bool VT::RenderSystem::init()
@@ -56,6 +57,8 @@ void VT::RenderSystem::draw(ITexture2D* target, IGraphicResourceDescriptor* targ
 {
 	assert(m_context);
 	assert(m_render);
+
+	VT_PROFILE_BLOCK_EVENT("RenderSystem drawing");
 
 	EngineEnvironment* environment = EngineInstance::getInstance()->getEnvironment();
 

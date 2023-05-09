@@ -37,7 +37,7 @@ namespace VT_WIN32
 
 		virtual VT::IInputSystem* createInputSystem() const override;
 
-		virtual uint32_t getMonitorCount() const override { return m_monitorInfos.size(); }
+		virtual uint32_t getMonitorCount() const override { return static_cast<uint32_t>(m_monitorInfos.size()); }
 		virtual const VT::MonitorInfo& getMonitorInfo(uint32_t index) const override { return m_monitorInfos[index]; }
 
 		virtual VT::IImGuiPlatformBackend* createImGuiPlatformBackend() const override;

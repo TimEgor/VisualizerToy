@@ -8,10 +8,10 @@ if (NOT DEFINED VT_COMMON_ENGINE)
 	add_library(GraphicsModule INTERFACE)
 
 	vt_add_modules_by_path_include(GraphicsModule INTERFACE "GraphicModules.cmake"
-	${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Modules)
+	${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 else()
 	add_library(GraphicsModule_COMMON INTERFACE)
 
 	vt_add_modules_by_path_include(GraphicsModule_COMMON INTERFACE "CommonGraphicModules.cmake"
-		${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Modules)
+		${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 endif()

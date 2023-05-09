@@ -10,7 +10,7 @@ set(VT_ASSET_CONVERTERS_DIR ${VT_ROOT_PATH}/AssetConverters)
 set(VT_ASSET_CONVERTERS_BINARY ${VT_ASSET_CONVERTERS_DIR}/Build)
 set(VT_ASSET_CONVERTERS_OUT ${VT_ASSET_CONVERTERS_DIR}/Out)
 
-include(${VT_ROOT_PATH}/CMake/BuildingOptions.cmake)
+include(${VT_ROOT_PATH}/CMake/Core.cmake)
 include(${VT_ROOT_PATH}/CMake/Module.cmake)
 include(${VT_ROOT_PATH}/CMake/SourceFilesGroups.cmake)
 
@@ -45,6 +45,12 @@ vt_add_plugins_include(Engine
 	"EngineConverters.cmake" ${VT_ASSET_CONVERTERS_DIR} ${VT_ASSET_CONVERTERS_BINARY})
 
 message("\n----------------------")
+
+if (TARGET WinPixEventRuntime)
+	add_custom_command(TARGET StandaloneLauncher POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy ${VT_ROOT_PATH}/Libs/WinPixEventRuntime/bin/x64/WinPixEventRuntime.dll ${OUTPUT_LOCATION}
+	)
+endif()
 
 if (MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT StandaloneLauncher)

@@ -8,8 +8,8 @@ namespace VT_WIN32
 {
 	class Win32InputSystem final : public VT::IInputSystem
 	{
-		using KeyMapVTContainer = std::unordered_map<VT::Key, size_t>;
-		using KeyMapWin32Container = std::unordered_map<size_t, VT::Key>;
+		using KeyMapVTContainer = std::unordered_map<VT::Key, uint8_t>;
+		using KeyMapWin32Container = std::unordered_map<uint8_t, VT::Key>;
 
 	private:
 		KeyMapVTContainer m_vtKeyMap;
@@ -41,7 +41,7 @@ namespace VT_WIN32
 		virtual const VT::Vector2Int16& getMouseMovementOffset() const override { return m_mouseMovementDelta; }
 		virtual bool isMouseMoved() const override;
 
-		VT::Key convertKeyWin32ToVt(size_t win32Key);
+		VT::Key convertKeyWin32ToVt(uint8_t win32Key);
 
 		VT_INPUT_SYSTEM_TYPE(WIN32_INPUT_SYSTEM_TYPE);
 	};
