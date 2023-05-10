@@ -7,11 +7,15 @@
 		#define USE_PIX
 		#include "WinPixEventRuntime/pix3.h"
 	#endif
+
+	#ifdef VT_PROFILE_SUPERLUMINAL
+		#include "Superluminal/PerformanceAPI.h"
+	#endif
 #endif
 
-VT::Profile::ProfileEvent::ProfileEvent(const char* name)
+VT::Profile::ProfileEvent::ProfileEvent(const char* title, const char* context)
 {
-	beginEvent(name);
+	beginEvent(title, context);
 }
 
 VT::Profile::ProfileEvent::~ProfileEvent()
@@ -19,21 +23,27 @@ VT::Profile::ProfileEvent::~ProfileEvent()
 	endEvent();
 }
 
-VT::Profile::ProfileEvent VT::Profile::createBlockEvent(const char* eventName)
-{
-	return ProfileEvent(eventName);
-}
-
-void VT::Profile::beginEvent(const char* eventName)
+void VT::Profile::beginEvent(const char* titleName, const char* contextName)
 {
 #if !defined(VT_CONFIG_RETAIL)
-	PIXBeginEvent(PIX_COLOR_DEFAULT, eventName);
+#ifdef VT_PROFILE_PIX
+	PIXBeginEvent(PIX_COLOR_DEFAULT, "%s: %s", titleName, contextName ? contextName : "");
+#endif
+#ifdef VT_PROFILE_SUPERLUMINAL
+	PerformanceAPI_BeginEvent(titleName, contextName, PERFORMANCEAPI_DEFAULT_COLOR);
+#endif
 #endif
 }
 
 void VT::Profile::endEvent()
 {
 #if !defined(VT_CONFIG_RETAIL)
+#ifdef VT_PROFILE_SUPERLUMINAL
+	PerformanceAPI_EndEvent();
+#endif
+
+#ifdef VT_PROFILE_PIX
 	PIXEndEvent();
+#endif
 #endif
 }

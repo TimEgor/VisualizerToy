@@ -1,4 +1,5 @@
 #include "Core/Platform.h"
+#include "Core/String/StringConverter.h"
 
 #include "InitParams.h"
 #include "ReturningCodes.h"
@@ -11,6 +12,8 @@
 #include "WindowSystem/IWindowSystem.h"
 #include "WindowSystem/IWindow.h"
 
+#include "InputSystem/IInputSystem.h"
+
 #include "ResourceSystem/IResourceSystem.h"
 
 #include "DebugUiSystem/IDebugUiSystem.h"
@@ -20,8 +23,6 @@
 #include "DefaultSceneRender/DefaultSceneRender.h"
 #include "SwapChain/ISwapChain.h"
 #include "GraphicPresenter/WindowGraphicPresenter.h"
-
-#include "MeshSystem/MeshSystem.h"
 
 #include "ProjectLoader/ProjectLoader.h"
 #include "LevelSystem/ILevelSystem.h"
@@ -151,31 +152,38 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 			graphicDevice->waitContexts();
 			graphicDevice->resetContexts();
 
-			engine->beginFrame();
-
-			debugUi->update();
-
-			engine->updateFrame();
-
-			if (!engine->isRenderingPaused())
 			{
-				sceneRender->prepareRenderData(*levelSystem->getCurrentLevel());
-				renderSystem->waitFrame();
+				VT::IEngine::FrameID frameId = engine->beginFrame();
 
-				graphicPresenter->updateNextTargetTextureIndex();
-				const uint32_t frameIndex = graphicPresenter->getCurrentTargetTextureIndex();
+				VT_PROFILE_BLOCK_EVENT_CONTEXT("Frame", VT::convertToString(frameId).c_str());
 
-				renderSystem->draw(
-					graphicPresenter->getTargetTexture(frameIndex),
-					graphicPresenter->getTargetTextureView(frameIndex)
-				);
+				engineEnvironment->m_windowSystem->updateWindowEvents();
+				engineEnvironment->m_inputSystem->update();
 
-				graphicPresenter->present();
+				debugUi->update();
+
+				engine->updateFrame();
+
+				if (!engine->isRenderingPaused())
+				{
+					sceneRender->prepareRenderData(*levelSystem->getCurrentLevel());
+					renderSystem->waitFrame();
+
+					graphicPresenter->updateNextTargetTextureIndex();
+					const uint32_t frameIndex = graphicPresenter->getCurrentTargetTextureIndex();
+
+					renderSystem->draw(
+						graphicPresenter->getTargetTexture(frameIndex),
+						graphicPresenter->getTargetTextureView(frameIndex)
+					);
+
+					graphicPresenter->present();
+				}
+
+				graphicDevice->submitContexts();
+
+				engine->endFrame();
 			}
-
-			graphicDevice->submitContexts();
-
-			engine->endFrame();
 		}
 
 		engine->getEnvironment()->m_graphicDevice->waitIdle();

@@ -9,12 +9,18 @@ include(${VT_ROOT_PATH}/CMake/PreBuild.cmake)
 vt_add_module_target(Profile STATIC "VT_Engine")
 
 target_link_libraries(Profile
-    PUBLIC
-        Core
+	PUBLIC
+		Core
 )
 
 vt_check_and_build_module(WinPixEventRuntime FALSE)
 if ((${WinPixEventRuntime_FOUND}) AND (DEFINED WinPixEventRuntime_FOUND))
-    target_compile_definitions(Profile PUBLIC VT_PROFILE_PIX)
-    vt_add_third_party_module(Profile PUBLIC WinPixEventRuntime WinPixEventRuntime)
+	target_compile_definitions(Profile PRIVATE VT_PROFILE_PIX)
+	vt_add_third_party_module(Profile PRIVATE WinPixEventRuntime WinPixEventRuntime)
+endif()
+
+vt_check_and_build_module(SuperluminalAPI FALSE)
+if ((${SuperluminalAPI_FOUND}) AND (DEFINED SuperluminalAPI_FOUND))
+	target_compile_definitions(Profile PRIVATE VT_PROFILE_SUPERLUMINAL)
+	vt_add_third_party_module(Profile PRIVATE SuperluminalAPI SuperluminalAPI)
 endif()

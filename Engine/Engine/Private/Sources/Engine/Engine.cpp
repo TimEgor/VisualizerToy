@@ -25,8 +25,6 @@
 
 #include "DebugUiSystem/DebugUiSystem.h"
 
-#include "Profile/Profile.h"
-
 #include <cassert>
 
 bool VT::Engine::init(const EngineInitParam& initParam)
@@ -139,15 +137,6 @@ VT::IEngine::FrameID VT::Engine::beginFrame()
 {
 	++m_currentFrameID;
 
-	VT_PROFILE_BEGIN_EVENT(stringFormat("Frame #%d", m_currentFrameID).c_str());
-
-	assert(m_engineEnvironment);
-
-	assert(m_engineEnvironment->m_windowSystem);
-	m_engineEnvironment->m_windowSystem->updateWindowEvents();
-
-	m_engineEnvironment->m_inputSystem->update();
-
 	m_currentFrameTime = Clock::getCurrentTime();
 	m_deltaTime = Clock::calkTimePointDelta(m_currentFrameTime, m_prevFrameStartTime);
 
@@ -157,7 +146,6 @@ VT::IEngine::FrameID VT::Engine::beginFrame()
 void VT::Engine::endFrame()
 {
 	m_prevFrameStartTime = m_currentFrameTime;
-	VT_PROFILE_END_EVENT();
 }
 
 void VT::Engine::updateFrame()

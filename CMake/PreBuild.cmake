@@ -1,8 +1,5 @@
 ### vt_build_module
 function(vt_build_module MODULE_NAME REQUIRING_STATE)
-	message("\n=========")
-	message(">>> Building: ${CMAKE_GENERATOR_PLATFORM} ${MODULE_NAME}\n")
-
 	set(MODULE_PATH ${VT_ROOT_PATH}/Libs/${MODULE_NAME})
 
 	if (NOT EXISTS ${MODULE_PATH})
@@ -12,6 +9,9 @@ function(vt_build_module MODULE_NAME REQUIRING_STATE)
 			return()
 		endif()
 	endif()
+
+	message("\n=========")
+	message(">>> Building: ${CMAKE_GENERATOR_PLATFORM} ${MODULE_NAME}\n")
 
 	set(MODULE_NEED_INSTALL FALSE)
 
